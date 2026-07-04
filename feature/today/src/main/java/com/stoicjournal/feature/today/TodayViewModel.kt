@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
@@ -48,9 +49,11 @@ class TodayViewModel @Inject constructor(
         baseStateFlow
             .flatMapLatest { state ->
                 val quoteFlow = state.prompt?.let { prompt ->
-                    getQuoteForPromptUseCase(prompt).map { it }
+                    getQuoteForPromptUseCase(prompt)
                 } ?: flowOf(null)
-                quoteFlow.map { quote -> state.copy(quote = quote) }
+                quoteFlow
+                    .map { quote -> state.copy(quote = quote) }
+                    .onStart { emit(state) }
             }
             .onEach { _uiState.value = it }
             .launchIn(viewModelScope)
