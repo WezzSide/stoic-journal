@@ -20,7 +20,7 @@ class ReminderScheduler @Inject constructor(
 
     fun schedule(hour: Int, minute: Int) {
         val now = LocalDateTime.now(ZoneId.systemDefault())
-        var target = now.withHour(hour).withMinute(minute).withSecond(0)
+        var target = now.withHour(hour).withMinute(minute).withSecond(0).withNano(0)
         if (target.isBefore(now)) {
             target = target.plusDays(1)
         }
