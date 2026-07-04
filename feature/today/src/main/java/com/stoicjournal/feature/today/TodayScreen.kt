@@ -41,7 +41,28 @@ fun TodayScreen(
     viewModel: TodayViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    TodayScreenContent(
+        uiState = uiState,
+        onGuidedJournal = onGuidedJournal,
+        onFreeFormJournal = onFreeFormJournal,
+        onExercise = onExercise,
+        onNavigateToLibrary = onNavigateToLibrary,
+        onNavigateToHistory = onNavigateToHistory,
+        onNavigateToSettings = onNavigateToSettings
+    )
+}
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun TodayScreenContent(
+    uiState: TodayUiState,
+    onGuidedJournal: (String) -> Unit,
+    onFreeFormJournal: () -> Unit,
+    onExercise: (String) -> Unit,
+    onNavigateToLibrary: () -> Unit,
+    onNavigateToHistory: () -> Unit,
+    onNavigateToSettings: () -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
