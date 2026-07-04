@@ -33,7 +33,11 @@ class AssetSeedImporter @Inject constructor(
 ) {
     @OptIn(ExperimentalSerializationApi::class)
     suspend fun seedIfEmpty() = withContext(Dispatchers.IO) {
-        if (quoteDao.getAll().first().isNotEmpty()) return@withContext
+        val hasContent = quoteDao.getAll().first().isNotEmpty() &&
+            promptDao.getAll().first().isNotEmpty() &&
+            exerciseDao.getAll().first().isNotEmpty() &&
+            philosopherDao.getAll().first().isNotEmpty()
+        if (hasContent) return@withContext
         val json = Json { ignoreUnknownKeys = true }
 
         database.withTransaction {
