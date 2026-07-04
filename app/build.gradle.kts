@@ -7,6 +7,7 @@ android {
 
     defaultConfig {
         applicationId = "com.stoicjournal"
+        testInstrumentationRunner = "com.stoicjournal.HiltTestRunner"
     }
 
     buildTypes {

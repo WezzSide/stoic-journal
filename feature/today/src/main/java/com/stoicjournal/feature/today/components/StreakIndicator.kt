@@ -7,13 +7,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.stoicjournal.core.domain.model.Streak
 
 @Composable
 fun StreakIndicator(streak: Streak) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.testTag("StreakIndicator")
+    ) {
         Text(
             text = "${streak.currentCount}",
             style = MaterialTheme.typography.headlineMedium,

@@ -1,6 +1,7 @@
 package com.stoicjournal.feature.today
 
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import com.stoicjournal.core.domain.model.Exercise
 import com.stoicjournal.core.domain.model.Prompt
@@ -59,7 +60,7 @@ class TodayScreenTest {
         }
 
         composeTestRule.onNodeWithText("Stoic Journal").assertExists()
-        composeTestRule.onNodeWithText("5 day streak").assertExists()
+        composeTestRule.onNodeWithTag("StreakIndicator").assertExists()
         composeTestRule.onNodeWithText("\"You have power over your mind.\"").assertExists()
         composeTestRule.onNodeWithText("What is in your control today?").assertExists()
         composeTestRule.onNodeWithText("Stoic Exercises").assertExists()
