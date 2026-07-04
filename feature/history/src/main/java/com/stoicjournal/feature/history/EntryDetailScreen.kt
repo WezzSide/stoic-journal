@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,7 +68,7 @@ fun EntryDetailScreen(
         ) {
             uiState.entry?.let { entry ->
                 Text(
-                    text = entry.title ?: entry.type.name.replace("_", " ").lowercase().replaceFirstChar { it.uppercase() },
+                    text = entry.title ?: entry.type.name.replace("_", " ").lowercase(Locale.ROOT).replaceFirstChar { it.uppercase(Locale.ROOT) },
                     style = MaterialTheme.typography.headlineMedium,
                     modifier = Modifier.padding(top = 16.dp)
                 )

@@ -30,7 +30,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -103,43 +102,46 @@ fun HistoryScreen(
                     verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)
                 ) {
                     items(uiState.entries, key = { it.id }) { entry ->
-                        key(entry.id, uiState.deleteError) {
-                            val dismissState = rememberSwipeToDismissBoxState(
-                                confirmValueChange = { dismissValue ->
-                                    if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
-                                        viewModel.deleteEntry(entry)
-                                        true
-                                    } else {
-                                        false
-                                    }
+                        val dismissState = rememberSwipeToDismissBoxState(
+                            confirmValueChange = { dismissValue ->
+                                if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
+                                    viewModel.deleteEntry(entry)
+                                    true
+                                } else {
+                                    false
                                 }
-                            )
-                            SwipeToDismissBox(
-                                state = dismissState,
-                                backgroundContent = {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(88.dp)
-                                            .background(MaterialTheme.colorScheme.error),
-                                        contentAlignment = Alignment.CenterEnd
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Delete,
-                                            contentDescription = "Delete",
-                                            tint = MaterialTheme.colorScheme.onError,
-                                            modifier = Modifier.padding(end = 16.dp)
-                                        )
-                                    }
-                                },
-                                content = {
-                                    EntryListItem(
-                                        entry = entry,
-                                        onClick = { onEntryClick(entry.id) }
+                            }
+                        )
+                        SwipeToDismissBox(
+                            state = dismissState,
+                            backgroundContent = {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(88.dp)
+                                        .background(MaterialTheme.colorScheme.error),
+                                    contentAlignment = Alignment.CenterEnd
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Delete",
+                                        tint = MaterialTheme.colorScheme.onError,
+                                        modifier = Modifier.padding(end = 16.dp)
                                     )
                                 }
-                            )
-                        }
+                            },
+                            content = {
+                                LaunchedEffect(uiState.failedDeleteEntryId) {
+                                    if (uiState.failedDeleteEntryId == entry.id) {
+                                        dismissState.reset()
+                                    }
+                                }
+                                EntryListItem(
+                                    entry = entry,
+                                    onClick = { onEntryClick(entry.id) }
+                                )
+                            }
+                        )
                     }
                 }
             }

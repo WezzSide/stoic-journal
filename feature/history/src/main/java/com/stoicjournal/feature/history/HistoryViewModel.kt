@@ -67,14 +67,17 @@ class HistoryViewModel @Inject constructor(
                 throw e
             } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(deleteError = e.localizedMessage ?: "Failed to delete entry")
+                    it.copy(
+                        deleteError = e.localizedMessage ?: "Failed to delete entry",
+                        failedDeleteEntryId = entry.id
+                    )
                 }
             }
         }
     }
 
     fun deleteErrorShown() {
-        _uiState.update { it.copy(deleteError = null) }
+        _uiState.update { it.copy(deleteError = null, failedDeleteEntryId = null) }
     }
 
     fun deleteSuccessShown() {

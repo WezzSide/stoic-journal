@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.stoicjournal.core.domain.model.StoicismLevel
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -117,7 +118,7 @@ private fun LevelStep(
             FilterChip(
                 selected = selectedLevel == level,
                 onClick = { onSelect(level) },
-                label = { Text(level.name.lowercase().replaceFirstChar { it.uppercase() }) },
+                label = { Text(level.name.lowercase(Locale.ROOT).replaceFirstChar { it.uppercase(Locale.ROOT) }) },
                 modifier = Modifier
                     .padding(top = 8.dp)
                     .heightIn(min = 48.dp)

@@ -9,5 +9,6 @@ data class HistoryUiState(
     val isLoading: Boolean = true,
     val loadError: String? = null,
     val deleteError: String? = null,
+    val failedDeleteEntryId: String? = null,
     val deleteSuccess: Boolean = false
 )
