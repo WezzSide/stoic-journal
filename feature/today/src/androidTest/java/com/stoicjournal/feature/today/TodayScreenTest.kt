@@ -30,14 +30,14 @@ class TodayScreenTest {
             text = "You have power over your mind.",
             attribution = "Marcus Aurelius",
             philosopherId = "marcus",
-            theme = Theme.DISCIPLINE
+            theme = Theme.CONTROL
         )
         val exercise = Exercise(
             id = "exercise-1",
             title = "Morning Reflection",
             description = "Plan your day with virtue.",
             steps = listOf("Step 1", "Step 2"),
-            theme = Theme.DISCIPLINE
+            theme = Theme.WISDOM
         )
         val uiState = TodayUiState(
             prompt = prompt,

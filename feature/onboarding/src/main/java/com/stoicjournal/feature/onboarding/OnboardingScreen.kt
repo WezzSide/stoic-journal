@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -72,7 +73,12 @@ private fun WelcomeStep(onNext: () -> Unit, modifier: Modifier = Modifier) {
             modifier = Modifier.padding(top = 16.dp)
         )
     }
-    Button(onClick = onNext, modifier = Modifier.fillMaxWidth()) {
+    Button(
+        onClick = onNext,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+    ) {
         Text("Begin")
     }
 }
@@ -94,11 +100,18 @@ private fun LevelStep(
                 selected = selectedLevel == level,
                 onClick = { onSelect(level) },
                 label = { Text(level.name.lowercase().replaceFirstChar { it.uppercase() }) },
-                modifier = Modifier.padding(top = 8.dp)
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .heightIn(min = 48.dp)
             )
         }
     }
-    Button(onClick = onNext, modifier = Modifier.fillMaxWidth()) {
+    Button(
+        onClick = onNext,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+    ) {
         Text("Continue")
     }
 }
@@ -129,7 +142,9 @@ private fun ReminderStep(
             onTimeChange(timePickerState.hour, timePickerState.minute)
             onComplete()
         },
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
     ) {
         Text("Start journaling")
     }

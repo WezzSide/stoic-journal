@@ -3,6 +3,7 @@ package com.stoicjournal.feature.journal.freeform
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -73,11 +74,17 @@ fun FreeFormJournalScreen(
             )
             QuoteHeader(quote = uiState.attachedQuote)
             if (uiState.attachedQuote == null) {
-                TextButton(onClick = viewModel::attachRandomQuote) {
+                TextButton(
+                    onClick = viewModel::attachRandomQuote,
+                    modifier = Modifier.heightIn(min = 48.dp)
+                ) {
                     Text("Add a Stoic quote")
                 }
             } else {
-                TextButton(onClick = viewModel::removeQuote) {
+                TextButton(
+                    onClick = viewModel::removeQuote,
+                    modifier = Modifier.heightIn(min = 48.dp)
+                ) {
                     Text("Remove quote")
                 }
             }

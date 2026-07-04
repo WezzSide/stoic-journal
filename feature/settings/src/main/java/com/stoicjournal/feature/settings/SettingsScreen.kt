@@ -5,9 +5,11 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -92,26 +94,36 @@ fun SettingsScreen(
                 )
             }
             if (uiState.reminderEnabled) {
-                Text(
-                    text = "Change time",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary,
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { showTimePicker = true }
-                        .padding(16.dp)
-                )
+                        .heightIn(min = 48.dp)
+                        .clickable { showTimePicker = true },
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Text(
+                        text = "Change time",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
             }
             Divider()
-            Text(
-                text = "Reset onboarding",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.primary,
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { viewModel.resetOnboarding() }
-                    .padding(16.dp)
-            )
+                    .heightIn(min = 48.dp)
+                    .clickable { viewModel.resetOnboarding() },
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Text(
+                    text = "Reset onboarding",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
             Divider()
             Text(
                 text = "Stoic Journal v1.0",

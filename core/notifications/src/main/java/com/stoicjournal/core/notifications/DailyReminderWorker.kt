@@ -1,11 +1,14 @@
 package com.stoicjournal.core.notifications
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -69,7 +72,24 @@ class DailyReminderWorker @AssistedInject constructor(
             .setAutoCancel(true)
             .build()
 
-        notificationManager.notify(NOTIFICATION_ID, notification)
+        val hasNotificationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                applicationContext,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+
+        if (hasNotificationPermission) {
+            try {
+                notificationManager.notify(NOTIFICATION_ID, notification)
+            } catch (e: SecurityException) {
+                Log.w(TAG, "SecurityException showing reminder notification", e)
+            }
+        } else {
+            Log.d(TAG, "Notification permission denied; skipping reminder notification")
+        }
 
         val hour = inputData.getInt("hour", DEFAULT_HOUR)
         val minute = inputData.getInt("minute", DEFAULT_MINUTE)
