@@ -1,6 +1,7 @@
 package com.stoicjournal.feature.settings
 
 import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -32,7 +33,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.stoicjournal.feature.settings.components.ReminderTimePicker
 
@@ -44,6 +47,7 @@ fun SettingsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showTimePicker by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -88,7 +92,10 @@ fun SettingsScreen(
                     onCheckedChange = { enabled ->
                         viewModel.setReminderEnabled(enabled)
                         if (enabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            val permission = Manifest.permission.POST_NOTIFICATIONS
+                            if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                                notificationPermissionLauncher.launch(permission)
+                            }
                         }
                     }
                 )
