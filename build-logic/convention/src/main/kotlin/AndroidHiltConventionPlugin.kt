@@ -1,5 +1,7 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.VersionCatalogsExtension
+import org.gradle.kotlin.dsl.getByType
 
 class AndroidHiltConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
@@ -7,9 +9,11 @@ class AndroidHiltConventionPlugin : Plugin<Project> {
             apply("com.google.dagger.hilt.android")
             apply("org.jetbrains.kotlin.kapt")
         }
-        dependencies {
-            "implementation"(libs.hilt.android)
-            "kapt"(libs.hilt.compiler)
+        val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
+        project.dependencies.apply {
+            add("implementation", libs.findLibrary("hilt-android").get())
+            add("kapt", libs.findLibrary("hilt-compiler").get())
         }
+        Unit
     }
 }
