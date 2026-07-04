@@ -10,6 +10,7 @@ import com.stoicjournal.core.domain.repository.QuoteRepository
 import com.stoicjournal.core.domain.usecase.SaveJournalEntryUseCase
 import com.stoicjournal.core.domain.usecase.createJournalEntry
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class FreeFormJournalUiState(
@@ -41,25 +43,35 @@ class FreeFormJournalViewModel @Inject constructor(
     val uiState: StateFlow<FreeFormJournalUiState> = _uiState
 
     private var draftSaveJob: Job? = null
+    private var draftQuoteIdToRestore: String? = null
+    private var quoteExplicitlySet: Boolean = false
 
     init {
         quoteRepository.getAllQuotes().onEach { quotes ->
             _uiState.update { it.copy(quotes = quotes) }
+            restoreDraftQuoteIfNeeded(quotes)
         }.launchIn(viewModelScope)
 
         viewModelScope.launch {
-            val draft = journalDraftRepository.getDraft(EntryType.FREE_FORM, FREE_FORM_DRAFT_KEY).first()
-            val quotes = quoteRepository.getAllQuotes().first()
-            draft?.let {
-                val quote = quotes.find { q -> q.id == it.quoteId }
+            journalDraftRepository.getDraft(EntryType.FREE_FORM, FREE_FORM_DRAFT_KEY).first()?.let { draft ->
+                draftQuoteIdToRestore = draft.quoteId
                 _uiState.update { state ->
                     state.copy(
-                        title = it.title,
-                        body = it.body,
-                        attachedQuote = quote
+                        title = draft.title,
+                        body = draft.body
                     )
                 }
             }
+        }
+    }
+
+    private fun restoreDraftQuoteIfNeeded(quotes: List<Quote>) {
+        val quoteId = draftQuoteIdToRestore ?: return
+        if (quoteExplicitlySet || quotes.isEmpty()) return
+        val quote = quotes.find { it.id == quoteId }
+        if (quote != null) {
+            _uiState.update { it.copy(attachedQuote = quote) }
+            draftQuoteIdToRestore = null
         }
     }
 
@@ -76,18 +88,27 @@ class FreeFormJournalViewModel @Inject constructor(
     fun attachRandomQuote() {
         val quotes = _uiState.value.quotes
         if (quotes.isNotEmpty()) {
+            quoteExplicitlySet = true
             _uiState.update { it.copy(attachedQuote = quotes.random(), saveError = null) }
             scheduleDraftSave()
         }
     }
 
     fun removeQuote() {
+        quoteExplicitlySet = true
         _uiState.update { it.copy(attachedQuote = null, saveError = null) }
         scheduleDraftSave()
     }
 
     fun onSaveErrorShown() {
         _uiState.update { it.copy(saveError = null) }
+    }
+
+    fun discard(onComplete: () -> Unit) {
+        viewModelScope.launch {
+            journalDraftRepository.clearDraft(EntryType.FREE_FORM, FREE_FORM_DRAFT_KEY)
+            onComplete()
+        }
     }
 
     fun save(onComplete: () -> Unit) {
@@ -105,6 +126,9 @@ class FreeFormJournalViewModel @Inject constructor(
                 journalDraftRepository.clearDraft(EntryType.FREE_FORM, FREE_FORM_DRAFT_KEY)
                 _uiState.update { it.copy(isSaving = false) }
                 onComplete()
+            } catch (e: CancellationException) {
+                _uiState.update { it.copy(isSaving = false) }
+                throw e
             } catch (e: Exception) {
                 _uiState.update { it.copy(isSaving = false, saveError = e.message ?: "Failed to save entry") }
             }
@@ -115,22 +139,30 @@ class FreeFormJournalViewModel @Inject constructor(
         draftSaveJob?.cancel()
         draftSaveJob = viewModelScope.launch {
             delay(DRAFT_SAVE_DEBOUNCE_MS)
-            val state = _uiState.value
-            journalDraftRepository.saveDraft(
-                EntryType.FREE_FORM,
-                FREE_FORM_DRAFT_KEY,
-                JournalDraft(
-                    title = state.title,
-                    body = state.body,
-                    quoteId = state.attachedQuote?.id
-                )
-            )
+            flushDraft()
         }
     }
 
     override fun onCleared() {
-        super.onCleared()
+        val pendingSave = draftSaveJob?.isCompleted == false
         draftSaveJob?.cancel()
+        if (pendingSave) {
+            runBlocking { flushDraft() }
+        }
+        super.onCleared()
+    }
+
+    private suspend fun flushDraft() {
+        val state = _uiState.value
+        journalDraftRepository.saveDraft(
+            EntryType.FREE_FORM,
+            FREE_FORM_DRAFT_KEY,
+            JournalDraft(
+                title = state.title,
+                body = state.body,
+                quoteId = state.attachedQuote?.id
+            )
+        )
     }
 
     companion object {

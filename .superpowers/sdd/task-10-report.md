@@ -51,3 +51,131 @@ No AAPT2 or Kotlin compilation issues occurred.
 ## Issues or concerns
 
 None. The module builds cleanly and the implementation follows the specified architecture.
+
+---
+
+# Task 10 Fix Report
+
+## What was changed
+
+### 1. Discard must clear the persisted draft
+
+- Added `discard(onComplete: () -> Unit)` to `FreeFormJournalViewModel`, `GuidedJournalViewModel`, and `ExerciseJournalViewModel`.
+- Each `discard()` calls `journalDraftRepository.clearDraft(...)` for the correct draft key (`EntryType.FREE_FORM` + `"freeform"`, `EntryType.GUIDED` + `promptId`, `EntryType.EXERCISE` + `exerciseId`), then invokes `onComplete()` to navigate back.
+- Updated `FreeFormJournalScreen`, `GuidedJournalScreen`, and `ExerciseJournalScreen` so the `Discard` action in `SaveDiscardBar` calls `viewModel.discard(onNavigateBack)` instead of navigating back directly.
+
+### 2. Free-form draft quote restoration is racy
+
+- In `FreeFormJournalViewModel`, removed the one-shot `.first()` fetch of quotes during draft restoration.
+- Added `draftQuoteIdToRestore` and `quoteExplicitlySet` flags.
+- The draft body/title are restored immediately; the saved `quoteId` is held until the quotes flow emits a non-empty list containing the matching quote.
+- A new `restoreDraftQuoteIfNeeded(quotes)` helper is invoked on every quotes emission and only attaches the saved quote when:
+  - a saved `quoteId` exists,
+  - the quotes list is non-empty,
+  - the user has not explicitly attached or removed a quote this session.
+- `attachRandomQuote()` and `removeQuote()` mark `quoteExplicitlySet = true` so a user choice is never overwritten by a later quotes emission.
+
+### 3. Pending drafts are not lost on exit
+
+- In `onCleared()` of all three ViewModels, the in-flight `draftSaveJob` is cancelled only after recording whether it had already completed.
+- If a save was still pending (`draftSaveJob?.isCompleted == false`), the current UI state is flushed to DataStore synchronously via `runBlocking { flushDraft() }`.
+- A shared `flushDraft()` helper is used by both the debounced `scheduleDraftSave()` and the synchronous exit flush, avoiding duplicate save logic and ensuring the final keystrokes are persisted.
+
+### 4. Cancellation exceptions are swallowed
+
+- In the `save()` method of all three ViewModels, `CancellationException` is now caught explicitly, `isSaving` is reset, and the exception is re-thrown so the coroutine is cancelled cleanly.
+- Other `Exception` types continue to populate `saveError` for the Snackbar UI.
+
+### Files modified
+
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/freeform/FreeFormJournalViewModel.kt`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/freeform/FreeFormJournalScreen.kt`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/guided/GuidedJournalViewModel.kt`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/guided/GuidedJournalScreen.kt`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/exercise/ExerciseJournalViewModel.kt`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/exercise/ExerciseJournalScreen.kt`
+- `.superpowers/sdd/task-10-report.md`
+
+## Test results
+
+Ran the requested build:
+
+```bash
+./gradlew :feature:journal:assembleDebug :core:data:assembleDebug :core:domain:assembleDebug --no-daemon
+```
+
+Result: `BUILD SUCCESSFUL in 1m 6s` (96 actionable tasks: 9 executed, 87 up-to-date).
+
+No Kotlin compilation, kapt, or AAPT2 errors in the affected modules.
+
+## Commit
+
+- `TBD` fix(journal): clear drafts on discard, flush drafts on exit, and rethrow cancellations
+
+## Issues or concerns
+
+- None. All four Important reviewer findings are addressed and the affected modules build cleanly.
+
+---
+
+# Task 10 Critical Fixes Report
+
+## What was changed
+
+### 1. Auto-save journal drafts
+
+- Added `JournalDraft` model in `core/domain/src/main/java/com/stoicjournal/core/domain/model/JournalDraft.kt`.
+- Added `JournalDraftRepository` interface in `core/domain/src/main/java/com/stoicjournal/core/domain/repository/JournalDraftRepository.kt`.
+- Added DataStore-backed `JournalDraftRepositoryImpl` in `core/data/src/main/java/com/stoicjournal/core/data/repository/JournalDraftRepositoryImpl.kt`.
+- Wired the repository into Hilt via `core/data/src/main/java/com/stoicjournal/core/data/di/DataModule.kt`.
+- Updated all three journal ViewModels to:
+  - Restore the draft when the screen opens.
+  - Save the draft debounced (300 ms) on every text/quote change.
+  - Clear the draft after a successful save.
+
+### 2. Fixed broken `isSaving` state in `GuidedJournalViewModel`
+
+- Added `isSaving` and `saveError` to `GuidedJournalUiState`, `FreeFormJournalUiState`, and `ExerciseJournalUiState`.
+- `isSaving` is now reset to `false` both on save success and in the `catch` block.
+- `SaveDiscardBar` now accepts an `isSaving` flag, disables the buttons, and shows "Saving…" while a save is in progress.
+
+### 3. Added save error handling
+
+- Wrapped `saveJournalEntryUseCase` invocations in `try/catch` in `GuidedJournalViewModel`, `FreeFormJournalViewModel`, and `ExerciseJournalViewModel`.
+- On error, `isSaving` is reset and `saveError` is populated with the exception message.
+- Each screen observes `saveError` and shows a `Snackbar` via `SnackbarHost`; the error is cleared via `onSaveErrorShown()` after display.
+
+### Files modified
+
+- `core/data/src/main/java/com/stoicjournal/core/data/di/DataModule.kt`
+- `core/data/src/main/java/com/stoicjournal/core/data/repository/JournalDraftRepositoryImpl.kt` (new)
+- `core/domain/src/main/java/com/stoicjournal/core/domain/model/JournalDraft.kt` (new)
+- `core/domain/src/main/java/com/stoicjournal/core/domain/repository/JournalDraftRepository.kt` (new)
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/components/SaveDiscardBar.kt`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/exercise/ExerciseJournalScreen.kt`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/exercise/ExerciseJournalViewModel.kt`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/freeform/FreeFormJournalScreen.kt`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/freeform/FreeFormJournalViewModel.kt`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/guided/GuidedJournalScreen.kt`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/guided/GuidedJournalViewModel.kt`
+
+## Test results
+
+Ran the requested build:
+
+```bash
+./gradlew :feature:journal:assembleDebug :core:data:assembleDebug :core:domain:assembleDebug
+```
+
+Result: `BUILD SUCCESSFUL in 43s` (96 actionable tasks: 57 executed, 39 up-to-date).
+
+No compilation errors in the affected modules.
+
+## Commit
+
+- `d183cf7` fix(journal): auto-save drafts, fix isSaving, and add save error handling
+
+## Issues or concerns
+
+- The `git add -A` used for the commit also staged pre-existing untracked `.superpowers/sdd/*` files (base-task/review diff/report artifacts). They are now part of the commit. If those files should remain untracked, they need to be removed from the commit history.
+- Draft restoration for the free-form screen fetches quotes once during init; if the quote list is still loading, a previously attached quote will not be restored. This is a minor edge case.

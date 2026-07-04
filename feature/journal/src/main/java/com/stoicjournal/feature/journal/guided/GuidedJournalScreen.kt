@@ -49,7 +49,7 @@ fun GuidedJournalScreen(
         bottomBar = {
             SaveDiscardBar(
                 onSave = { viewModel.save(onNavigateBack) },
-                onDiscard = onNavigateBack,
+                onDiscard = { viewModel.discard(onNavigateBack) },
                 saveEnabled = uiState.body.isNotBlank(),
                 isSaving = uiState.isSaving,
                 modifier = Modifier

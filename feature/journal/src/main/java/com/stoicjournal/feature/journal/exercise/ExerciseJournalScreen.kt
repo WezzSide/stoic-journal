@@ -46,7 +46,7 @@ fun ExerciseJournalScreen(
         bottomBar = {
             SaveDiscardBar(
                 onSave = { viewModel.save(onNavigateBack) },
-                onDiscard = onNavigateBack,
+                onDiscard = { viewModel.discard(onNavigateBack) },
                 saveEnabled = uiState.reflection.isNotBlank(),
                 isSaving = uiState.isSaving,
                 modifier = Modifier

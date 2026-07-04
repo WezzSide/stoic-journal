@@ -13,6 +13,7 @@ import com.stoicjournal.core.domain.usecase.GetQuoteForPromptUseCase
 import com.stoicjournal.core.domain.usecase.SaveJournalEntryUseCase
 import com.stoicjournal.core.domain.usecase.createJournalEntry
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class GuidedJournalUiState(
@@ -74,6 +76,13 @@ class GuidedJournalViewModel @Inject constructor(
         _uiState.update { it.copy(saveError = null) }
     }
 
+    fun discard(onComplete: () -> Unit) {
+        viewModelScope.launch {
+            journalDraftRepository.clearDraft(EntryType.GUIDED, promptId)
+            onComplete()
+        }
+    }
+
     fun save(onComplete: () -> Unit) {
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true, saveError = null) }
@@ -89,6 +98,9 @@ class GuidedJournalViewModel @Inject constructor(
                 journalDraftRepository.clearDraft(EntryType.GUIDED, promptId)
                 _uiState.update { it.copy(isSaving = false) }
                 onComplete()
+            } catch (e: CancellationException) {
+                _uiState.update { it.copy(isSaving = false) }
+                throw e
             } catch (e: Exception) {
                 _uiState.update { it.copy(isSaving = false, saveError = e.message ?: "Failed to save entry") }
             }
@@ -99,18 +111,25 @@ class GuidedJournalViewModel @Inject constructor(
         draftSaveJob?.cancel()
         draftSaveJob = viewModelScope.launch {
             delay(DRAFT_SAVE_DEBOUNCE_MS)
-            val body = _uiState.value.body
-            journalDraftRepository.saveDraft(
-                EntryType.GUIDED,
-                promptId,
-                JournalDraft(body = body)
-            )
+            flushDraft()
         }
     }
 
     override fun onCleared() {
-        super.onCleared()
+        val pendingSave = draftSaveJob?.isCompleted == false
         draftSaveJob?.cancel()
+        if (pendingSave) {
+            runBlocking { flushDraft() }
+        }
+        super.onCleared()
+    }
+
+    private suspend fun flushDraft() {
+        journalDraftRepository.saveDraft(
+            EntryType.GUIDED,
+            promptId,
+            JournalDraft(body = _uiState.value.body)
+        )
     }
 
     companion object {

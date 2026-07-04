@@ -11,6 +11,7 @@ import com.stoicjournal.core.domain.repository.JournalDraftRepository
 import com.stoicjournal.core.domain.usecase.SaveJournalEntryUseCase
 import com.stoicjournal.core.domain.usecase.createJournalEntry
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class ExerciseJournalUiState(
@@ -63,6 +65,13 @@ class ExerciseJournalViewModel @Inject constructor(
         _uiState.update { it.copy(saveError = null) }
     }
 
+    fun discard(onComplete: () -> Unit) {
+        viewModelScope.launch {
+            journalDraftRepository.clearDraft(EntryType.EXERCISE, exerciseId)
+            onComplete()
+        }
+    }
+
     fun save(onComplete: () -> Unit) {
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true, saveError = null) }
@@ -77,6 +86,9 @@ class ExerciseJournalViewModel @Inject constructor(
                 journalDraftRepository.clearDraft(EntryType.EXERCISE, exerciseId)
                 _uiState.update { it.copy(isSaving = false) }
                 onComplete()
+            } catch (e: CancellationException) {
+                _uiState.update { it.copy(isSaving = false) }
+                throw e
             } catch (e: Exception) {
                 _uiState.update { it.copy(isSaving = false, saveError = e.message ?: "Failed to save entry") }
             }
@@ -87,18 +99,25 @@ class ExerciseJournalViewModel @Inject constructor(
         draftSaveJob?.cancel()
         draftSaveJob = viewModelScope.launch {
             delay(DRAFT_SAVE_DEBOUNCE_MS)
-            val reflection = _uiState.value.reflection
-            journalDraftRepository.saveDraft(
-                EntryType.EXERCISE,
-                exerciseId,
-                JournalDraft(reflection = reflection)
-            )
+            flushDraft()
         }
     }
 
     override fun onCleared() {
-        super.onCleared()
+        val pendingSave = draftSaveJob?.isCompleted == false
         draftSaveJob?.cancel()
+        if (pendingSave) {
+            runBlocking { flushDraft() }
+        }
+        super.onCleared()
+    }
+
+    private suspend fun flushDraft() {
+        journalDraftRepository.saveDraft(
+            EntryType.EXERCISE,
+            exerciseId,
+            JournalDraft(reflection = _uiState.value.reflection)
+        )
     }
 
     companion object {
