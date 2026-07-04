@@ -1,6 +1,7 @@
 *.iml
 .gradle/
 /local.properties
+.superpowers/
 /.idea
 .DS_Store
 /build
@@ -10,3 +11,4 @@ captures/
 .externalNativeBuild
 .cxx
 local.properties
+.superpowers/
