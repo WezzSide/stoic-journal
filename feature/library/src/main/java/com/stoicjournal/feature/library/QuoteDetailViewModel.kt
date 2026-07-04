@@ -8,7 +8,6 @@ import com.stoicjournal.core.domain.repository.QuoteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -27,7 +26,7 @@ class QuoteDetailViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val quote = quoteRepository.getAllQuotes().first().find { it.id == quoteId }
+            val quote = quoteRepository.getQuoteById(quoteId)
             _uiState.update { it.copy(quote = quote) }
         }
     }

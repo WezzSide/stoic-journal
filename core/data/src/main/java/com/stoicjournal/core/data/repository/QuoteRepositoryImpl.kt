@@ -23,6 +23,9 @@ class QuoteRepositoryImpl @Inject constructor(
     override fun getFavoriteQuotes(): Flow<List<Quote>> =
         quoteDao.getFavorites().map { it.map(QuoteEntity::toDomain) }
 
+    override suspend fun getQuoteById(id: String): Quote? =
+        quoteDao.getById(id)?.toDomain()
+
     override suspend fun toggleFavorite(quoteId: String) {
         val quote = quoteDao.getById(quoteId) ?: return
         quoteDao.update(quote.copy(isFavorite = !quote.isFavorite))

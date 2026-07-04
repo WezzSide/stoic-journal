@@ -1,5 +1,9 @@
 package com.stoicjournal.feature.onboarding
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,6 +34,18 @@ fun OnboardingScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { _ ->
+        // Permission result is intentionally ignored; onboarding completes regardless.
+    }
+
+    val onRequestNotificationPermission: () -> Unit = {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -52,6 +68,7 @@ fun OnboardingScreen(
                 minute = uiState.reminderMinute,
                 onTimeChange = viewModel::setReminderTime,
                 onComplete = { viewModel.completeOnboarding(onComplete) },
+                onRequestNotificationPermission = onRequestNotificationPermission,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -123,6 +140,7 @@ private fun ReminderStep(
     minute: Int,
     onTimeChange: (Int, Int) -> Unit,
     onComplete: () -> Unit,
+    onRequestNotificationPermission: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val timePickerState = rememberTimePickerState(initialHour = hour, initialMinute = minute)
@@ -140,6 +158,7 @@ private fun ReminderStep(
     Button(
         onClick = {
             onTimeChange(timePickerState.hour, timePickerState.minute)
+            onRequestNotificationPermission()
             onComplete()
         },
         modifier = Modifier

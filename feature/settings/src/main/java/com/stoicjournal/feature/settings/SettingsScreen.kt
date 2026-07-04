@@ -22,6 +22,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -30,6 +32,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.stoicjournal.feature.settings.components.ReminderTimePicker
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,12 +51,24 @@ fun SettingsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showTimePicker by remember { mutableStateOf(false) }
+    var pendingEnable by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { _ ->
-        // Permission result does not block the toggle; the system suppresses notifications if denied.
+    ) { isGranted ->
+        if (pendingEnable) {
+            pendingEnable = false
+            if (isGranted) {
+                viewModel.setReminderEnabled(true)
+            } else {
+                scope.launch {
+                    snackbarHostState.showSnackbar("Notification permission is required for reminders.")
+                }
+            }
+        }
     }
 
     Scaffold(
@@ -65,7 +81,8 @@ fun SettingsScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -90,12 +107,22 @@ fun SettingsScreen(
                 Switch(
                     checked = uiState.reminderEnabled,
                     onCheckedChange = { enabled ->
-                        viewModel.setReminderEnabled(enabled)
-                        if (enabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            val permission = Manifest.permission.POST_NOTIFICATIONS
-                            if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
-                                notificationPermissionLauncher.launch(permission)
-                            }
+                        if (!enabled) {
+                            viewModel.setReminderEnabled(false)
+                            return@Switch
+                        }
+
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                            viewModel.setReminderEnabled(true)
+                            return@Switch
+                        }
+
+                        val permission = Manifest.permission.POST_NOTIFICATIONS
+                        if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
+                            viewModel.setReminderEnabled(true)
+                        } else {
+                            pendingEnable = true
+                            notificationPermissionLauncher.launch(permission)
                         }
                     }
                 )

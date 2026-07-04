@@ -9,5 +9,6 @@ interface QuoteRepository {
     fun getQuotesByPhilosopher(philosopherId: String): Flow<List<Quote>>
     fun getQuotesByTheme(theme: Theme): Flow<List<Quote>>
     fun getFavoriteQuotes(): Flow<List<Quote>>
+    suspend fun getQuoteById(id: String): Quote?
     suspend fun toggleFavorite(quoteId: String)
 }

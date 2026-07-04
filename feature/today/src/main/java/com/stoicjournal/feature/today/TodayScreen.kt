@@ -3,7 +3,6 @@ package com.stoicjournal.feature.today
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -32,7 +31,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.stoicjournal.feature.today.components.DailyPromptCard
@@ -64,10 +62,7 @@ fun TodayScreen(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val permission = Manifest.permission.POST_NOTIFICATIONS
             if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
-                val activity = context as? ComponentActivity
-                if (activity != null && ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
-                    notificationPermissionLauncher.launch(permission)
-                }
+                notificationPermissionLauncher.launch(permission)
             }
         }
     }

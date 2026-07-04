@@ -24,7 +24,11 @@ class GetTodayPromptUseCase @Inject constructor(
             prompts
         }
         val pool = candidates.ifEmpty { prompts }
-        val selected = pool.firstOrNull()
+        val selected = if (pool.isEmpty()) {
+            null
+        } else {
+            pool[today.dayOfYear % pool.size]
+        }
         TodayPrompt(
             prompt = selected,
             date = today
