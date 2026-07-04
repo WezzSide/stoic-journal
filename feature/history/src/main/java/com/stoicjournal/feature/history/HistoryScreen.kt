@@ -25,14 +25,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.stoicjournal.feature.history.components.EntryFilterChips
 import com.stoicjournal.feature.history.components.EntryListItem
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,12 +41,25 @@ fun HistoryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(uiState.loadError) {
+        uiState.loadError?.let { message ->
+            snackbarHostState.showSnackbar(message)
+            viewModel.loadErrorShown()
+        }
+    }
 
     LaunchedEffect(uiState.deleteError) {
         uiState.deleteError?.let { message ->
             snackbarHostState.showSnackbar(message)
             viewModel.deleteErrorShown()
+        }
+    }
+
+    LaunchedEffect(uiState.deleteSuccess) {
+        if (uiState.deleteSuccess) {
+            snackbarHostState.showSnackbar("Entry deleted")
+            viewModel.deleteSuccessShown()
         }
     }
 
@@ -89,9 +100,6 @@ fun HistoryScreen(
                             confirmValueChange = { dismissValue ->
                                 if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
                                     viewModel.deleteEntry(entry)
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar("Entry deleted")
-                                    }
                                     true
                                 } else {
                                     false

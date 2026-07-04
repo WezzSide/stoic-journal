@@ -8,5 +8,6 @@ data class HistoryUiState(
     val selectedFilter: EntryType? = null,
     val isLoading: Boolean = true,
     val loadError: String? = null,
-    val deleteError: String? = null
+    val deleteError: String? = null,
+    val deleteSuccess: Boolean = false
 )
