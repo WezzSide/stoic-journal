@@ -8,6 +8,7 @@ import com.stoicjournal.core.domain.repository.PreferencesRepository
 import com.stoicjournal.core.notifications.ReminderScheduler
 import com.stoicjournal.navigation.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -29,6 +30,8 @@ class MainViewModel @Inject constructor(
             try {
                 try {
                     assetSeedImporter.seedIfEmpty()
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to seed bundled content", e)
                 }
@@ -41,6 +44,8 @@ class MainViewModel @Inject constructor(
                 } else {
                     Screen.Onboarding
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to initialize start destination", e)
                 _startDestination.value = Screen.Onboarding

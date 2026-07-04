@@ -58,8 +58,9 @@ fun TodayScreen(
         // Permission result is intentionally ignored; the UI is not blocked if denied.
     }
 
-    LaunchedEffect(uiState.isLoading, uiState.hasRequestedNotificationPermission) {
+    LaunchedEffect(uiState.isLoading, uiState.reminderEnabled, uiState.hasRequestedNotificationPermission) {
         if (uiState.isLoading) return@LaunchedEffect
+        if (!uiState.reminderEnabled) return@LaunchedEffect
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val permission = Manifest.permission.POST_NOTIFICATIONS
             if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED &&

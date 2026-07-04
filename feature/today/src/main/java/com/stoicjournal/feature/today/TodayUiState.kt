@@ -11,5 +11,6 @@ data class TodayUiState(
     val streak: Streak = Streak(0, null),
     val exercises: List<Exercise> = emptyList(),
     val hasRequestedNotificationPermission: Boolean = false,
+    val reminderEnabled: Boolean = true,
     val isLoading: Boolean = true
 )
