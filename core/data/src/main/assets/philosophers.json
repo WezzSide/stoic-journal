@@ -1,0 +1,38 @@
+[
+  {
+    "id": "marcus-aurelius",
+    "name": "Marcus Aurelius",
+    "lived": "121–180 AD",
+    "shortBio": "Roman emperor and Stoic philosopher, author of the Meditations."
+  },
+  {
+    "id": "epictetus",
+    "name": "Epictetus",
+    "lived": "c. 50–135 AD",
+    "shortBio": "A formerly enslaved Stoic teacher whose Discourses emphasize the dichotomy of control."
+  },
+  {
+    "id": "seneca",
+    "name": "Seneca the Younger",
+    "lived": "c. 4 BC–65 AD",
+    "shortBio": "Roman Stoic philosopher, statesman, and playwright."
+  },
+  {
+    "id": "musonius-rufus",
+    "name": "Musonius Rufus",
+    "lived": "c. 30–100 AD",
+    "shortBio": "Roman Stoic teacher whose lectures influenced Epictetus."
+  },
+  {
+    "id": "cleanthes",
+    "name": "Cleanthes",
+    "lived": "c. 330–230 BC",
+    "shortBio": "Second head of the Stoic school, known for his Hymn to Zeus."
+  },
+  {
+    "id": "cato-the-younger",
+    "name": "Cato the Younger",
+    "lived": "95–46 BC",
+    "shortBio": "Roman senator celebrated in Stoic tradition as a model of integrity."
+  }
+]

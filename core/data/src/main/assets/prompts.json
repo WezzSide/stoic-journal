@@ -1,0 +1,20 @@
+[
+  {
+    "id": "prompt-control-001",
+    "text": "What is within your control today, and what is not? How will you focus your energy on the former?",
+    "theme": "CONTROL",
+    "difficultyLevel": "BEGINNER"
+  },
+  {
+    "id": "prompt-adversity-001",
+    "text": "Recall a recent difficulty. What virtue can you practice in response to it?",
+    "theme": "ADVERSITY",
+    "difficultyLevel": "FAMILIAR"
+  },
+  {
+    "id": "prompt-mortality-001",
+    "text": "If you knew this were your last day, what would you stop doing and what would you begin?",
+    "theme": "MORTALITY",
+    "difficultyLevel": "ADVANCED"
+  }
+]

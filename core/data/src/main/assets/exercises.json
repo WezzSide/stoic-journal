@@ -1,0 +1,68 @@
+[
+  {
+    "id": "exercise-dichotomy-of-control",
+    "title": "Dichotomy of Control",
+    "description": "Separate what is in your control from what is not.",
+    "steps": [
+      "Take three slow breaths.",
+      "List one thing that is troubling you.",
+      "Ask: Is this entirely within my control, partly within my control, or outside my control?",
+      "For what is within your control, name one virtuous action.",
+      "For what is outside your control, practice accepting it as it is."
+    ],
+    "theme": "CONTROL",
+    "difficultyLevel": "BEGINNER"
+  },
+  {
+    "id": "exercise-evening-review",
+    "title": "Evening Review",
+    "description": "Reflect on the day’s actions and judgments.",
+    "steps": [
+      "Where did I act well today?",
+      "Where did I fall short of my values?",
+      "What could I do differently tomorrow?",
+      "Write one sentence of self-forgiveness."
+    ],
+    "theme": "WISDOM",
+    "difficultyLevel": "FAMILIAR"
+  },
+  {
+    "id": "exercise-premeditatio-malorum",
+    "title": "Premeditatio Malorum",
+    "description": "Anticipate challenges with calm.",
+    "steps": [
+      "Identify one challenge you may face tomorrow.",
+      "Imagine it happening in detail.",
+      "Ask: What resources do I have to meet it?",
+      "Commit to one virtuous response."
+    ],
+    "theme": "ADVERSITY",
+    "difficultyLevel": "FAMILIAR"
+  },
+  {
+    "id": "exercise-view-from-above",
+    "title": "View from Above",
+    "description": "Gain perspective by imagining your place in the wider world.",
+    "steps": [
+      "Close your eyes and picture your current location from above.",
+      "Zoom out to see your neighborhood, city, country, planet.",
+      "Notice how small today's concern appears.",
+      "Return with one calm intention."
+    ],
+    "theme": "MORTALITY",
+    "difficultyLevel": "ADVANCED"
+  },
+  {
+    "id": "exercise-amor-fati",
+    "title": "Amor Fati",
+    "description": "Reflect on accepting what happens.",
+    "steps": [
+      "Write down one thing you wish were different.",
+      "Ask: What could this obstacle teach me?",
+      "Write one reason to be grateful it happened exactly this way.",
+      "Choose to meet tomorrow with open hands."
+    ],
+    "theme": "COURAGE",
+    "difficultyLevel": "ADVANCED"
+  }
+]
