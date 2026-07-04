@@ -21,4 +21,6 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.kotlinx.serialization.json)
     kapt(libs.androidx.room.compiler)
+
+    testImplementation(libs.junit)
 }
