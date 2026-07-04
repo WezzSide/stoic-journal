@@ -5,3 +5,7 @@ plugins {
 android {
     namespace = "com.stoicjournal.feature.library"
 }
+
+dependencies {
+    implementation(libs.androidx.foundation)
+}

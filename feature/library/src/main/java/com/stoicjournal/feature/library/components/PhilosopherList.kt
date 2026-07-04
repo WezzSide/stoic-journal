@@ -1,7 +1,9 @@
 package com.stoicjournal.feature.library.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -22,7 +24,10 @@ fun PhilosopherList(
             androidx.compose.material3.ListItem(
                 headlineContent = { Text(philosopher.name) },
                 supportingContent = { Text(philosopher.lived) },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp)
+                    .clickable { onSelect(philosopher.id) },
                 trailingContent = {
                     if (philosopher.id == selectedId) {
                         Text(

@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -18,11 +21,14 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -30,8 +36,10 @@ import com.stoicjournal.core.domain.model.Theme
 import com.stoicjournal.feature.library.components.PhilosopherList
 import com.stoicjournal.feature.library.components.QuoteCard
 import com.stoicjournal.feature.library.components.ThemeChip
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun LibraryScreen(
     onQuoteClick: (String) -> Unit,
@@ -39,8 +47,19 @@ fun LibraryScreen(
     viewModel: LibraryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     val tabs = listOf("Themes", "Philosophers", "Favorites")
+    val pagerState = rememberPagerState(pageCount = { tabs.size })
+    var selectedTab by rememberSaveable { mutableIntStateOf(pagerState.currentPage) }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }
+            .distinctUntilChanged()
+            .collect { page ->
+                selectedTab = page
+                viewModel.selectFilter(filterForTab(page, viewModel.uiState.value.selectedFilter))
+            }
+    }
 
     Scaffold(
         topBar = {
@@ -63,34 +82,59 @@ fun LibraryScreen(
                 tabs.forEachIndexed { index, title ->
                     Tab(
                         selected = selectedTab == index,
-                        onClick = { selectedTab = index },
+                        onClick = {
+                            selectedTab = index
+                            coroutineScope.launch { pagerState.animateScrollToPage(index) }
+                        },
                         text = { Text(title) }
                     )
                 }
             }
-            when (selectedTab) {
-                0 -> ThemesTab(
-                    selectedFilter = uiState.selectedFilter,
-                    onFilter = viewModel::selectFilter,
-                    quotes = viewModel.filteredQuotes(),
-                    onToggleFavorite = viewModel::toggleFavorite,
-                    onQuoteClick = onQuoteClick
-                )
-                1 -> PhilosophersTab(
-                    philosophers = uiState.philosophers,
-                    selectedFilter = uiState.selectedFilter,
-                    onFilter = viewModel::selectFilter,
-                    quotes = viewModel.filteredQuotes(),
-                    onToggleFavorite = viewModel::toggleFavorite,
-                    onQuoteClick = onQuoteClick
-                )
-                2 -> QuotesList(
-                    quotes = uiState.quotes.filter { it.isFavorite },
-                    onToggleFavorite = viewModel::toggleFavorite,
-                    onQuoteClick = onQuoteClick
-                )
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                when (page) {
+                    0 -> ThemesTab(
+                        selectedFilter = uiState.selectedFilter,
+                        onFilter = viewModel::selectFilter,
+                        quotes = viewModel.filteredQuotes(),
+                        onToggleFavorite = viewModel::toggleFavorite,
+                        onQuoteClick = onQuoteClick
+                    )
+                    1 -> PhilosophersTab(
+                        philosophers = uiState.philosophers,
+                        selectedFilter = uiState.selectedFilter,
+                        onFilter = viewModel::selectFilter,
+                        quotes = viewModel.filteredQuotes(),
+                        onToggleFavorite = viewModel::toggleFavorite,
+                        onQuoteClick = onQuoteClick
+                    )
+                    2 -> QuotesList(
+                        quotes = viewModel.filteredQuotes(),
+                        onToggleFavorite = viewModel::toggleFavorite,
+                        onQuoteClick = onQuoteClick
+                    )
+                }
             }
         }
+    }
+}
+
+private fun filterForTab(
+    tab: Int,
+    currentFilter: LibraryFilter
+): LibraryFilter = when (tab) {
+    2 -> LibraryFilter.Favorites
+    1 -> if (currentFilter is LibraryFilter.ByPhilosopher) {
+        currentFilter
+    } else {
+        LibraryFilter.ByTheme(Theme.WISDOM)
+    }
+    else -> if (currentFilter is LibraryFilter.ByTheme) {
+        currentFilter
+    } else {
+        LibraryFilter.ByTheme(Theme.WISDOM)
     }
 }
 
