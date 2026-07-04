@@ -3,6 +3,7 @@ package com.stoicjournal.feature.today
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.stoicjournal.core.domain.repository.ExerciseRepository
+import com.stoicjournal.core.domain.repository.PreferencesRepository
 import com.stoicjournal.core.domain.usecase.GetQuoteForPromptUseCase
 import com.stoicjournal.core.domain.usecase.GetStreakUseCase
 import com.stoicjournal.core.domain.usecase.GetTodayPromptUseCase
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -26,7 +28,8 @@ class TodayViewModel @Inject constructor(
     getTodayPromptUseCase: GetTodayPromptUseCase,
     private val getQuoteForPromptUseCase: GetQuoteForPromptUseCase,
     getStreakUseCase: GetStreakUseCase,
-    exerciseRepository: ExerciseRepository
+    exerciseRepository: ExerciseRepository,
+    private val preferencesRepository: PreferencesRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TodayUiState())
@@ -36,12 +39,14 @@ class TodayViewModel @Inject constructor(
         val baseStateFlow = combine(
             getTodayPromptUseCase(),
             getStreakUseCase(),
-            exerciseRepository.getAllExercises()
-        ) { todayPrompt, streak, exercises ->
+            exerciseRepository.getAllExercises(),
+            preferencesRepository.preferences
+        ) { todayPrompt, streak, exercises, prefs ->
             TodayUiState(
                 prompt = todayPrompt.prompt,
                 streak = streak,
                 exercises = exercises,
+                hasRequestedNotificationPermission = prefs.hasRequestedNotificationPermission,
                 isLoading = false
             )
         }
@@ -57,5 +62,11 @@ class TodayViewModel @Inject constructor(
             }
             .onEach { _uiState.value = it }
             .launchIn(viewModelScope)
+    }
+
+    fun setNotificationPermissionRequested(requested: Boolean) {
+        viewModelScope.launch {
+            preferencesRepository.setNotificationPermissionRequested(requested)
+        }
     }
 }

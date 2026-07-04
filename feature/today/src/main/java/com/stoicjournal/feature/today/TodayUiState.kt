@@ -10,5 +10,6 @@ data class TodayUiState(
     val quote: Quote? = null,
     val streak: Streak = Streak(0, null),
     val exercises: List<Exercise> = emptyList(),
+    val hasRequestedNotificationPermission: Boolean = false,
     val isLoading: Boolean = true
 )

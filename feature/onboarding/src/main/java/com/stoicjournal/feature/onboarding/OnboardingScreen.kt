@@ -43,6 +43,7 @@ fun OnboardingScreen(
     val onRequestNotificationPermission: () -> Unit = {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            viewModel.setNotificationPermissionRequested(true)
         }
     }
 

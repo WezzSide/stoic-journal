@@ -8,7 +8,8 @@ data class UserPreferences(
     val reminderMinute: Int,
     val reminderEnabled: Boolean,
     val stoicismLevel: StoicismLevel,
-    val onboardingComplete: Boolean
+    val onboardingComplete: Boolean,
+    val hasRequestedNotificationPermission: Boolean = false
 )
 
 interface PreferencesRepository {
@@ -17,4 +18,5 @@ interface PreferencesRepository {
     suspend fun setReminderEnabled(enabled: Boolean)
     suspend fun setStoicismLevel(level: StoicismLevel)
     suspend fun setOnboardingComplete(complete: Boolean)
+    suspend fun setNotificationPermissionRequested(requested: Boolean)
 }

@@ -123,6 +123,7 @@ fun SettingsScreen(
                         } else {
                             pendingEnable = true
                             notificationPermissionLauncher.launch(permission)
+                            viewModel.setNotificationPermissionRequested(true)
                         }
                     }
                 )

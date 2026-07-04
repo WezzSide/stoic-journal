@@ -62,4 +62,10 @@ class SettingsViewModel @Inject constructor(
             preferencesRepository.setOnboardingComplete(false)
         }
     }
+
+    fun setNotificationPermissionRequested(requested: Boolean) {
+        viewModelScope.launch {
+            preferencesRepository.setNotificationPermissionRequested(requested)
+        }
+    }
 }

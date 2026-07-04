@@ -98,5 +98,6 @@ class GetTodayPromptUseCaseTest {
         override suspend fun setReminderEnabled(enabled: Boolean) = Unit
         override suspend fun setStoicismLevel(level: StoicismLevel) = Unit
         override suspend fun setOnboardingComplete(complete: Boolean) = Unit
+        override suspend fun setNotificationPermissionRequested(requested: Boolean) = Unit
     }
 }

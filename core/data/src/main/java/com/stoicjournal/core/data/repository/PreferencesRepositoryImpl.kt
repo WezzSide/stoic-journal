@@ -29,6 +29,7 @@ class PreferencesRepositoryImpl @Inject constructor(
         val REMINDER_ENABLED = booleanPreferencesKey("reminder_enabled")
         val STOICISM_LEVEL = intPreferencesKey("stoicism_level")
         val ONBOARDING_COMPLETE = booleanPreferencesKey("onboarding_complete")
+        val HAS_REQUESTED_NOTIFICATION_PERMISSION = booleanPreferencesKey("has_requested_notification_permission")
     }
 
     override val preferences: Flow<UserPreferences> = dataStore.data.map { prefs ->
@@ -37,7 +38,8 @@ class PreferencesRepositoryImpl @Inject constructor(
             reminderMinute = prefs[REMINDER_MINUTE] ?: 0,
             reminderEnabled = prefs[REMINDER_ENABLED] ?: true,
             stoicismLevel = StoicismLevel.entries[prefs[STOICISM_LEVEL] ?: 0],
-            onboardingComplete = prefs[ONBOARDING_COMPLETE] ?: false
+            onboardingComplete = prefs[ONBOARDING_COMPLETE] ?: false,
+            hasRequestedNotificationPermission = prefs[HAS_REQUESTED_NOTIFICATION_PERMISSION] ?: false
         )
     }
 
@@ -63,6 +65,12 @@ class PreferencesRepositoryImpl @Inject constructor(
     override suspend fun setOnboardingComplete(complete: Boolean) {
         dataStore.edit { prefs ->
             prefs[ONBOARDING_COMPLETE] = complete
+        }
+    }
+
+    override suspend fun setNotificationPermissionRequested(requested: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[HAS_REQUESTED_NOTIFICATION_PERMISSION] = requested
         }
     }
 }
