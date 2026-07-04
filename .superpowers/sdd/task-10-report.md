@@ -179,3 +179,67 @@ No compilation errors in the affected modules.
 
 - The `git add -A` used for the commit also staged pre-existing untracked `.superpowers/sdd/*` files (base-task/review diff/report artifacts). They are now part of the commit. If those files should remain untracked, they need to be removed from the commit history.
 - Draft restoration for the free-form screen fetches quotes once during init; if the quote list is still loading, a previously attached quote will not be restored. This is a minor edge case.
+
+---
+
+# Task 10 Second Fix Report
+
+## What was changed
+
+### 1. Do not block the main thread in `onCleared()`
+
+- Removed `runBlocking { flushDraft() }` from `onCleared()` in `FreeFormJournalViewModel`, `GuidedJournalViewModel`, and `ExerciseJournalViewModel`.
+- Added a new `@ApplicationScope` qualifier and a singleton process-level `CoroutineScope` (backed by `SupervisorJob() + Dispatchers.Default`) in `core/common/src/main/java/com/stoicjournal/core/common/di/`.
+- Injected `@ApplicationScope CoroutineScope` into each journal ViewModel.
+- In `onCleared()`, the final draft flush is now launched on the application scope so the UI thread is never blocked by DataStore I/O.
+- Added the `stoic.android.hilt` convention plugin to `:core:common` so the new Hilt module compiles.
+
+### 2. Fix the free-form draft quote restoration race
+
+- Restructured `FreeFormJournalViewModel.init` so the persisted `JournalDraft` is read first (one-shot `.first()`) before `quoteRepository.getAllQuotes()` is collected.
+- The saved `quoteId` is stored in `draftQuoteIdToRestore`; title and body are restored immediately.
+- Quote collection starts only after the draft is loaded, and `restoreDraftQuoteIfNeeded(quotes)` is invoked on every emission.
+- The saved quote is restored only when the quotes list is non-empty and contains a matching quote, and only if the user has not explicitly attached or removed a quote this session.
+- `attachRandomQuote()` and `removeQuote()` continue to set `quoteExplicitlySet = true` so user choices are never overwritten.
+
+### 3. Remove triplicated auto-save logic
+
+- Created `JournalDraftSaver` in `feature/journal/src/main/java/com/stoicjournal/feature/journal/draft/JournalDraftSaver.kt`.
+- The helper owns the 300 ms debounce delay, the in-flight `Job`, and `flushOnExit(scope)`.
+- Each ViewModel supplies the draft key (`EntryType` + id), a `produceDraft` lambda returning the current `JournalDraft`, and the `journalDraftRepository::saveDraft` callback.
+- Replaced duplicated `scheduleDraftSave()`, `flushDraft()`, and `onCleared()` logic in all three ViewModels with calls to `draftSaver.scheduleSave()` and `draftSaver.flushOnExit(applicationScope)`.
+- Behavior is preserved: debounced auto-save, off-main-thread exit flush only when a save is pending, and cancellation-exception handling remains in the ViewModel's `save()` method for journal-entry persistence.
+
+## Files modified
+
+- `core/common/build.gradle.kts`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/freeform/FreeFormJournalViewModel.kt`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/guided/GuidedJournalViewModel.kt`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/exercise/ExerciseJournalViewModel.kt`
+- `.superpowers/sdd/task-10-report.md`
+
+## Files created
+
+- `core/common/src/main/java/com/stoicjournal/core/common/di/ApplicationScope.kt`
+- `core/common/src/main/java/com/stoicjournal/core/common/di/CommonModule.kt`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/draft/JournalDraftSaver.kt`
+
+## Test results
+
+Ran the requested build:
+
+```bash
+./gradlew :feature:journal:assembleDebug :core:data:assembleDebug :core:domain:assembleDebug :core:common:assembleDebug --no-daemon
+```
+
+Result: `BUILD SUCCESSFUL in 1m 21s` (116 actionable tasks: 40 executed, 76 up-to-date).
+
+No Kotlin compilation, kapt, or AAPT2 errors in the affected modules.
+
+## Commit
+
+- `200f021` fix(journal): avoid main-thread draft flush, fix quote restore race, and dedupe auto-save logic
+
+## Issues or concerns
+
+- None. All three Important reviewer findings are addressed and the affected modules build cleanly.
