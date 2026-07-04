@@ -37,7 +37,13 @@ class MainViewModel @Inject constructor(
                 }
                 val prefs = preferencesRepository.preferences.first()
                 if (prefs.reminderEnabled) {
-                    reminderScheduler.schedule(prefs.reminderHour, prefs.reminderMinute)
+                    try {
+                        reminderScheduler.schedule(prefs.reminderHour, prefs.reminderMinute)
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to schedule reminder", e)
+                    }
                 }
                 _startDestination.value = if (prefs.onboardingComplete) {
                     Screen.Today

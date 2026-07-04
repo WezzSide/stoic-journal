@@ -7,5 +7,6 @@ data class SettingsUiState(
     val reminderMinute: Int = 0,
     val reminderEnabled: Boolean = true,
     val stoicismLevel: StoicismLevel = StoicismLevel.BEGINNER,
-    val onboardingComplete: Boolean = false
+    val onboardingComplete: Boolean = false,
+    val error: String? = null
 )

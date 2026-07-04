@@ -1,11 +1,13 @@
 package com.stoicjournal.feature.settings
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.stoicjournal.core.domain.repository.PreferencesRepository
 import com.stoicjournal.core.domain.repository.UserPreferences
 import com.stoicjournal.core.notifications.ReminderScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -39,22 +41,40 @@ class SettingsViewModel @Inject constructor(
 
     fun setReminderTime(hour: Int, minute: Int) {
         viewModelScope.launch {
-            preferencesRepository.setReminderTime(hour, minute)
-            if (_uiState.value.reminderEnabled) {
-                reminderScheduler.schedule(hour, minute)
+            try {
+                preferencesRepository.setReminderTime(hour, minute)
+                if (_uiState.value.reminderEnabled) {
+                    reminderScheduler.schedule(hour, minute)
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to set reminder time", e)
+                _uiState.update { it.copy(error = e.message ?: "Failed to set reminder time") }
             }
         }
     }
 
     fun setReminderEnabled(enabled: Boolean) {
         viewModelScope.launch {
-            preferencesRepository.setReminderEnabled(enabled)
-            if (enabled) {
-                reminderScheduler.schedule(_uiState.value.reminderHour, _uiState.value.reminderMinute)
-            } else {
-                reminderScheduler.cancel()
+            try {
+                preferencesRepository.setReminderEnabled(enabled)
+                if (enabled) {
+                    reminderScheduler.schedule(_uiState.value.reminderHour, _uiState.value.reminderMinute)
+                } else {
+                    reminderScheduler.cancel()
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to set reminder enabled state", e)
+                _uiState.update { it.copy(error = e.message ?: "Failed to update reminder") }
             }
         }
+    }
+
+    fun errorShown() {
+        _uiState.update { it.copy(error = null) }
     }
 
     fun resetOnboarding() {
@@ -67,5 +87,9 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             preferencesRepository.setNotificationPermissionRequested(requested)
         }
+    }
+
+    private companion object {
+        const val TAG = "SettingsViewModel"
     }
 }
