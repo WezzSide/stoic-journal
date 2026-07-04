@@ -15,21 +15,26 @@ fun SaveDiscardBar(
     onSave: () -> Unit,
     onDiscard: () -> Unit,
     saveEnabled: Boolean,
+    isSaving: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        OutlinedButton(onClick = onDiscard, modifier = Modifier.weight(1f)) {
+        OutlinedButton(
+            onClick = onDiscard,
+            enabled = !isSaving,
+            modifier = Modifier.weight(1f)
+        ) {
             Text("Discard")
         }
         Button(
             onClick = onSave,
-            enabled = saveEnabled,
+            enabled = saveEnabled && !isSaving,
             modifier = Modifier.weight(1f)
         ) {
-            Text("Save")
+            Text(if (isSaving) "Saving…" else "Save")
         }
     }
 }

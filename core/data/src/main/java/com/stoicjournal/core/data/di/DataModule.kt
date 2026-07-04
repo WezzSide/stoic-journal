@@ -4,12 +4,14 @@ import android.content.Context
 import androidx.room.Room
 import com.stoicjournal.core.data.database.StoicJournalDatabase
 import com.stoicjournal.core.data.repository.ExerciseRepositoryImpl
+import com.stoicjournal.core.data.repository.JournalDraftRepositoryImpl
 import com.stoicjournal.core.data.repository.JournalRepositoryImpl
 import com.stoicjournal.core.data.repository.PhilosopherRepositoryImpl
 import com.stoicjournal.core.data.repository.PreferencesRepositoryImpl
 import com.stoicjournal.core.data.repository.PromptRepositoryImpl
 import com.stoicjournal.core.data.repository.QuoteRepositoryImpl
 import com.stoicjournal.core.domain.repository.ExerciseRepository
+import com.stoicjournal.core.domain.repository.JournalDraftRepository
 import com.stoicjournal.core.domain.repository.JournalRepository
 import com.stoicjournal.core.domain.repository.PhilosopherRepository
 import com.stoicjournal.core.domain.repository.PreferencesRepository
@@ -43,6 +45,9 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindPreferencesRepository(impl: PreferencesRepositoryImpl): PreferencesRepository
+
+    @Binds
+    abstract fun bindJournalDraftRepository(impl: JournalDraftRepositoryImpl): JournalDraftRepository
 }
 
 @Module

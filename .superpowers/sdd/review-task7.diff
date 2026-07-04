@@ -1,0 +1,1036 @@
+# Review package: 3bb6ff188359ffe26c932e0d8e7e764a6ac43543..HEAD
+
+## Commits
+67d363b docs: add task 7 report
+61e283a feat(app): add MainActivity, navigation, theme, and application setup
+
+## Files changed
+ .superpowers/sdd/task-7-report.md                  |  73 ++++++++++++++
+ app/build.gradle.kts                               |  47 +++++++++
+ app/src/main/AndroidManifest.xml                   |  25 +++++
+ app/src/main/java/com/stoicjournal/MainActivity.kt |  30 ++++++
+ .../main/java/com/stoicjournal/MainViewModel.kt    |  40 ++++++++
+ .../com/stoicjournal/StoicJournalApplication.kt    |  19 ++++
+ .../java/com/stoicjournal/navigation/Screen.kt     |  22 +++++
+ .../stoicjournal/navigation/StoicJournalNavHost.kt | 109 +++++++++++++++++++++
+ app/src/main/java/com/stoicjournal/theme/Color.kt  |  15 +++
+ app/src/main/java/com/stoicjournal/theme/Shape.kt  |  11 +++
+ app/src/main/java/com/stoicjournal/theme/Theme.kt  |  63 ++++++++++++
+ app/src/main/java/com/stoicjournal/theme/Type.kt   |  46 +++++++++
+ app/src/main/res/mipmap-hdpi/ic_launcher.png       | Bin 0 -> 1301 bytes
+ app/src/main/res/mipmap-hdpi/ic_launcher_round.png | Bin 0 -> 1059 bytes
+ app/src/main/res/mipmap-mdpi/ic_launcher.png       | Bin 0 -> 1068 bytes
+ app/src/main/res/mipmap-mdpi/ic_launcher_round.png | Bin 0 -> 790 bytes
+ app/src/main/res/mipmap-xhdpi/ic_launcher.png      | Bin 0 -> 1777 bytes
+ .../main/res/mipmap-xhdpi/ic_launcher_round.png    | Bin 0 -> 1851 bytes
+ app/src/main/res/mipmap-xxhdpi/ic_launcher.png     | Bin 0 -> 2648 bytes
+ .../main/res/mipmap-xxhdpi/ic_launcher_round.png   | Bin 0 -> 3025 bytes
+ app/src/main/res/mipmap-xxxhdpi/ic_launcher.png    | Bin 0 -> 3453 bytes
+ .../main/res/mipmap-xxxhdpi/ic_launcher_round.png  | Bin 0 -> 3961 bytes
+ app/src/main/res/values/strings.xml                |   3 +
+ app/src/main/res/values/themes.xml                 |   4 +
+ .../kotlin/AndroidApplicationConventionPlugin.kt   |   3 -
+ .../main/kotlin/AndroidFeatureConventionPlugin.kt  |  13 ++-
+ .../main/kotlin/AndroidLibraryConventionPlugin.kt  |   6 --
+ .../src/main/res/drawable/ic_notification.xml      |   2 +-
+ feature/history/build.gradle.kts                   |   7 ++
+ .../feature/history/EntryDetailScreen.kt           |  10 ++
+ .../stoicjournal/feature/history/HistoryScreen.kt  |  10 ++
+ feature/journal/build.gradle.kts                   |   7 ++
+ .../journal/exercise/ExerciseJournalScreen.kt      |  10 ++
+ .../journal/freeform/FreeFormJournalScreen.kt      |   9 ++
+ .../feature/journal/guided/GuidedJournalScreen.kt  |  10 ++
+ feature/library/build.gradle.kts                   |   7 ++
+ .../stoicjournal/feature/library/LibraryScreen.kt  |  10 ++
+ .../feature/library/QuoteDetailScreen.kt           |  10 ++
+ feature/onboarding/build.gradle.kts                |   7 ++
+ .../feature/onboarding/OnboardingScreen.kt         |   9 ++
+ feature/settings/build.gradle.kts                  |   7 ++
+ .../feature/settings/SettingsScreen.kt             |   9 ++
+ feature/today/build.gradle.kts                     |   7 ++
+ .../com/stoicjournal/feature/today/TodayScreen.kt  |  14 +++
+ 44 files changed, 662 insertions(+), 12 deletions(-)
+
+## Diff
+diff --git a/.superpowers/sdd/task-7-report.md b/.superpowers/sdd/task-7-report.md
+new file mode 100644
+index 0000000..84a1339
+--- /dev/null
++++ b/.superpowers/sdd/task-7-report.md
+@@ -0,0 +1,73 @@
++# Task 7 Report: Set up app module, theme, and navigation
++
++## What was implemented
++
++Created the `:app` module and all supporting feature-module placeholders required for the app to compile:
++
++- `app/build.gradle.kts` — application module configuration, depends on all core and feature modules plus Compose, Navigation, Hilt, WorkManager, and Hilt-Work dependencies.
++- `app/src/main/java/com/stoicjournal/StoicJournalApplication.kt` — `HiltAndroidApp` Application class implementing `Configuration.Provider` with a `HiltWorkerFactory` for WorkManager.
++- `app/src/main/java/com/stoicjournal/MainActivity.kt` — edge-to-edge Compose entry point that observes `MainViewModel.startDestination` and hosts `StoicJournalNavHost`.
++- `app/src/main/java/com/stoicjournal/MainViewModel.kt` — seeds assets, schedules reminders if enabled, and chooses `Screen.Today` or `Screen.Onboarding` as the start destination.
++- `app/src/main/java/com/stoicjournal/navigation/Screen.kt` — sealed class of all navigation routes with argument helpers.
++- `app/src/main/java/com/stoicjournal/navigation/StoicJournalNavHost.kt` — Compose Navigation host wiring all feature screens together.
++- `app/src/main/java/com/stoicjournal/theme/{Color,Type,Theme,Shape}.kt` — custom Material3 theme with stone/amber color palette, serif/sans-serif typography, and rounded shapes.
++- `app/src/main/res/values/themes.xml` and `strings.xml` — app theme and app_name string.
++- `app/src/main/AndroidManifest.xml` — launcher activity and `POST_NOTIFICATIONS` permission.
++- `app/src/main/res/mipmap-*/ic_launcher.png` and `ic_launcher_round.png` — placeholder launcher icons for all densities.
++- Feature module placeholders in `:feature:today`, `:feature:journal`, `:feature:library`, `:feature:history`, `:feature:settings`, `:feature:onboarding` with minimal `build.gradle.kts` and empty Composables matching the signatures expected by the nav host.
++
++## Supporting fixes required to build
++
++Task 7 was the first code path to exercise the feature convention plugin and full Compose build, so a few pre-existing issues had to be corrected:
++
++- `build-logic/convention/src/main/kotlin/AndroidFeatureConventionPlugin.kt` — fixed project dependency declarations, added the Compose BOM platform dependency, and enabled Compose / applied the Compose Compiler plugin for feature modules.
++- `build-logic/convention/src/main/kotlin/AndroidLibraryConventionPlugin.kt` — removed unconditional Compose enablement and Compose Compiler plugin application so non-Compose core modules (`:core:domain`, `:core:common`, etc.) compile under Kotlin 2.0.
++- `build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt` — removed the obsolete `composeOptions.kotlinCompilerExtensionVersion` override so Kotlin 2.0’s Compose Compiler plugin controls the version.
++- `core/notifications/src/main/res/drawable/ic_notification.xml` — changed `?attr/colorControlNormal` to `?android:attr/colorControlNormal` so AAPT2 can resolve the attribute without AppCompat.
++
++## Testing and results
++
++Ran the debug assembly:
++
++```bash
++./gradlew :app:assembleDebug -Pandroid.aapt2FromMavenOverride=/opt/aapt2-wrapper/aapt2
++```
++
++Result: **BUILD SUCCESSFUL** in 38s; `app/build/outputs/apk/debug/app-debug.apk` was produced.
++
++Note: the `-Pandroid.aapt2FromMavenOverride` flag was only necessary because the build environment is an ARM64 (aarch64) Linux container and the AAPT2 binary distributed with AGP 8.5.0 is x86-64. A wrapper script using `box64` was installed at `/opt/aapt2-wrapper/aapt2` to run the x86-64 AAPT2. On a standard x86-64 development machine the project builds with the plain `./gradlew :app:assembleDebug` command.
++
++## Files changed
++
++New files:
++- `app/build.gradle.kts`
++- `app/src/main/java/com/stoicjournal/StoicJournalApplication.kt`
++- `app/src/main/java/com/stoicjournal/MainActivity.kt`
++- `app/src/main/java/com/stoicjournal/MainViewModel.kt`
++- `app/src/main/java/com/stoicjournal/navigation/Screen.kt`
++- `app/src/main/java/com/stoicjournal/navigation/StoicJournalNavHost.kt`
++- `app/src/main/java/com/stoicjournal/theme/{Color,Type,Theme,Shape}.kt`
++- `app/src/main/res/values/{themes,strings}.xml`
++- `app/src/main/AndroidManifest.xml`
++- `app/src/main/res/mipmap-*/ic_launcher.png` and `ic_launcher_round.png`
++- All `:feature:*` `build.gradle.kts` and placeholder screen sources.
++
++Modified files:
++- `build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt`
++- `build-logic/convention/src/main/kotlin/AndroidFeatureConventionPlugin.kt`
++- `build-logic/convention/src/main/kotlin/AndroidLibraryConventionPlugin.kt`
++- `core/notifications/src/main/res/drawable/ic_notification.xml`
++
++## Self-review findings
++
++- The navigation graph matches the route/argument structure defined in `Screen.kt`.
++- `MainViewModel` correctly awaits preferences and seeds data before emitting the start destination.
++- `StoicJournalApplication` configures Hilt’s `WorkManager` factory as required by `DailyReminderWorker`.
++- Theme file imports `androidx.compose.ui.graphics.Color` and applies `StoicShapes`.
++- Feature placeholders expose the exact callback signatures consumed by `StoicJournalNavHost`.
++- The only deviation from the task brief is using `override val workManagerConfiguration` instead of `override fun getWorkManagerConfiguration()`; Kotlin maps this to the same Java getter and the compiler accepted it.
++
++## Issues or concerns
++
++- The launcher icons are simple colored placeholders generated with ImageMagick; they should be replaced with proper adaptive icons before release.
++- The `android.aapt2FromMavenOverride` workaround is environment-specific and not committed. The project is expected to build without it on x86-64 hosts.
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+new file mode 100644
+index 0000000..803bf0c
+--- /dev/null
++++ b/app/build.gradle.kts
+@@ -0,0 +1,47 @@
++plugins {
++    id("stoic.android.application")
++}
++
++android {
++    namespace = "com.stoicjournal"
++
++    defaultConfig {
++        applicationId = "com.stoicjournal"
++    }
++
++    buildTypes {
++        release {
++            isMinifyEnabled = false
++            proguardFiles(
++                getDefaultProguardFile("proguard-android-optimize.txt"),
++                "proguard-rules.pro"
++            )
++        }
++    }
++}
++
++dependencies {
++    implementation(project(":core:data"))
++    implementation(project(":core:domain"))
++    implementation(project(":core:common"))
++    implementation(project(":core:notifications"))
++    implementation(project(":feature:today"))
++    implementation(project(":feature:journal"))
++    implementation(project(":feature:library"))
++    implementation(project(":feature:history"))
++    implementation(project(":feature:settings"))
++    implementation(project(":feature:onboarding"))
++
++    implementation(libs.androidx.core.ktx)
++    implementation(libs.androidx.lifecycle.runtime.ktx)
++    implementation(libs.androidx.activity.compose)
++    implementation(libs.androidx.navigation.compose)
++    implementation(libs.hilt.navigation.compose)
++    implementation(libs.androidx.work.runtime.ktx)
++    implementation(libs.hilt.work)
++    implementation(libs.androidx.compose.bom)
++    implementation(libs.androidx.ui)
++    implementation(libs.androidx.ui.graphics)
++    implementation(libs.androidx.ui.tooling.preview)
++    implementation(libs.androidx.material3)
++}
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+new file mode 100644
+index 0000000..d2d7c31
+--- /dev/null
++++ b/app/src/main/AndroidManifest.xml
+@@ -0,0 +1,25 @@
++<?xml version="1.0" encoding="utf-8"?>
++<manifest xmlns:android="http://schemas.android.com/apk/res/android">
++
++    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
++
++    <application
++        android:name=".StoicJournalApplication"
++        android:allowBackup="true"
++        android:icon="@mipmap/ic_launcher"
++        android:label="@string/app_name"
++        android:roundIcon="@mipmap/ic_launcher_round"
++        android:supportsRtl="true"
++        android:theme="@style/Theme.StoicJournal">
++        <activity
++            android:name=".MainActivity"
++            android:exported="true"
++            android:theme="@style/Theme.StoicJournal">
++            <intent-filter>
++                <action android:name="android.intent.action.MAIN" />
++                <category android:name="android.intent.category.LAUNCHER" />
++            </intent-filter>
++        </activity>
++    </application>
++
++</manifest>
+diff --git a/app/src/main/java/com/stoicjournal/MainActivity.kt b/app/src/main/java/com/stoicjournal/MainActivity.kt
+new file mode 100644
+index 0000000..62cb18b
+--- /dev/null
++++ b/app/src/main/java/com/stoicjournal/MainActivity.kt
+@@ -0,0 +1,30 @@
++package com.stoicjournal
++
++import android.os.Bundle
++import androidx.activity.ComponentActivity
++import androidx.activity.compose.setContent
++import androidx.activity.enableEdgeToEdge
++import androidx.compose.runtime.collectAsState
++import androidx.compose.runtime.getValue
++import androidx.hilt.navigation.compose.hiltViewModel
++import com.stoicjournal.navigation.Screen
++import com.stoicjournal.navigation.StoicJournalNavHost
++import com.stoicjournal.theme.StoicJournalTheme
++import dagger.hilt.android.AndroidEntryPoint
++
++@AndroidEntryPoint
++class MainActivity : ComponentActivity() {
++    override fun onCreate(savedInstanceState: Bundle?) {
++        super.onCreate(savedInstanceState)
++        enableEdgeToEdge()
++        setContent {
++            StoicJournalTheme {
++                val viewModel: MainViewModel = hiltViewModel()
++                val startDestination by viewModel.startDestination.collectAsState()
++                startDestination?.let { destination ->
++                    StoicJournalNavHost(startDestination = destination)
++                }
++            }
++        }
++    }
++}
+diff --git a/app/src/main/java/com/stoicjournal/MainViewModel.kt b/app/src/main/java/com/stoicjournal/MainViewModel.kt
+new file mode 100644
+index 0000000..633b775
+--- /dev/null
++++ b/app/src/main/java/com/stoicjournal/MainViewModel.kt
+@@ -0,0 +1,40 @@
++package com.stoicjournal
++
++import androidx.lifecycle.ViewModel
++import androidx.lifecycle.viewModelScope
++import com.stoicjournal.core.data.seed.AssetSeedImporter
++import com.stoicjournal.core.domain.repository.PreferencesRepository
++import com.stoicjournal.core.notifications.ReminderScheduler
++import com.stoicjournal.navigation.Screen
++import dagger.hilt.android.lifecycle.HiltViewModel
++import kotlinx.coroutines.flow.MutableStateFlow
++import kotlinx.coroutines.flow.StateFlow
++import kotlinx.coroutines.flow.first
++import kotlinx.coroutines.launch
++import javax.inject.Inject
++
++@HiltViewModel
++class MainViewModel @Inject constructor(
++    private val preferencesRepository: PreferencesRepository,
++    private val assetSeedImporter: AssetSeedImporter,
++    private val reminderScheduler: ReminderScheduler
++) : ViewModel() {
++
++    private val _startDestination = MutableStateFlow<Screen?>(null)
++    val startDestination: StateFlow<Screen?> = _startDestination
++
++    init {
++        viewModelScope.launch {
++            assetSeedImporter.seedIfEmpty()
++            val prefs = preferencesRepository.preferences.first()
++            if (prefs.reminderEnabled) {
++                reminderScheduler.schedule(prefs.reminderHour, prefs.reminderMinute)
++            }
++            _startDestination.value = if (prefs.onboardingComplete) {
++                Screen.Today
++            } else {
++                Screen.Onboarding
++            }
++        }
++    }
++}
+diff --git a/app/src/main/java/com/stoicjournal/StoicJournalApplication.kt b/app/src/main/java/com/stoicjournal/StoicJournalApplication.kt
+new file mode 100644
+index 0000000..7eaaa44
+--- /dev/null
++++ b/app/src/main/java/com/stoicjournal/StoicJournalApplication.kt
+@@ -0,0 +1,19 @@
++package com.stoicjournal
++
++import android.app.Application
++import androidx.hilt.work.HiltWorkerFactory
++import androidx.work.Configuration
++import dagger.hilt.android.HiltAndroidApp
++import javax.inject.Inject
++
++@HiltAndroidApp
++class StoicJournalApplication : Application(), Configuration.Provider {
++
++    @Inject
++    lateinit var workerFactory: HiltWorkerFactory
++
++    override val workManagerConfiguration: Configuration
++        get() = Configuration.Builder()
++            .setWorkerFactory(workerFactory)
++            .build()
++}
+diff --git a/app/src/main/java/com/stoicjournal/navigation/Screen.kt b/app/src/main/java/com/stoicjournal/navigation/Screen.kt
+new file mode 100644
+index 0000000..64d07dc
+--- /dev/null
++++ b/app/src/main/java/com/stoicjournal/navigation/Screen.kt
+@@ -0,0 +1,22 @@
++package com.stoicjournal.navigation
++
++sealed class Screen(val route: String) {
++    data object Onboarding : Screen("onboarding")
++    data object Today : Screen("today")
++    data object GuidedJournal : Screen("guided_journal/{promptId}") {
++        fun createRoute(promptId: String) = "guided_journal/$promptId"
++    }
++    data object FreeFormJournal : Screen("free_form_journal")
++    data object ExerciseJournal : Screen("exercise_journal/{exerciseId}") {
++        fun createRoute(exerciseId: String) = "exercise_journal/$exerciseId"
++    }
++    data object Library : Screen("library")
++    data object QuoteDetail : Screen("quote_detail/{quoteId}") {
++        fun createRoute(quoteId: String) = "quote_detail/$quoteId"
++    }
++    data object History : Screen("history")
++    data object EntryDetail : Screen("entry_detail/{entryId}") {
++        fun createRoute(entryId: String) = "entry_detail/$entryId"
++    }
++    data object Settings : Screen("settings")
++}
+diff --git a/app/src/main/java/com/stoicjournal/navigation/StoicJournalNavHost.kt b/app/src/main/java/com/stoicjournal/navigation/StoicJournalNavHost.kt
+new file mode 100644
+index 0000000..f3f65b6
+--- /dev/null
++++ b/app/src/main/java/com/stoicjournal/navigation/StoicJournalNavHost.kt
+@@ -0,0 +1,109 @@
++package com.stoicjournal.navigation
++
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.Modifier
++import androidx.navigation.NavHostController
++import androidx.navigation.compose.NavHost
++import androidx.navigation.compose.composable
++import androidx.navigation.compose.rememberNavController
++import com.stoicjournal.feature.history.HistoryScreen
++import com.stoicjournal.feature.history.EntryDetailScreen
++import com.stoicjournal.feature.journal.exercise.ExerciseJournalScreen
++import com.stoicjournal.feature.journal.freeform.FreeFormJournalScreen
++import com.stoicjournal.feature.journal.guided.GuidedJournalScreen
++import com.stoicjournal.feature.library.LibraryScreen
++import com.stoicjournal.feature.library.QuoteDetailScreen
++import com.stoicjournal.feature.onboarding.OnboardingScreen
++import com.stoicjournal.feature.settings.SettingsScreen
++import com.stoicjournal.feature.today.TodayScreen
++
++@Composable
++fun StoicJournalNavHost(
++    startDestination: Screen,
++    modifier: Modifier = Modifier,
++    navController: NavHostController = rememberNavController()
++) {
++    NavHost(
++        navController = navController,
++        startDestination = startDestination.route,
++        modifier = modifier
++    ) {
++        composable(Screen.Onboarding.route) {
++            OnboardingScreen(
++                onComplete = {
++                    navController.navigate(Screen.Today.route) {
++                        popUpTo(Screen.Onboarding.route) { inclusive = true }
++                    }
++                }
++            )
++        }
++        composable(Screen.Today.route) {
++            TodayScreen(
++                onGuidedJournal = { promptId ->
++                    navController.navigate(Screen.GuidedJournal.createRoute(promptId))
++                },
++                onFreeFormJournal = { navController.navigate(Screen.FreeFormJournal.route) },
++                onExercise = { exerciseId ->
++                    navController.navigate(Screen.ExerciseJournal.createRoute(exerciseId))
++                },
++                onNavigateToLibrary = { navController.navigate(Screen.Library.route) },
++                onNavigateToHistory = { navController.navigate(Screen.History.route) },
++                onNavigateToSettings = { navController.navigate(Screen.Settings.route) }
++            )
++        }
++        composable(Screen.GuidedJournal.route) { backStackEntry ->
++            val promptId = backStackEntry.arguments?.getString("promptId") ?: return@composable
++            GuidedJournalScreen(
++                promptId = promptId,
++                onNavigateBack = { navController.popBackStack() }
++            )
++        }
++        composable(Screen.FreeFormJournal.route) {
++            FreeFormJournalScreen(
++                onNavigateBack = { navController.popBackStack() }
++            )
++        }
++        composable(Screen.ExerciseJournal.route) { backStackEntry ->
++            val exerciseId = backStackEntry.arguments?.getString("exerciseId") ?: return@composable
++            ExerciseJournalScreen(
++                exerciseId = exerciseId,
++                onNavigateBack = { navController.popBackStack() }
++            )
++        }
++        composable(Screen.Library.route) {
++            LibraryScreen(
++                onQuoteClick = { quoteId ->
++                    navController.navigate(Screen.QuoteDetail.createRoute(quoteId))
++                },
++                onNavigateBack = { navController.popBackStack() }
++            )
++        }
++        composable(Screen.QuoteDetail.route) { backStackEntry ->
++            val quoteId = backStackEntry.arguments?.getString("quoteId") ?: return@composable
++            QuoteDetailScreen(
++                quoteId = quoteId,
++                onNavigateBack = { navController.popBackStack() }
++            )
++        }
++        composable(Screen.History.route) {
++            HistoryScreen(
++                onEntryClick = { entryId ->
++                    navController.navigate(Screen.EntryDetail.createRoute(entryId))
++                },
++                onNavigateBack = { navController.popBackStack() }
++            )
++        }
++        composable(Screen.EntryDetail.route) { backStackEntry ->
++            val entryId = backStackEntry.arguments?.getString("entryId") ?: return@composable
++            EntryDetailScreen(
++                entryId = entryId,
++                onNavigateBack = { navController.popBackStack() }
++            )
++        }
++        composable(Screen.Settings.route) {
++            SettingsScreen(
++                onNavigateBack = { navController.popBackStack() }
++            )
++        }
++    }
++}
+diff --git a/app/src/main/java/com/stoicjournal/theme/Color.kt b/app/src/main/java/com/stoicjournal/theme/Color.kt
+new file mode 100644
+index 0000000..800f630
+--- /dev/null
++++ b/app/src/main/java/com/stoicjournal/theme/Color.kt
+@@ -0,0 +1,15 @@
++package com.stoicjournal.theme
++
++import androidx.compose.ui.graphics.Color
++
++val Stone50 = Color(0xFFFAFAF9)
++val Stone100 = Color(0xFFF5F5F4)
++val Stone200 = Color(0xFFE7E5E4)
++val Stone400 = Color(0xFFA8A29E)
++val Stone600 = Color(0xFF57534E)
++val Stone800 = Color(0xFF292524)
++val Stone900 = Color(0xFF1C1917)
++val Slate700 = Color(0xFF334155)
++val Amber200 = Color(0xFFFDE68A)
++val Amber500 = Color(0xFFF59E0B)
++val Amber700 = Color(0xFFB45309)
+diff --git a/app/src/main/java/com/stoicjournal/theme/Shape.kt b/app/src/main/java/com/stoicjournal/theme/Shape.kt
+new file mode 100644
+index 0000000..559c4c4
+--- /dev/null
++++ b/app/src/main/java/com/stoicjournal/theme/Shape.kt
+@@ -0,0 +1,11 @@
++package com.stoicjournal.theme
++
++import androidx.compose.foundation.shape.RoundedCornerShape
++import androidx.compose.material3.Shapes
++import androidx.compose.ui.unit.dp
++
++val StoicShapes = Shapes(
++    small = RoundedCornerShape(4.dp),
++    medium = RoundedCornerShape(8.dp),
++    large = RoundedCornerShape(16.dp)
++)
+diff --git a/app/src/main/java/com/stoicjournal/theme/Theme.kt b/app/src/main/java/com/stoicjournal/theme/Theme.kt
+new file mode 100644
+index 0000000..cf58602
+--- /dev/null
++++ b/app/src/main/java/com/stoicjournal/theme/Theme.kt
+@@ -0,0 +1,63 @@
++package com.stoicjournal.theme
++
++import android.os.Build
++import androidx.compose.foundation.isSystemInDarkTheme
++import androidx.compose.material3.MaterialTheme
++import androidx.compose.material3.darkColorScheme
++import androidx.compose.material3.dynamicDarkColorScheme
++import androidx.compose.material3.dynamicLightColorScheme
++import androidx.compose.material3.lightColorScheme
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.platform.LocalContext
++
++private val LightColors = lightColorScheme(
++    primary = Amber700,
++    onPrimary = Color.White,
++    secondary = Slate700,
++    onSecondary = Color.White,
++    background = Stone50,
++    onBackground = Stone900,
++    surface = Stone100,
++    onSurface = Stone900,
++    surfaceVariant = Stone200,
++    onSurfaceVariant = Stone600,
++    outline = Stone400
++)
++
++private val DarkColors = darkColorScheme(
++    primary = Amber200,
++    onPrimary = Stone900,
++    secondary = Stone200,
++    onSecondary = Stone900,
++    background = Stone900,
++    onBackground = Stone100,
++    surface = Stone800,
++    onSurface = Stone100,
++    surfaceVariant = Stone600,
++    onSurfaceVariant = Stone200,
++    outline = Stone400
++)
++
++@Composable
++fun StoicJournalTheme(
++    darkTheme: Boolean = isSystemInDarkTheme(),
++    dynamicColor: Boolean = false,
++    content: @Composable () -> Unit
++) {
++    val colorScheme = when {
++        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
++            val context = LocalContext.current
++            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
++        }
++        darkTheme -> DarkColors
++        else -> LightColors
++    }
++
++    MaterialTheme(
++        colorScheme = colorScheme,
++        typography = StoicTypography,
++        shapes = StoicShapes,
++        content = content
++    )
++}
+diff --git a/app/src/main/java/com/stoicjournal/theme/Type.kt b/app/src/main/java/com/stoicjournal/theme/Type.kt
+new file mode 100644
+index 0000000..9264431
+--- /dev/null
++++ b/app/src/main/java/com/stoicjournal/theme/Type.kt
+@@ -0,0 +1,46 @@
++package com.stoicjournal.theme
++
++import androidx.compose.material3.Typography
++import androidx.compose.ui.text.TextStyle
++import androidx.compose.ui.text.font.FontFamily
++import androidx.compose.ui.text.font.FontWeight
++import androidx.compose.ui.unit.sp
++
++val StoicTypography = Typography(
++    displayLarge = TextStyle(
++        fontFamily = FontFamily.Serif,
++        fontWeight = FontWeight.Normal,
++        fontSize = 32.sp,
++        lineHeight = 40.sp
++    ),
++    headlineMedium = TextStyle(
++        fontFamily = FontFamily.Serif,
++        fontWeight = FontWeight.Medium,
++        fontSize = 24.sp,
++        lineHeight = 32.sp
++    ),
++    titleLarge = TextStyle(
++        fontFamily = FontFamily.Serif,
++        fontWeight = FontWeight.Medium,
++        fontSize = 20.sp,
++        lineHeight = 28.sp
++    ),
++    bodyLarge = TextStyle(
++        fontFamily = FontFamily.SansSerif,
++        fontWeight = FontWeight.Normal,
++        fontSize = 16.sp,
++        lineHeight = 24.sp
++    ),
++    bodyMedium = TextStyle(
++        fontFamily = FontFamily.SansSerif,
++        fontWeight = FontWeight.Normal,
++        fontSize = 14.sp,
++        lineHeight = 20.sp
++    ),
++    labelLarge = TextStyle(
++        fontFamily = FontFamily.SansSerif,
++        fontWeight = FontWeight.Medium,
++        fontSize = 14.sp,
++        lineHeight = 20.sp
++    )
++)
+diff --git a/app/src/main/res/mipmap-hdpi/ic_launcher.png b/app/src/main/res/mipmap-hdpi/ic_launcher.png
+new file mode 100644
+index 0000000..9f1ecd5
+Binary files /dev/null and b/app/src/main/res/mipmap-hdpi/ic_launcher.png differ
+diff --git a/app/src/main/res/mipmap-hdpi/ic_launcher_round.png b/app/src/main/res/mipmap-hdpi/ic_launcher_round.png
+new file mode 100644
+index 0000000..0470812
+Binary files /dev/null and b/app/src/main/res/mipmap-hdpi/ic_launcher_round.png differ
+diff --git a/app/src/main/res/mipmap-mdpi/ic_launcher.png b/app/src/main/res/mipmap-mdpi/ic_launcher.png
+new file mode 100644
+index 0000000..50255a0
+Binary files /dev/null and b/app/src/main/res/mipmap-mdpi/ic_launcher.png differ
+diff --git a/app/src/main/res/mipmap-mdpi/ic_launcher_round.png b/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
+new file mode 100644
+index 0000000..fc1e31a
+Binary files /dev/null and b/app/src/main/res/mipmap-mdpi/ic_launcher_round.png differ
+diff --git a/app/src/main/res/mipmap-xhdpi/ic_launcher.png b/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+new file mode 100644
+index 0000000..75f7a0a
+Binary files /dev/null and b/app/src/main/res/mipmap-xhdpi/ic_launcher.png differ
+diff --git a/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png b/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
+new file mode 100644
+index 0000000..5e41721
+Binary files /dev/null and b/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png differ
+diff --git a/app/src/main/res/mipmap-xxhdpi/ic_launcher.png b/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+new file mode 100644
+index 0000000..921a64e
+Binary files /dev/null and b/app/src/main/res/mipmap-xxhdpi/ic_launcher.png differ
+diff --git a/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png b/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
+new file mode 100644
+index 0000000..ed80e46
+Binary files /dev/null and b/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png differ
+diff --git a/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png b/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+new file mode 100644
+index 0000000..8509c2a
+Binary files /dev/null and b/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png differ
+diff --git a/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png b/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
+new file mode 100644
+index 0000000..3946753
+Binary files /dev/null and b/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png differ
+diff --git a/app/src/main/res/values/strings.xml b/app/src/main/res/values/strings.xml
+new file mode 100644
+index 0000000..a7d6793
+--- /dev/null
++++ b/app/src/main/res/values/strings.xml
+@@ -0,0 +1,3 @@
++<resources>
++    <string name="app_name">Stoic Journal</string>
++</resources>
+diff --git a/app/src/main/res/values/themes.xml b/app/src/main/res/values/themes.xml
+new file mode 100644
+index 0000000..fa1a6be
+--- /dev/null
++++ b/app/src/main/res/values/themes.xml
+@@ -0,0 +1,4 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources>
++    <style name="Theme.StoicJournal" parent="android:Theme.Material.Light.NoActionBar" />
++</resources>
+diff --git a/build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt b/build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt
+index c015040..1aecc14 100644
+--- a/build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt
++++ b/build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt
+@@ -23,21 +23,18 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
+                 versionName = "1.0"
+                 testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+             }
+             compileOptions {
+                 sourceCompatibility = JavaVersion.VERSION_17
+                 targetCompatibility = JavaVersion.VERSION_17
+             }
+             buildFeatures {
+                 compose = true
+             }
+-            composeOptions {
+-                kotlinCompilerExtensionVersion = "1.5.14"
+-            }
+         }
+         extensions.configure<KotlinAndroidProjectExtension> {
+             compilerOptions {
+                 jvmTarget.set(JvmTarget.JVM_17)
+             }
+         }
+     }
+ }
+diff --git a/build-logic/convention/src/main/kotlin/AndroidFeatureConventionPlugin.kt b/build-logic/convention/src/main/kotlin/AndroidFeatureConventionPlugin.kt
+index f0212b5..74a0102 100644
+--- a/build-logic/convention/src/main/kotlin/AndroidFeatureConventionPlugin.kt
++++ b/build-logic/convention/src/main/kotlin/AndroidFeatureConventionPlugin.kt
+@@ -1,25 +1,34 @@
++import com.android.build.api.dsl.LibraryExtension
+ import org.gradle.api.Plugin
+ import org.gradle.api.Project
+ import org.gradle.api.artifacts.VersionCatalogsExtension
++import org.gradle.kotlin.dsl.configure
+ import org.gradle.kotlin.dsl.getByType
+ 
+ class AndroidFeatureConventionPlugin : Plugin<Project> {
+     override fun apply(target: Project) = with(target) {
+         with(pluginManager) {
+             apply("stoic.android.library")
+             apply("stoic.android.hilt")
++            apply("org.jetbrains.kotlin.plugin.compose")
++        }
++        extensions.configure<LibraryExtension> {
++            buildFeatures {
++                compose = true
++            }
+         }
+         val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
+         project.dependencies.apply {
+-            add("implementation", mapOf("path" to ":core:domain"))
+-            add("implementation", mapOf("path" to ":core:common"))
++            add("implementation", project(":core:domain"))
++            add("implementation", project(":core:common"))
++            add("implementation", platform(libs.findLibrary("androidx-compose-bom").get()))
+             add("implementation", libs.findLibrary("androidx-lifecycle-viewmodel-compose").get())
+             add("implementation", libs.findLibrary("androidx-lifecycle-runtime-compose").get())
+             add("implementation", libs.findLibrary("androidx-navigation-compose").get())
+             add("implementation", libs.findLibrary("hilt-navigation-compose").get())
+             add("implementation", libs.findLibrary("androidx-ui").get())
+             add("implementation", libs.findLibrary("androidx-ui-graphics").get())
+             add("implementation", libs.findLibrary("androidx-ui-tooling-preview").get())
+             add("implementation", libs.findLibrary("androidx-material3").get())
+         }
+         Unit
+diff --git a/build-logic/convention/src/main/kotlin/AndroidLibraryConventionPlugin.kt b/build-logic/convention/src/main/kotlin/AndroidLibraryConventionPlugin.kt
+index 516193b..1abdce5 100644
+--- a/build-logic/convention/src/main/kotlin/AndroidLibraryConventionPlugin.kt
++++ b/build-logic/convention/src/main/kotlin/AndroidLibraryConventionPlugin.kt
+@@ -16,24 +16,18 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
+         extensions.configure<LibraryExtension> {
+             compileSdk = 34
+             defaultConfig {
+                 minSdk = 26
+                 testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+             }
+             compileOptions {
+                 sourceCompatibility = JavaVersion.VERSION_17
+                 targetCompatibility = JavaVersion.VERSION_17
+             }
+-            buildFeatures {
+-                compose = true
+-            }
+-            composeOptions {
+-                kotlinCompilerExtensionVersion = "1.5.14"
+-            }
+         }
+         extensions.configure<KotlinAndroidProjectExtension> {
+             compilerOptions {
+                 jvmTarget.set(JvmTarget.JVM_17)
+             }
+         }
+     }
+ }
+diff --git a/core/notifications/src/main/res/drawable/ic_notification.xml b/core/notifications/src/main/res/drawable/ic_notification.xml
+index 2caca8f..7f2f111 100644
+--- a/core/notifications/src/main/res/drawable/ic_notification.xml
++++ b/core/notifications/src/main/res/drawable/ic_notification.xml
+@@ -1,10 +1,10 @@
+ <vector xmlns:android="http://schemas.android.com/apk/res/android"
+     android:width="24dp"
+     android:height="24dp"
+     android:viewportWidth="24"
+     android:viewportHeight="24"
+-    android:tint="?attr/colorControlNormal">
++    android:tint="?android:attr/colorControlNormal">
+     <path
+         android:fillColor="@android:color/white"
+         android:pathData="M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2zM12,20c-4.41,0 -8,-3.59 -8,-8s3.59,-8 8,-8 8,3.59 8,8 -3.59,8 -8,8z"/>
+ </vector>
+diff --git a/feature/history/build.gradle.kts b/feature/history/build.gradle.kts
+new file mode 100644
+index 0000000..086b837
+--- /dev/null
++++ b/feature/history/build.gradle.kts
+@@ -0,0 +1,7 @@
++plugins {
++    id("stoic.android.feature")
++}
++
++android {
++    namespace = "com.stoicjournal.feature.history"
++}
+diff --git a/feature/history/src/main/java/com/stoicjournal/feature/history/EntryDetailScreen.kt b/feature/history/src/main/java/com/stoicjournal/feature/history/EntryDetailScreen.kt
+new file mode 100644
+index 0000000..34603b5
+--- /dev/null
++++ b/feature/history/src/main/java/com/stoicjournal/feature/history/EntryDetailScreen.kt
+@@ -0,0 +1,10 @@
++package com.stoicjournal.feature.history
++
++import androidx.compose.runtime.Composable
++
++@Composable
++fun EntryDetailScreen(
++    entryId: String,
++    onNavigateBack: () -> Unit
++) {
++}
+diff --git a/feature/history/src/main/java/com/stoicjournal/feature/history/HistoryScreen.kt b/feature/history/src/main/java/com/stoicjournal/feature/history/HistoryScreen.kt
+new file mode 100644
+index 0000000..e67cd82
+--- /dev/null
++++ b/feature/history/src/main/java/com/stoicjournal/feature/history/HistoryScreen.kt
+@@ -0,0 +1,10 @@
++package com.stoicjournal.feature.history
++
++import androidx.compose.runtime.Composable
++
++@Composable
++fun HistoryScreen(
++    onEntryClick: (String) -> Unit,
++    onNavigateBack: () -> Unit
++) {
++}
+diff --git a/feature/journal/build.gradle.kts b/feature/journal/build.gradle.kts
+new file mode 100644
+index 0000000..e19727d
+--- /dev/null
++++ b/feature/journal/build.gradle.kts
+@@ -0,0 +1,7 @@
++plugins {
++    id("stoic.android.feature")
++}
++
++android {
++    namespace = "com.stoicjournal.feature.journal"
++}
+diff --git a/feature/journal/src/main/java/com/stoicjournal/feature/journal/exercise/ExerciseJournalScreen.kt b/feature/journal/src/main/java/com/stoicjournal/feature/journal/exercise/ExerciseJournalScreen.kt
+new file mode 100644
+index 0000000..f6d106c
+--- /dev/null
++++ b/feature/journal/src/main/java/com/stoicjournal/feature/journal/exercise/ExerciseJournalScreen.kt
+@@ -0,0 +1,10 @@
++package com.stoicjournal.feature.journal.exercise
++
++import androidx.compose.runtime.Composable
++
++@Composable
++fun ExerciseJournalScreen(
++    exerciseId: String,
++    onNavigateBack: () -> Unit
++) {
++}
+diff --git a/feature/journal/src/main/java/com/stoicjournal/feature/journal/freeform/FreeFormJournalScreen.kt b/feature/journal/src/main/java/com/stoicjournal/feature/journal/freeform/FreeFormJournalScreen.kt
+new file mode 100644
+index 0000000..36cd7f3
+--- /dev/null
++++ b/feature/journal/src/main/java/com/stoicjournal/feature/journal/freeform/FreeFormJournalScreen.kt
+@@ -0,0 +1,9 @@
++package com.stoicjournal.feature.journal.freeform
++
++import androidx.compose.runtime.Composable
++
++@Composable
++fun FreeFormJournalScreen(
++    onNavigateBack: () -> Unit
++) {
++}
+diff --git a/feature/journal/src/main/java/com/stoicjournal/feature/journal/guided/GuidedJournalScreen.kt b/feature/journal/src/main/java/com/stoicjournal/feature/journal/guided/GuidedJournalScreen.kt
+new file mode 100644
+index 0000000..d3e820d
+--- /dev/null
++++ b/feature/journal/src/main/java/com/stoicjournal/feature/journal/guided/GuidedJournalScreen.kt
+@@ -0,0 +1,10 @@
++package com.stoicjournal.feature.journal.guided
++
++import androidx.compose.runtime.Composable
++
++@Composable
++fun GuidedJournalScreen(
++    promptId: String,
++    onNavigateBack: () -> Unit
++) {
++}
+diff --git a/feature/library/build.gradle.kts b/feature/library/build.gradle.kts
+new file mode 100644
+index 0000000..bdef514
+--- /dev/null
++++ b/feature/library/build.gradle.kts
+@@ -0,0 +1,7 @@
++plugins {
++    id("stoic.android.feature")
++}
++
++android {
++    namespace = "com.stoicjournal.feature.library"
++}
+diff --git a/feature/library/src/main/java/com/stoicjournal/feature/library/LibraryScreen.kt b/feature/library/src/main/java/com/stoicjournal/feature/library/LibraryScreen.kt
+new file mode 100644
+index 0000000..a26582b
+--- /dev/null
++++ b/feature/library/src/main/java/com/stoicjournal/feature/library/LibraryScreen.kt
+@@ -0,0 +1,10 @@
++package com.stoicjournal.feature.library
++
++import androidx.compose.runtime.Composable
++
++@Composable
++fun LibraryScreen(
++    onQuoteClick: (String) -> Unit,
++    onNavigateBack: () -> Unit
++) {
++}
+diff --git a/feature/library/src/main/java/com/stoicjournal/feature/library/QuoteDetailScreen.kt b/feature/library/src/main/java/com/stoicjournal/feature/library/QuoteDetailScreen.kt
+new file mode 100644
+index 0000000..235e4b4
+--- /dev/null
++++ b/feature/library/src/main/java/com/stoicjournal/feature/library/QuoteDetailScreen.kt
+@@ -0,0 +1,10 @@
++package com.stoicjournal.feature.library
++
++import androidx.compose.runtime.Composable
++
++@Composable
++fun QuoteDetailScreen(
++    quoteId: String,
++    onNavigateBack: () -> Unit
++) {
++}
+diff --git a/feature/onboarding/build.gradle.kts b/feature/onboarding/build.gradle.kts
+new file mode 100644
+index 0000000..e261189
+--- /dev/null
++++ b/feature/onboarding/build.gradle.kts
+@@ -0,0 +1,7 @@
++plugins {
++    id("stoic.android.feature")
++}
++
++android {
++    namespace = "com.stoicjournal.feature.onboarding"
++}
+diff --git a/feature/onboarding/src/main/java/com/stoicjournal/feature/onboarding/OnboardingScreen.kt b/feature/onboarding/src/main/java/com/stoicjournal/feature/onboarding/OnboardingScreen.kt
+new file mode 100644
+index 0000000..ec437ba
+--- /dev/null
++++ b/feature/onboarding/src/main/java/com/stoicjournal/feature/onboarding/OnboardingScreen.kt
+@@ -0,0 +1,9 @@
++package com.stoicjournal.feature.onboarding
++
++import androidx.compose.runtime.Composable
++
++@Composable
++fun OnboardingScreen(
++    onComplete: () -> Unit
++) {
++}
+diff --git a/feature/settings/build.gradle.kts b/feature/settings/build.gradle.kts
+new file mode 100644
+index 0000000..23b26e8
+--- /dev/null
++++ b/feature/settings/build.gradle.kts
+@@ -0,0 +1,7 @@
++plugins {
++    id("stoic.android.feature")
++}
++
++android {
++    namespace = "com.stoicjournal.feature.settings"
++}
+diff --git a/feature/settings/src/main/java/com/stoicjournal/feature/settings/SettingsScreen.kt b/feature/settings/src/main/java/com/stoicjournal/feature/settings/SettingsScreen.kt
+new file mode 100644
+index 0000000..b179f00
+--- /dev/null
++++ b/feature/settings/src/main/java/com/stoicjournal/feature/settings/SettingsScreen.kt
+@@ -0,0 +1,9 @@
++package com.stoicjournal.feature.settings
++
++import androidx.compose.runtime.Composable
++
++@Composable
++fun SettingsScreen(
++    onNavigateBack: () -> Unit
++) {
++}
+diff --git a/feature/today/build.gradle.kts b/feature/today/build.gradle.kts
+new file mode 100644
+index 0000000..3135d52
+--- /dev/null
++++ b/feature/today/build.gradle.kts
+@@ -0,0 +1,7 @@
++plugins {
++    id("stoic.android.feature")
++}
++
++android {
++    namespace = "com.stoicjournal.feature.today"
++}
+diff --git a/feature/today/src/main/java/com/stoicjournal/feature/today/TodayScreen.kt b/feature/today/src/main/java/com/stoicjournal/feature/today/TodayScreen.kt
+new file mode 100644
+index 0000000..f78d309
+--- /dev/null
++++ b/feature/today/src/main/java/com/stoicjournal/feature/today/TodayScreen.kt
+@@ -0,0 +1,14 @@
++package com.stoicjournal.feature.today
++
++import androidx.compose.runtime.Composable
++
++@Composable
++fun TodayScreen(
++    onGuidedJournal: (String) -> Unit,
++    onFreeFormJournal: () -> Unit,
++    onExercise: (String) -> Unit,
++    onNavigateToLibrary: () -> Unit,
++    onNavigateToHistory: () -> Unit,
++    onNavigateToSettings: () -> Unit
++) {
++}

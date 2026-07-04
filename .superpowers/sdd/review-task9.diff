@@ -1,0 +1,378 @@
+# Review package: 7ba04c8b770a1edb55f08fed53c81dafb028e632..HEAD
+
+## Commits
+78638e9 feat(today): add home screen with daily prompt, streak, and quick actions
+
+## Files changed
+ feature/today/build.gradle.kts                     |   4 +
+ .../com/stoicjournal/feature/today/TodayScreen.kt  | 100 ++++++++++++++++++++-
+ .../com/stoicjournal/feature/today/TodayUiState.kt |  14 +++
+ .../stoicjournal/feature/today/TodayViewModel.kt   |  50 +++++++++++
+ .../feature/today/components/DailyPromptCard.kt    |  49 ++++++++++
+ .../feature/today/components/QuickActionsRow.kt    |  30 +++++++
+ .../feature/today/components/StreakIndicator.kt    |  28 ++++++
+ gradle/libs.versions.toml                          |   1 +
+ 8 files changed, 275 insertions(+), 1 deletion(-)
+
+## Diff
+diff --git a/feature/today/build.gradle.kts b/feature/today/build.gradle.kts
+index 3135d52..527309a 100644
+--- a/feature/today/build.gradle.kts
++++ b/feature/today/build.gradle.kts
+@@ -1,7 +1,11 @@
+ plugins {
+     id("stoic.android.feature")
+ }
+ 
+ android {
+     namespace = "com.stoicjournal.feature.today"
+ }
++
++dependencies {
++    implementation(libs.androidx.material.icons.extended)
++}
+diff --git a/feature/today/src/main/java/com/stoicjournal/feature/today/TodayScreen.kt b/feature/today/src/main/java/com/stoicjournal/feature/today/TodayScreen.kt
+index f78d309..a079ac0 100644
+--- a/feature/today/src/main/java/com/stoicjournal/feature/today/TodayScreen.kt
++++ b/feature/today/src/main/java/com/stoicjournal/feature/today/TodayScreen.kt
+@@ -1,14 +1,112 @@
+ package com.stoicjournal.feature.today
+ 
++import androidx.compose.foundation.layout.Arrangement
++import androidx.compose.foundation.layout.Column
++import androidx.compose.foundation.layout.fillMaxSize
++import androidx.compose.foundation.layout.fillMaxWidth
++import androidx.compose.foundation.layout.padding
++import androidx.compose.foundation.rememberScrollState
++import androidx.compose.foundation.verticalScroll
++import androidx.compose.material.icons.Icons
++import androidx.compose.material.icons.automirrored.filled.LibraryBooks
++import androidx.compose.material.icons.filled.History
++import androidx.compose.material.icons.filled.Settings
++import androidx.compose.material3.ExperimentalMaterial3Api
++import androidx.compose.material3.Icon
++import androidx.compose.material3.IconButton
++import androidx.compose.material3.ListItem
++import androidx.compose.material3.MaterialTheme
++import androidx.compose.material3.Scaffold
++import androidx.compose.material3.Text
++import androidx.compose.material3.TopAppBar
+ import androidx.compose.runtime.Composable
++import androidx.compose.runtime.collectAsState
++import androidx.compose.runtime.getValue
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.unit.dp
++import androidx.hilt.navigation.compose.hiltViewModel
++import com.stoicjournal.feature.today.components.DailyPromptCard
++import com.stoicjournal.feature.today.components.QuickActionsRow
++import com.stoicjournal.feature.today.components.StreakIndicator
+ 
++@OptIn(ExperimentalMaterial3Api::class)
+ @Composable
+ fun TodayScreen(
+     onGuidedJournal: (String) -> Unit,
+     onFreeFormJournal: () -> Unit,
+     onExercise: (String) -> Unit,
+     onNavigateToLibrary: () -> Unit,
+     onNavigateToHistory: () -> Unit,
+-    onNavigateToSettings: () -> Unit
++    onNavigateToSettings: () -> Unit,
++    viewModel: TodayViewModel = hiltViewModel()
+ ) {
++    val uiState by viewModel.uiState.collectAsState()
++
++    Scaffold(
++        topBar = {
++            TopAppBar(
++                title = { Text("Stoic Journal") },
++                actions = {
++                    IconButton(onClick = onNavigateToLibrary) {
++                        Icon(Icons.AutoMirrored.Filled.LibraryBooks, contentDescription = "Library")
++                    }
++                    IconButton(onClick = onNavigateToHistory) {
++                        Icon(Icons.Default.History, contentDescription = "History")
++                    }
++                    IconButton(onClick = onNavigateToSettings) {
++                        Icon(Icons.Default.Settings, contentDescription = "Settings")
++                    }
++                }
++            )
++        }
++    ) { padding ->
++        Column(
++            modifier = Modifier
++                .fillMaxSize()
++                .padding(padding)
++                .padding(horizontal = 16.dp)
++                .verticalScroll(rememberScrollState()),
++            verticalArrangement = Arrangement.spacedBy(16.dp)
++        ) {
++            StreakIndicator(streak = uiState.streak)
++
++            uiState.prompt?.let { prompt ->
++                DailyPromptCard(
++                    prompt = prompt,
++                    quote = uiState.quote,
++                    onClick = { onGuidedJournal(prompt.id) },
++                    modifier = Modifier.fillMaxWidth()
++                )
++            }
++
++            QuickActionsRow(
++                onFreeForm = onFreeFormJournal,
++                onExercise = {
++                    val exerciseId = uiState.exercises.firstOrNull()?.id ?: return@QuickActionsRow
++                    onExercise(exerciseId)
++                },
++                modifier = Modifier.fillMaxWidth()
++            )
++
++            if (uiState.exercises.isNotEmpty()) {
++                Text(
++                    text = "Stoic Exercises",
++                    style = MaterialTheme.typography.titleLarge,
++                    modifier = Modifier.padding(top = 16.dp)
++                )
++                uiState.exercises.forEach { exercise ->
++                    ListItem(
++                        headlineContent = { Text(exercise.title) },
++                        supportingContent = { Text(exercise.description) },
++                        modifier = Modifier.fillMaxWidth(),
++                        trailingContent = {
++                            IconButton(onClick = { onExercise(exercise.id) }) {
++                                Icon(Icons.AutoMirrored.Filled.LibraryBooks, contentDescription = "Start exercise")
++                            }
++                        }
++                    )
++                }
++            }
++        }
++    }
+ }
+diff --git a/feature/today/src/main/java/com/stoicjournal/feature/today/TodayUiState.kt b/feature/today/src/main/java/com/stoicjournal/feature/today/TodayUiState.kt
+new file mode 100644
+index 0000000..80ac050
+--- /dev/null
++++ b/feature/today/src/main/java/com/stoicjournal/feature/today/TodayUiState.kt
+@@ -0,0 +1,14 @@
++package com.stoicjournal.feature.today
++
++import com.stoicjournal.core.domain.model.Exercise
++import com.stoicjournal.core.domain.model.Prompt
++import com.stoicjournal.core.domain.model.Quote
++import com.stoicjournal.core.domain.model.Streak
++
++data class TodayUiState(
++    val prompt: Prompt? = null,
++    val quote: Quote? = null,
++    val streak: Streak = Streak(0, null),
++    val exercises: List<Exercise> = emptyList(),
++    val isLoading: Boolean = true
++)
+diff --git a/feature/today/src/main/java/com/stoicjournal/feature/today/TodayViewModel.kt b/feature/today/src/main/java/com/stoicjournal/feature/today/TodayViewModel.kt
+new file mode 100644
+index 0000000..b4a6444
+--- /dev/null
++++ b/feature/today/src/main/java/com/stoicjournal/feature/today/TodayViewModel.kt
+@@ -0,0 +1,50 @@
++package com.stoicjournal.feature.today
++
++import androidx.lifecycle.ViewModel
++import androidx.lifecycle.viewModelScope
++import com.stoicjournal.core.domain.repository.ExerciseRepository
++import com.stoicjournal.core.domain.usecase.GetQuoteForPromptUseCase
++import com.stoicjournal.core.domain.usecase.GetStreakUseCase
++import com.stoicjournal.core.domain.usecase.GetTodayPromptUseCase
++import dagger.hilt.android.lifecycle.HiltViewModel
++import kotlinx.coroutines.flow.MutableStateFlow
++import kotlinx.coroutines.flow.StateFlow
++import kotlinx.coroutines.flow.combine
++import kotlinx.coroutines.flow.launchIn
++import kotlinx.coroutines.flow.onEach
++import kotlinx.coroutines.flow.update
++import javax.inject.Inject
++
++@HiltViewModel
++class TodayViewModel @Inject constructor(
++    getTodayPromptUseCase: GetTodayPromptUseCase,
++    private val getQuoteForPromptUseCase: GetQuoteForPromptUseCase,
++    getStreakUseCase: GetStreakUseCase,
++    exerciseRepository: ExerciseRepository
++) : ViewModel() {
++
++    private val _uiState = MutableStateFlow(TodayUiState())
++    val uiState: StateFlow<TodayUiState> = _uiState
++
++    init {
++        combine(
++            getTodayPromptUseCase(),
++            getStreakUseCase(),
++            exerciseRepository.getAllExercises()
++        ) { todayPrompt, streak, exercises ->
++            Triple(todayPrompt, streak, exercises)
++        }.onEach { (todayPrompt, streak, exercises) ->
++            _uiState.update {
++                it.copy(
++                    prompt = todayPrompt.prompt,
++                    streak = streak,
++                    exercises = exercises,
++                    isLoading = false
++                )
++            }
++            getQuoteForPromptUseCase(todayPrompt.prompt).onEach { quote ->
++                _uiState.update { it.copy(quote = quote) }
++            }.launchIn(viewModelScope)
++        }.launchIn(viewModelScope)
++    }
++}
+diff --git a/feature/today/src/main/java/com/stoicjournal/feature/today/components/DailyPromptCard.kt b/feature/today/src/main/java/com/stoicjournal/feature/today/components/DailyPromptCard.kt
+new file mode 100644
+index 0000000..33c3da7
+--- /dev/null
++++ b/feature/today/src/main/java/com/stoicjournal/feature/today/components/DailyPromptCard.kt
+@@ -0,0 +1,49 @@
++package com.stoicjournal.feature.today.components
++
++import androidx.compose.foundation.layout.Column
++import androidx.compose.foundation.layout.fillMaxWidth
++import androidx.compose.foundation.layout.padding
++import androidx.compose.material3.Card
++import androidx.compose.material3.CardDefaults
++import androidx.compose.material3.MaterialTheme
++import androidx.compose.material3.Text
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.unit.dp
++import com.stoicjournal.core.domain.model.Prompt
++import com.stoicjournal.core.domain.model.Quote
++
++@Composable
++fun DailyPromptCard(
++    prompt: Prompt,
++    quote: Quote?,
++    onClick: () -> Unit,
++    modifier: Modifier = Modifier
++) {
++    Card(
++        onClick = onClick,
++        modifier = modifier.fillMaxWidth(),
++        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
++    ) {
++        Column(modifier = Modifier.padding(20.dp)) {
++            quote?.let {
++                Text(
++                    text = "\"${it.text}\"",
++                    style = MaterialTheme.typography.bodyMedium,
++                    color = MaterialTheme.colorScheme.onSurfaceVariant
++                )
++                Text(
++                    text = "— ${it.attribution}",
++                    style = MaterialTheme.typography.labelLarge,
++                    color = MaterialTheme.colorScheme.onSurfaceVariant,
++                    modifier = Modifier.padding(top = 8.dp)
++                )
++            }
++            Text(
++                text = prompt.text,
++                style = MaterialTheme.typography.titleLarge,
++                modifier = Modifier.padding(top = 16.dp)
++            )
++        }
++    }
++}
+diff --git a/feature/today/src/main/java/com/stoicjournal/feature/today/components/QuickActionsRow.kt b/feature/today/src/main/java/com/stoicjournal/feature/today/components/QuickActionsRow.kt
+new file mode 100644
+index 0000000..57e0336
+--- /dev/null
++++ b/feature/today/src/main/java/com/stoicjournal/feature/today/components/QuickActionsRow.kt
+@@ -0,0 +1,30 @@
++package com.stoicjournal.feature.today.components
++
++import androidx.compose.foundation.layout.Arrangement
++import androidx.compose.foundation.layout.Row
++import androidx.compose.foundation.layout.fillMaxWidth
++import androidx.compose.material3.Button
++import androidx.compose.material3.OutlinedButton
++import androidx.compose.material3.Text
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.unit.dp
++
++@Composable
++fun QuickActionsRow(
++    onFreeForm: () -> Unit,
++    onExercise: () -> Unit,
++    modifier: Modifier = Modifier
++) {
++    Row(
++        modifier = modifier.fillMaxWidth(),
++        horizontalArrangement = Arrangement.spacedBy(12.dp)
++    ) {
++        OutlinedButton(onClick = onFreeForm, modifier = Modifier.weight(1f)) {
++            Text("Free-form")
++        }
++        Button(onClick = onExercise, modifier = Modifier.weight(1f)) {
++            Text("Exercise")
++        }
++    }
++}
+diff --git a/feature/today/src/main/java/com/stoicjournal/feature/today/components/StreakIndicator.kt b/feature/today/src/main/java/com/stoicjournal/feature/today/components/StreakIndicator.kt
+new file mode 100644
+index 0000000..9581efb
+--- /dev/null
++++ b/feature/today/src/main/java/com/stoicjournal/feature/today/components/StreakIndicator.kt
+@@ -0,0 +1,28 @@
++package com.stoicjournal.feature.today.components
++
++import androidx.compose.foundation.layout.Row
++import androidx.compose.foundation.layout.padding
++import androidx.compose.material3.MaterialTheme
++import androidx.compose.material3.Text
++import androidx.compose.runtime.Composable
++import androidx.compose.ui.Alignment
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.unit.dp
++import androidx.compose.ui.unit.sp
++import com.stoicjournal.core.domain.model.Streak
++
++@Composable
++fun StreakIndicator(streak: Streak) {
++    Row(verticalAlignment = Alignment.CenterVertically) {
++        Text(
++            text = "${streak.currentCount}",
++            style = MaterialTheme.typography.headlineMedium,
++            fontSize = 32.sp
++        )
++        Text(
++            text = " day streak",
++            style = MaterialTheme.typography.bodyMedium,
++            modifier = Modifier.padding(start = 4.dp)
++        )
++    }
++}
+diff --git a/gradle/libs.versions.toml b/gradle/libs.versions.toml
+index 144fc8c..f244c91 100644
+--- a/gradle/libs.versions.toml
++++ b/gradle/libs.versions.toml
+@@ -21,20 +21,21 @@ espresso = "3.6.1"
+ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+ androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
+ androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+ androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
+ androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+ androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+ androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+ androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+ androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
++androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
+ androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
+ androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+ androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+ androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+ androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
+ hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+ hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+ hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigation" }
+ hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltWork" }

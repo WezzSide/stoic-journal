@@ -1,0 +1,1054 @@
+# Review package: 50ccc0e3883a94af05a050ffceebf3656c80991e..HEAD
+
+## Commits
+362e1a4 feat(data): add Room database, entities, DAOs, and bundled content seeding
+
+## Files changed
+ core/common/build.gradle.kts                       |  14 +++
+ core/data/build.gradle.kts                         |  24 ++++
+ core/data/src/main/assets/exercises.json           |  68 ++++++++++++
+ core/data/src/main/assets/philosophers.json        |  38 +++++++
+ core/data/src/main/assets/prompts.json             |  20 ++++
+ core/data/src/main/assets/quotes.json              |  24 ++++
+ .../com/stoicjournal/core/data/dao/ExerciseDao.kt  |  20 ++++
+ .../stoicjournal/core/data/dao/JournalEntryDao.kt  |  24 ++++
+ .../stoicjournal/core/data/dao/PhilosopherDao.kt   |  20 ++++
+ .../com/stoicjournal/core/data/dao/PromptDao.kt    |  21 ++++
+ .../com/stoicjournal/core/data/dao/QuoteDao.kt     |  34 ++++++
+ .../core/data/database/StoicJournalDatabase.kt     |  59 ++++++++++
+ .../com/stoicjournal/core/data/di/DataModule.kt    |  75 +++++++++++++
+ .../core/data/entity/ExerciseEntity.kt             |  16 +++
+ .../core/data/entity/JournalEntryEntity.kt         |  18 +++
+ .../core/data/entity/PhilosopherEntity.kt          |  12 ++
+ .../stoicjournal/core/data/entity/PromptEntity.kt  |  15 +++
+ .../stoicjournal/core/data/entity/QuoteEntity.kt   |  16 +++
+ .../core/data/repository/ExerciseRepository.kt     |   9 ++
+ .../core/data/repository/ExerciseRepositoryImpl.kt |  13 +++
+ .../core/data/repository/JournalRepository.kt      |  11 ++
+ .../core/data/repository/JournalRepositoryImpl.kt  |  15 +++
+ .../core/data/repository/PhilosopherRepository.kt  |   9 ++
+ .../data/repository/PhilosopherRepositoryImpl.kt   |  13 +++
+ .../core/data/repository/PreferencesRepository.kt  |   3 +
+ .../data/repository/PreferencesRepositoryImpl.kt   |   5 +
+ .../core/data/repository/PromptRepository.kt       |  10 ++
+ .../core/data/repository/PromptRepositoryImpl.kt   |  14 +++
+ .../core/data/repository/QuoteRepository.kt        |  14 +++
+ .../core/data/repository/QuoteRepositoryImpl.kt    |  18 +++
+ .../core/data/seed/AssetSeedImporter.kt            | 123 +++++++++++++++++++++
+ gradle/libs.versions.toml                          |   3 +
+ 32 files changed, 778 insertions(+)
+
+## Diff
+diff --git a/core/common/build.gradle.kts b/core/common/build.gradle.kts
+new file mode 100644
+index 0000000..0034412
+--- /dev/null
++++ b/core/common/build.gradle.kts
+@@ -0,0 +1,14 @@
++plugins {
++    id("stoic.android.library")
++}
++
++android {
++    namespace = "com.stoicjournal.core.common"
++    buildFeatures {
++        compose = false
++    }
++}
++
++dependencies {
++    implementation(libs.androidx.core.ktx)
++}
+diff --git a/core/data/build.gradle.kts b/core/data/build.gradle.kts
+new file mode 100644
+index 0000000..5dd6bbd
+--- /dev/null
++++ b/core/data/build.gradle.kts
+@@ -0,0 +1,24 @@
++plugins {
++    id("stoic.android.library")
++    id("stoic.android.hilt")
++    id("stoic.android.room")
++    alias(libs.plugins.kotlin.serialization)
++}
++
++android {
++    namespace = "com.stoicjournal.core.data"
++    buildFeatures {
++        compose = false
++    }
++}
++
++dependencies {
++    implementation(project(":core:domain"))
++    implementation(project(":core:common"))
++    implementation(libs.androidx.core.ktx)
++    implementation(libs.androidx.room.runtime)
++    implementation(libs.androidx.room.ktx)
++    implementation(libs.androidx.datastore.preferences)
++    implementation(libs.kotlinx.serialization.json)
++    kapt(libs.androidx.room.compiler)
++}
+diff --git a/core/data/src/main/assets/exercises.json b/core/data/src/main/assets/exercises.json
+new file mode 100644
+index 0000000..67ee725
+--- /dev/null
++++ b/core/data/src/main/assets/exercises.json
+@@ -0,0 +1,68 @@
++[
++  {
++    "id": "exercise-dichotomy-of-control",
++    "title": "Dichotomy of Control",
++    "description": "Separate what is in your control from what is not.",
++    "steps": [
++      "Take three slow breaths.",
++      "List one thing that is troubling you.",
++      "Ask: Is this entirely within my control, partly within my control, or outside my control?",
++      "For what is within your control, name one virtuous action.",
++      "For what is outside your control, practice accepting it as it is."
++    ],
++    "theme": "CONTROL",
++    "difficultyLevel": "BEGINNER"
++  },
++  {
++    "id": "exercise-evening-review",
++    "title": "Evening Review",
++    "description": "Reflect on the day’s actions and judgments.",
++    "steps": [
++      "Where did I act well today?",
++      "Where did I fall short of my values?",
++      "What could I do differently tomorrow?",
++      "Write one sentence of self-forgiveness."
++    ],
++    "theme": "WISDOM",
++    "difficultyLevel": "FAMILIAR"
++  },
++  {
++    "id": "exercise-premeditatio-malorum",
++    "title": "Premeditatio Malorum",
++    "description": "Anticipate challenges with calm.",
++    "steps": [
++      "Identify one challenge you may face tomorrow.",
++      "Imagine it happening in detail.",
++      "Ask: What resources do I have to meet it?",
++      "Commit to one virtuous response."
++    ],
++    "theme": "ADVERSITY",
++    "difficultyLevel": "FAMILIAR"
++  },
++  {
++    "id": "exercise-view-from-above",
++    "title": "View from Above",
++    "description": "Gain perspective by imagining your place in the wider world.",
++    "steps": [
++      "Close your eyes and picture your current location from above.",
++      "Zoom out to see your neighborhood, city, country, planet.",
++      "Notice how small today's concern appears.",
++      "Return with one calm intention."
++    ],
++    "theme": "MORTALITY",
++    "difficultyLevel": "ADVANCED"
++  },
++  {
++    "id": "exercise-amor-fati",
++    "title": "Amor Fati",
++    "description": "Reflect on accepting what happens.",
++    "steps": [
++      "Write down one thing you wish were different.",
++      "Ask: What could this obstacle teach me?",
++      "Write one reason to be grateful it happened exactly this way.",
++      "Choose to meet tomorrow with open hands."
++    ],
++    "theme": "COURAGE",
++    "difficultyLevel": "ADVANCED"
++  }
++]
+diff --git a/core/data/src/main/assets/philosophers.json b/core/data/src/main/assets/philosophers.json
+new file mode 100644
+index 0000000..4938632
+--- /dev/null
++++ b/core/data/src/main/assets/philosophers.json
+@@ -0,0 +1,38 @@
++[
++  {
++    "id": "marcus-aurelius",
++    "name": "Marcus Aurelius",
++    "lived": "121–180 AD",
++    "shortBio": "Roman emperor and Stoic philosopher, author of the Meditations."
++  },
++  {
++    "id": "epictetus",
++    "name": "Epictetus",
++    "lived": "c. 50–135 AD",
++    "shortBio": "A formerly enslaved Stoic teacher whose Discourses emphasize the dichotomy of control."
++  },
++  {
++    "id": "seneca",
++    "name": "Seneca the Younger",
++    "lived": "c. 4 BC–65 AD",
++    "shortBio": "Roman Stoic philosopher, statesman, and playwright."
++  },
++  {
++    "id": "musonius-rufus",
++    "name": "Musonius Rufus",
++    "lived": "c. 30–100 AD",
++    "shortBio": "Roman Stoic teacher whose lectures influenced Epictetus."
++  },
++  {
++    "id": "cleanthes",
++    "name": "Cleanthes",
++    "lived": "c. 330–230 BC",
++    "shortBio": "Second head of the Stoic school, known for his Hymn to Zeus."
++  },
++  {
++    "id": "cato-the-younger",
++    "name": "Cato the Younger",
++    "lived": "95–46 BC",
++    "shortBio": "Roman senator celebrated in Stoic tradition as a model of integrity."
++  }
++]
+diff --git a/core/data/src/main/assets/prompts.json b/core/data/src/main/assets/prompts.json
+new file mode 100644
+index 0000000..0dfd082
+--- /dev/null
++++ b/core/data/src/main/assets/prompts.json
+@@ -0,0 +1,20 @@
++[
++  {
++    "id": "prompt-control-001",
++    "text": "What is within your control today, and what is not? How will you focus your energy on the former?",
++    "theme": "CONTROL",
++    "difficultyLevel": "BEGINNER"
++  },
++  {
++    "id": "prompt-adversity-001",
++    "text": "Recall a recent difficulty. What virtue can you practice in response to it?",
++    "theme": "ADVERSITY",
++    "difficultyLevel": "FAMILIAR"
++  },
++  {
++    "id": "prompt-mortality-001",
++    "text": "If you knew this were your last day, what would you stop doing and what would you begin?",
++    "theme": "MORTALITY",
++    "difficultyLevel": "ADVANCED"
++  }
++]
+diff --git a/core/data/src/main/assets/quotes.json b/core/data/src/main/assets/quotes.json
+new file mode 100644
+index 0000000..6c5fad7
+--- /dev/null
++++ b/core/data/src/main/assets/quotes.json
+@@ -0,0 +1,24 @@
++[
++  {
++    "id": "marcus-001",
++    "text": "You have power over your mind — not outside events. Realize this, and you will find strength.",
++    "attribution": "Marcus Aurelius",
++    "philosopherId": "marcus-aurelius",
++    "theme": "CONTROL",
++    "source": "Meditations"
++  },
++  {
++    "id": "epictetus-001",
++    "text": "It's not what happens to you, but how you react to it that matters.",
++    "attribution": "Epictetus",
++    "philosopherId": "epictetus",
++    "theme": "ADVERSITY"
++  },
++  {
++    "id": "seneca-001",
++    "text": "We suffer more often in imagination than in reality.",
++    "attribution": "Seneca",
++    "philosopherId": "seneca",
++    "theme": "ADVERSITY"
++  }
++]
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/dao/ExerciseDao.kt b/core/data/src/main/java/com/stoicjournal/core/data/dao/ExerciseDao.kt
+new file mode 100644
+index 0000000..e942c93
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/dao/ExerciseDao.kt
+@@ -0,0 +1,20 @@
++package com.stoicjournal.core.data.dao
++
++import androidx.room.Dao
++import androidx.room.Insert
++import androidx.room.OnConflictStrategy
++import androidx.room.Query
++import com.stoicjournal.core.data.entity.ExerciseEntity
++import kotlinx.coroutines.flow.Flow
++
++@Dao
++interface ExerciseDao {
++    @Query("SELECT * FROM exercises ORDER BY id ASC")
++    fun getAll(): Flow<List<ExerciseEntity>>
++
++    @Query("SELECT * FROM exercises WHERE id = :id")
++    suspend fun getById(id: String): ExerciseEntity?
++
++    @Insert(onConflict = OnConflictStrategy.REPLACE)
++    suspend fun insertAll(exercises: List<ExerciseEntity>)
++}
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/dao/JournalEntryDao.kt b/core/data/src/main/java/com/stoicjournal/core/data/dao/JournalEntryDao.kt
+new file mode 100644
+index 0000000..07e3525
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/dao/JournalEntryDao.kt
+@@ -0,0 +1,24 @@
++package com.stoicjournal.core.data.dao
++
++import androidx.room.Dao
++import androidx.room.Delete
++import androidx.room.Insert
++import androidx.room.OnConflictStrategy
++import androidx.room.Query
++import com.stoicjournal.core.data.entity.JournalEntryEntity
++import kotlinx.coroutines.flow.Flow
++
++@Dao
++interface JournalEntryDao {
++    @Query("SELECT * FROM journal_entries ORDER BY createdAtMillis DESC")
++    fun getAll(): Flow<List<JournalEntryEntity>>
++
++    @Query("SELECT * FROM journal_entries WHERE id = :id")
++    suspend fun getById(id: String): JournalEntryEntity?
++
++    @Insert(onConflict = OnConflictStrategy.REPLACE)
++    suspend fun insert(entry: JournalEntryEntity)
++
++    @Delete
++    suspend fun delete(entry: JournalEntryEntity)
++}
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/dao/PhilosopherDao.kt b/core/data/src/main/java/com/stoicjournal/core/data/dao/PhilosopherDao.kt
+new file mode 100644
+index 0000000..499cb9b
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/dao/PhilosopherDao.kt
+@@ -0,0 +1,20 @@
++package com.stoicjournal.core.data.dao
++
++import androidx.room.Dao
++import androidx.room.Insert
++import androidx.room.OnConflictStrategy
++import androidx.room.Query
++import com.stoicjournal.core.data.entity.PhilosopherEntity
++import kotlinx.coroutines.flow.Flow
++
++@Dao
++interface PhilosopherDao {
++    @Query("SELECT * FROM philosophers ORDER BY name ASC")
++    fun getAll(): Flow<List<PhilosopherEntity>>
++
++    @Query("SELECT * FROM philosophers WHERE id = :id")
++    suspend fun getById(id: String): PhilosopherEntity?
++
++    @Insert(onConflict = OnConflictStrategy.REPLACE)
++    suspend fun insertAll(philosophers: List<PhilosopherEntity>)
++}
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/dao/PromptDao.kt b/core/data/src/main/java/com/stoicjournal/core/data/dao/PromptDao.kt
+new file mode 100644
+index 0000000..ffa0c45
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/dao/PromptDao.kt
+@@ -0,0 +1,21 @@
++package com.stoicjournal.core.data.dao
++
++import androidx.room.Dao
++import androidx.room.Insert
++import androidx.room.OnConflictStrategy
++import androidx.room.Query
++import com.stoicjournal.core.data.entity.PromptEntity
++import com.stoicjournal.core.domain.model.StoicismLevel
++import kotlinx.coroutines.flow.Flow
++
++@Dao
++interface PromptDao {
++    @Query("SELECT * FROM prompts ORDER BY id ASC")
++    fun getAll(): Flow<List<PromptEntity>>
++
++    @Query("SELECT * FROM prompts WHERE difficultyLevel = :level ORDER BY id ASC")
++    fun getByDifficulty(level: StoicismLevel): Flow<List<PromptEntity>>
++
++    @Insert(onConflict = OnConflictStrategy.REPLACE)
++    suspend fun insertAll(prompts: List<PromptEntity>)
++}
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/dao/QuoteDao.kt b/core/data/src/main/java/com/stoicjournal/core/data/dao/QuoteDao.kt
+new file mode 100644
+index 0000000..286fbab
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/dao/QuoteDao.kt
+@@ -0,0 +1,34 @@
++package com.stoicjournal.core.data.dao
++
++import androidx.room.Dao
++import androidx.room.Insert
++import androidx.room.OnConflictStrategy
++import androidx.room.Query
++import androidx.room.Update
++import com.stoicjournal.core.data.entity.QuoteEntity
++import com.stoicjournal.core.domain.model.Theme
++import kotlinx.coroutines.flow.Flow
++
++@Dao
++interface QuoteDao {
++    @Query("SELECT * FROM quotes ORDER BY id ASC")
++    fun getAll(): Flow<List<QuoteEntity>>
++
++    @Query("SELECT * FROM quotes WHERE philosopherId = :philosopherId ORDER BY id ASC")
++    fun getByPhilosopher(philosopherId: String): Flow<List<QuoteEntity>>
++
++    @Query("SELECT * FROM quotes WHERE theme = :theme ORDER BY id ASC")
++    fun getByTheme(theme: Theme): Flow<List<QuoteEntity>>
++
++    @Query("SELECT * FROM quotes WHERE isFavorite = 1 ORDER BY id ASC")
++    fun getFavorites(): Flow<List<QuoteEntity>>
++
++    @Query("SELECT * FROM quotes WHERE id = :id")
++    suspend fun getById(id: String): QuoteEntity?
++
++    @Update
++    suspend fun update(quote: QuoteEntity)
++
++    @Insert(onConflict = OnConflictStrategy.REPLACE)
++    suspend fun insertAll(quotes: List<QuoteEntity>)
++}
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/database/StoicJournalDatabase.kt b/core/data/src/main/java/com/stoicjournal/core/data/database/StoicJournalDatabase.kt
+new file mode 100644
+index 0000000..9188ac7
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/database/StoicJournalDatabase.kt
+@@ -0,0 +1,59 @@
++package com.stoicjournal.core.data.database
++
++import androidx.room.Database
++import androidx.room.RoomDatabase
++import androidx.room.TypeConverter
++import androidx.room.TypeConverters
++import com.stoicjournal.core.data.dao.ExerciseDao
++import com.stoicjournal.core.data.dao.JournalEntryDao
++import com.stoicjournal.core.data.dao.PhilosopherDao
++import com.stoicjournal.core.data.dao.PromptDao
++import com.stoicjournal.core.data.dao.QuoteDao
++import com.stoicjournal.core.data.entity.ExerciseEntity
++import com.stoicjournal.core.data.entity.JournalEntryEntity
++import com.stoicjournal.core.data.entity.PhilosopherEntity
++import com.stoicjournal.core.data.entity.PromptEntity
++import com.stoicjournal.core.data.entity.QuoteEntity
++import com.stoicjournal.core.domain.model.EntryType
++import com.stoicjournal.core.domain.model.StoicismLevel
++import com.stoicjournal.core.domain.model.Theme
++
++@Database(
++    entities = [
++        JournalEntryEntity::class,
++        QuoteEntity::class,
++        PromptEntity::class,
++        ExerciseEntity::class,
++        PhilosopherEntity::class
++    ],
++    version = 1,
++    exportSchema = false
++)
++@TypeConverters(StoicJournalTypeConverters::class)
++abstract class StoicJournalDatabase : RoomDatabase() {
++    abstract fun journalEntryDao(): JournalEntryDao
++    abstract fun quoteDao(): QuoteDao
++    abstract fun promptDao(): PromptDao
++    abstract fun exerciseDao(): ExerciseDao
++    abstract fun philosopherDao(): PhilosopherDao
++}
++
++class StoicJournalTypeConverters {
++    @TypeConverter
++    fun fromEntryType(value: EntryType): String = value.name
++
++    @TypeConverter
++    fun toEntryType(value: String): EntryType = EntryType.valueOf(value)
++
++    @TypeConverter
++    fun fromStoicismLevel(value: StoicismLevel): String = value.name
++
++    @TypeConverter
++    fun toStoicismLevel(value: String): StoicismLevel = StoicismLevel.valueOf(value)
++
++    @TypeConverter
++    fun fromTheme(value: Theme): String = value.name
++
++    @TypeConverter
++    fun toTheme(value: String): Theme = Theme.valueOf(value)
++}
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/di/DataModule.kt b/core/data/src/main/java/com/stoicjournal/core/data/di/DataModule.kt
+new file mode 100644
+index 0000000..6c55879
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/di/DataModule.kt
+@@ -0,0 +1,75 @@
++package com.stoicjournal.core.data.di
++
++import android.content.Context
++import androidx.room.Room
++import com.stoicjournal.core.data.database.StoicJournalDatabase
++import com.stoicjournal.core.data.repository.ExerciseRepository
++import com.stoicjournal.core.data.repository.ExerciseRepositoryImpl
++import com.stoicjournal.core.data.repository.JournalRepository
++import com.stoicjournal.core.data.repository.JournalRepositoryImpl
++import com.stoicjournal.core.data.repository.PhilosopherRepository
++import com.stoicjournal.core.data.repository.PhilosopherRepositoryImpl
++import com.stoicjournal.core.data.repository.PreferencesRepository
++import com.stoicjournal.core.data.repository.PreferencesRepositoryImpl
++import com.stoicjournal.core.data.repository.PromptRepository
++import com.stoicjournal.core.data.repository.PromptRepositoryImpl
++import com.stoicjournal.core.data.repository.QuoteRepository
++import com.stoicjournal.core.data.repository.QuoteRepositoryImpl
++import dagger.Binds
++import dagger.Module
++import dagger.Provides
++import dagger.hilt.InstallIn
++import dagger.hilt.android.qualifiers.ApplicationContext
++import dagger.hilt.components.SingletonComponent
++import javax.inject.Singleton
++
++@Module
++@InstallIn(SingletonComponent::class)
++abstract class RepositoryModule {
++    @Binds
++    abstract fun bindJournalRepository(impl: JournalRepositoryImpl): JournalRepository
++
++    @Binds
++    abstract fun bindQuoteRepository(impl: QuoteRepositoryImpl): QuoteRepository
++
++    @Binds
++    abstract fun bindPromptRepository(impl: PromptRepositoryImpl): PromptRepository
++
++    @Binds
++    abstract fun bindExerciseRepository(impl: ExerciseRepositoryImpl): ExerciseRepository
++
++    @Binds
++    abstract fun bindPhilosopherRepository(impl: PhilosopherRepositoryImpl): PhilosopherRepository
++
++    @Binds
++    abstract fun bindPreferencesRepository(impl: PreferencesRepositoryImpl): PreferencesRepository
++}
++
++@Module
++@InstallIn(SingletonComponent::class)
++object DatabaseModule {
++    @Provides
++    @Singleton
++    fun provideDatabase(@ApplicationContext context: Context): StoicJournalDatabase {
++        return Room.databaseBuilder(
++            context,
++            StoicJournalDatabase::class.java,
++            "stoic_journal.db"
++        ).build()
++    }
++
++    @Provides
++    fun provideJournalEntryDao(db: StoicJournalDatabase) = db.journalEntryDao()
++
++    @Provides
++    fun provideQuoteDao(db: StoicJournalDatabase) = db.quoteDao()
++
++    @Provides
++    fun providePromptDao(db: StoicJournalDatabase) = db.promptDao()
++
++    @Provides
++    fun provideExerciseDao(db: StoicJournalDatabase) = db.exerciseDao()
++
++    @Provides
++    fun providePhilosopherDao(db: StoicJournalDatabase) = db.philosopherDao()
++}
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/entity/ExerciseEntity.kt b/core/data/src/main/java/com/stoicjournal/core/data/entity/ExerciseEntity.kt
+new file mode 100644
+index 0000000..08c21a9
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/entity/ExerciseEntity.kt
+@@ -0,0 +1,16 @@
++package com.stoicjournal.core.data.entity
++
++import androidx.room.Entity
++import androidx.room.PrimaryKey
++import com.stoicjournal.core.domain.model.StoicismLevel
++import com.stoicjournal.core.domain.model.Theme
++
++@Entity(tableName = "exercises")
++data class ExerciseEntity(
++    @PrimaryKey val id: String,
++    val title: String,
++    val description: String,
++    val steps: String, // JSON array string
++    val theme: Theme,
++    val difficultyLevel: StoicismLevel = StoicismLevel.BEGINNER
++)
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/entity/JournalEntryEntity.kt b/core/data/src/main/java/com/stoicjournal/core/data/entity/JournalEntryEntity.kt
+new file mode 100644
+index 0000000..204ce34
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/entity/JournalEntryEntity.kt
+@@ -0,0 +1,18 @@
++package com.stoicjournal.core.data.entity
++
++import androidx.room.Entity
++import androidx.room.PrimaryKey
++import com.stoicjournal.core.domain.model.EntryType
++
++@Entity(tableName = "journal_entries")
++data class JournalEntryEntity(
++    @PrimaryKey val id: String,
++    val type: EntryType,
++    val promptId: String? = null,
++    val title: String? = null,
++    val body: String,
++    val quoteId: String? = null,
++    val exerciseId: String? = null,
++    val createdAtMillis: Long,
++    val updatedAtMillis: Long
++)
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/entity/PhilosopherEntity.kt b/core/data/src/main/java/com/stoicjournal/core/data/entity/PhilosopherEntity.kt
+new file mode 100644
+index 0000000..0b91214
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/entity/PhilosopherEntity.kt
+@@ -0,0 +1,12 @@
++package com.stoicjournal.core.data.entity
++
++import androidx.room.Entity
++import androidx.room.PrimaryKey
++
++@Entity(tableName = "philosophers")
++data class PhilosopherEntity(
++    @PrimaryKey val id: String,
++    val name: String,
++    val lived: String,
++    val shortBio: String
++)
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/entity/PromptEntity.kt b/core/data/src/main/java/com/stoicjournal/core/data/entity/PromptEntity.kt
+new file mode 100644
+index 0000000..75c2f73
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/entity/PromptEntity.kt
+@@ -0,0 +1,15 @@
++package com.stoicjournal.core.data.entity
++
++import androidx.room.Entity
++import androidx.room.PrimaryKey
++import com.stoicjournal.core.domain.model.StoicismLevel
++import com.stoicjournal.core.domain.model.Theme
++
++@Entity(tableName = "prompts")
++data class PromptEntity(
++    @PrimaryKey val id: String,
++    val text: String,
++    val theme: Theme,
++    val philosopherId: String? = null,
++    val difficultyLevel: StoicismLevel = StoicismLevel.BEGINNER
++)
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/entity/QuoteEntity.kt b/core/data/src/main/java/com/stoicjournal/core/data/entity/QuoteEntity.kt
+new file mode 100644
+index 0000000..4eab541
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/entity/QuoteEntity.kt
+@@ -0,0 +1,16 @@
++package com.stoicjournal.core.data.entity
++
++import androidx.room.Entity
++import androidx.room.PrimaryKey
++import com.stoicjournal.core.domain.model.Theme
++
++@Entity(tableName = "quotes")
++data class QuoteEntity(
++    @PrimaryKey val id: String,
++    val text: String,
++    val attribution: String,
++    val philosopherId: String,
++    val theme: Theme,
++    val source: String? = null,
++    val isFavorite: Boolean = false
++)
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/repository/ExerciseRepository.kt b/core/data/src/main/java/com/stoicjournal/core/data/repository/ExerciseRepository.kt
+new file mode 100644
+index 0000000..8451688
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/repository/ExerciseRepository.kt
+@@ -0,0 +1,9 @@
++package com.stoicjournal.core.data.repository
++
++import com.stoicjournal.core.data.entity.ExerciseEntity
++import kotlinx.coroutines.flow.Flow
++
++interface ExerciseRepository {
++    fun getAll(): Flow<List<ExerciseEntity>>
++    suspend fun getById(id: String): ExerciseEntity?
++}
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/repository/ExerciseRepositoryImpl.kt b/core/data/src/main/java/com/stoicjournal/core/data/repository/ExerciseRepositoryImpl.kt
+new file mode 100644
+index 0000000..1c2e40c
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/repository/ExerciseRepositoryImpl.kt
+@@ -0,0 +1,13 @@
++package com.stoicjournal.core.data.repository
++
++import com.stoicjournal.core.data.dao.ExerciseDao
++import com.stoicjournal.core.data.entity.ExerciseEntity
++import kotlinx.coroutines.flow.Flow
++import javax.inject.Inject
++
++class ExerciseRepositoryImpl @Inject constructor(
++    private val dao: ExerciseDao
++) : ExerciseRepository {
++    override fun getAll(): Flow<List<ExerciseEntity>> = dao.getAll()
++    override suspend fun getById(id: String): ExerciseEntity? = dao.getById(id)
++}
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/repository/JournalRepository.kt b/core/data/src/main/java/com/stoicjournal/core/data/repository/JournalRepository.kt
+new file mode 100644
+index 0000000..16c7011
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/repository/JournalRepository.kt
+@@ -0,0 +1,11 @@
++package com.stoicjournal.core.data.repository
++
++import com.stoicjournal.core.data.entity.JournalEntryEntity
++import kotlinx.coroutines.flow.Flow
++
++interface JournalRepository {
++    fun getAll(): Flow<List<JournalEntryEntity>>
++    suspend fun getById(id: String): JournalEntryEntity?
++    suspend fun insert(entry: JournalEntryEntity)
++    suspend fun delete(entry: JournalEntryEntity)
++}
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/repository/JournalRepositoryImpl.kt b/core/data/src/main/java/com/stoicjournal/core/data/repository/JournalRepositoryImpl.kt
+new file mode 100644
+index 0000000..f7e1a0f
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/repository/JournalRepositoryImpl.kt
+@@ -0,0 +1,15 @@
++package com.stoicjournal.core.data.repository
++
++import com.stoicjournal.core.data.dao.JournalEntryDao
++import com.stoicjournal.core.data.entity.JournalEntryEntity
++import kotlinx.coroutines.flow.Flow
++import javax.inject.Inject
++
++class JournalRepositoryImpl @Inject constructor(
++    private val dao: JournalEntryDao
++) : JournalRepository {
++    override fun getAll(): Flow<List<JournalEntryEntity>> = dao.getAll()
++    override suspend fun getById(id: String): JournalEntryEntity? = dao.getById(id)
++    override suspend fun insert(entry: JournalEntryEntity) = dao.insert(entry)
++    override suspend fun delete(entry: JournalEntryEntity) = dao.delete(entry)
++}
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/repository/PhilosopherRepository.kt b/core/data/src/main/java/com/stoicjournal/core/data/repository/PhilosopherRepository.kt
+new file mode 100644
+index 0000000..ba06010
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/repository/PhilosopherRepository.kt
+@@ -0,0 +1,9 @@
++package com.stoicjournal.core.data.repository
++
++import com.stoicjournal.core.data.entity.PhilosopherEntity
++import kotlinx.coroutines.flow.Flow
++
++interface PhilosopherRepository {
++    fun getAll(): Flow<List<PhilosopherEntity>>
++    suspend fun getById(id: String): PhilosopherEntity?
++}
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/repository/PhilosopherRepositoryImpl.kt b/core/data/src/main/java/com/stoicjournal/core/data/repository/PhilosopherRepositoryImpl.kt
+new file mode 100644
+index 0000000..c3f5315
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/repository/PhilosopherRepositoryImpl.kt
+@@ -0,0 +1,13 @@
++package com.stoicjournal.core.data.repository
++
++import com.stoicjournal.core.data.dao.PhilosopherDao
++import com.stoicjournal.core.data.entity.PhilosopherEntity
++import kotlinx.coroutines.flow.Flow
++import javax.inject.Inject
++
++class PhilosopherRepositoryImpl @Inject constructor(
++    private val dao: PhilosopherDao
++) : PhilosopherRepository {
++    override fun getAll(): Flow<List<PhilosopherEntity>> = dao.getAll()
++    override suspend fun getById(id: String): PhilosopherEntity? = dao.getById(id)
++}
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/repository/PreferencesRepository.kt b/core/data/src/main/java/com/stoicjournal/core/data/repository/PreferencesRepository.kt
+new file mode 100644
+index 0000000..d35b37f
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/repository/PreferencesRepository.kt
+@@ -0,0 +1,3 @@
++package com.stoicjournal.core.data.repository
++
++interface PreferencesRepository
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/repository/PreferencesRepositoryImpl.kt b/core/data/src/main/java/com/stoicjournal/core/data/repository/PreferencesRepositoryImpl.kt
+new file mode 100644
+index 0000000..6b621cd
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/repository/PreferencesRepositoryImpl.kt
+@@ -0,0 +1,5 @@
++package com.stoicjournal.core.data.repository
++
++import javax.inject.Inject
++
++class PreferencesRepositoryImpl @Inject constructor() : PreferencesRepository
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/repository/PromptRepository.kt b/core/data/src/main/java/com/stoicjournal/core/data/repository/PromptRepository.kt
+new file mode 100644
+index 0000000..dc7ee6c
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/repository/PromptRepository.kt
+@@ -0,0 +1,10 @@
++package com.stoicjournal.core.data.repository
++
++import com.stoicjournal.core.data.entity.PromptEntity
++import com.stoicjournal.core.domain.model.StoicismLevel
++import kotlinx.coroutines.flow.Flow
++
++interface PromptRepository {
++    fun getAll(): Flow<List<PromptEntity>>
++    fun getByDifficulty(level: StoicismLevel): Flow<List<PromptEntity>>
++}
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/repository/PromptRepositoryImpl.kt b/core/data/src/main/java/com/stoicjournal/core/data/repository/PromptRepositoryImpl.kt
+new file mode 100644
+index 0000000..8d6ed05
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/repository/PromptRepositoryImpl.kt
+@@ -0,0 +1,14 @@
++package com.stoicjournal.core.data.repository
++
++import com.stoicjournal.core.data.dao.PromptDao
++import com.stoicjournal.core.data.entity.PromptEntity
++import com.stoicjournal.core.domain.model.StoicismLevel
++import kotlinx.coroutines.flow.Flow
++import javax.inject.Inject
++
++class PromptRepositoryImpl @Inject constructor(
++    private val dao: PromptDao
++) : PromptRepository {
++    override fun getAll(): Flow<List<PromptEntity>> = dao.getAll()
++    override fun getByDifficulty(level: StoicismLevel): Flow<List<PromptEntity>> = dao.getByDifficulty(level)
++}
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/repository/QuoteRepository.kt b/core/data/src/main/java/com/stoicjournal/core/data/repository/QuoteRepository.kt
+new file mode 100644
+index 0000000..9c1d23d
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/repository/QuoteRepository.kt
+@@ -0,0 +1,14 @@
++package com.stoicjournal.core.data.repository
++
++import com.stoicjournal.core.data.entity.QuoteEntity
++import com.stoicjournal.core.domain.model.Theme
++import kotlinx.coroutines.flow.Flow
++
++interface QuoteRepository {
++    fun getAll(): Flow<List<QuoteEntity>>
++    fun getByPhilosopher(philosopherId: String): Flow<List<QuoteEntity>>
++    fun getByTheme(theme: Theme): Flow<List<QuoteEntity>>
++    fun getFavorites(): Flow<List<QuoteEntity>>
++    suspend fun getById(id: String): QuoteEntity?
++    suspend fun update(quote: QuoteEntity)
++}
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/repository/QuoteRepositoryImpl.kt b/core/data/src/main/java/com/stoicjournal/core/data/repository/QuoteRepositoryImpl.kt
+new file mode 100644
+index 0000000..bfb1eab
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/repository/QuoteRepositoryImpl.kt
+@@ -0,0 +1,18 @@
++package com.stoicjournal.core.data.repository
++
++import com.stoicjournal.core.data.dao.QuoteDao
++import com.stoicjournal.core.data.entity.QuoteEntity
++import com.stoicjournal.core.domain.model.Theme
++import kotlinx.coroutines.flow.Flow
++import javax.inject.Inject
++
++class QuoteRepositoryImpl @Inject constructor(
++    private val dao: QuoteDao
++) : QuoteRepository {
++    override fun getAll(): Flow<List<QuoteEntity>> = dao.getAll()
++    override fun getByPhilosopher(philosopherId: String): Flow<List<QuoteEntity>> = dao.getByPhilosopher(philosopherId)
++    override fun getByTheme(theme: Theme): Flow<List<QuoteEntity>> = dao.getByTheme(theme)
++    override fun getFavorites(): Flow<List<QuoteEntity>> = dao.getFavorites()
++    override suspend fun getById(id: String): QuoteEntity? = dao.getById(id)
++    override suspend fun update(quote: QuoteEntity) = dao.update(quote)
++}
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/seed/AssetSeedImporter.kt b/core/data/src/main/java/com/stoicjournal/core/data/seed/AssetSeedImporter.kt
+new file mode 100644
+index 0000000..afd2df7
+--- /dev/null
++++ b/core/data/src/main/java/com/stoicjournal/core/data/seed/AssetSeedImporter.kt
+@@ -0,0 +1,123 @@
++package com.stoicjournal.core.data.seed
++
++import android.content.Context
++import com.stoicjournal.core.data.dao.ExerciseDao
++import com.stoicjournal.core.data.dao.PhilosopherDao
++import com.stoicjournal.core.data.dao.PromptDao
++import com.stoicjournal.core.data.dao.QuoteDao
++import com.stoicjournal.core.data.entity.ExerciseEntity
++import com.stoicjournal.core.data.entity.PhilosopherEntity
++import com.stoicjournal.core.data.entity.PromptEntity
++import com.stoicjournal.core.data.entity.QuoteEntity
++import com.stoicjournal.core.domain.model.StoicismLevel
++import com.stoicjournal.core.domain.model.Theme
++import dagger.hilt.android.qualifiers.ApplicationContext
++import kotlinx.coroutines.Dispatchers
++import kotlinx.coroutines.flow.first
++import kotlinx.coroutines.withContext
++import kotlinx.serialization.ExperimentalSerializationApi
++import kotlinx.serialization.Serializable
++import kotlinx.serialization.json.Json
++import kotlinx.serialization.json.decodeFromStream
++import javax.inject.Inject
++
++class AssetSeedImporter @Inject constructor(
++    @ApplicationContext private val context: Context,
++    private val quoteDao: QuoteDao,
++    private val promptDao: PromptDao,
++    private val exerciseDao: ExerciseDao,
++    private val philosopherDao: PhilosopherDao
++) {
++    @OptIn(ExperimentalSerializationApi::class)
++    suspend fun seedIfEmpty() = withContext(Dispatchers.IO) {
++        if (quoteDao.getAll().first().isNotEmpty()) return@withContext
++        val json = Json { ignoreUnknownKeys = true }
++
++        context.assets.open("quotes.json").use { stream ->
++            val dtos: List<QuoteDto> = json.decodeFromStream(stream)
++            quoteDao.insertAll(dtos.map { it.toEntity() })
++        }
++        context.assets.open("prompts.json").use { stream ->
++            val dtos: List<PromptDto> = json.decodeFromStream(stream)
++            promptDao.insertAll(dtos.map { it.toEntity() })
++        }
++        context.assets.open("exercises.json").use { stream ->
++            val dtos: List<ExerciseDto> = json.decodeFromStream(stream)
++            exerciseDao.insertAll(dtos.map { it.toEntity() })
++        }
++        context.assets.open("philosophers.json").use { stream ->
++            val dtos: List<PhilosopherDto> = json.decodeFromStream(stream)
++            philosopherDao.insertAll(dtos.map { it.toEntity() })
++        }
++    }
++}
++
++@Serializable
++private data class QuoteDto(
++    val id: String,
++    val text: String,
++    val attribution: String,
++    val philosopherId: String,
++    val theme: String,
++    val source: String? = null
++) {
++    fun toEntity() = QuoteEntity(
++        id = id,
++        text = text,
++        attribution = attribution,
++        philosopherId = philosopherId,
++        theme = Theme.valueOf(theme),
++        source = source
++    )
++}
++
++@Serializable
++private data class PromptDto(
++    val id: String,
++    val text: String,
++    val theme: String,
++    val philosopherId: String? = null,
++    val difficultyLevel: String = "BEGINNER"
++) {
++    fun toEntity() = PromptEntity(
++        id = id,
++        text = text,
++        theme = Theme.valueOf(theme),
++        philosopherId = philosopherId,
++        difficultyLevel = StoicismLevel.valueOf(difficultyLevel)
++    )
++}
++
++@Serializable
++private data class ExerciseDto(
++    val id: String,
++    val title: String,
++    val description: String,
++    val steps: List<String>,
++    val theme: String,
++    val difficultyLevel: String = "BEGINNER"
++) {
++    fun toEntity() = ExerciseEntity(
++        id = id,
++        title = title,
++        description = description,
++        steps = steps.joinToString("|"),
++        theme = Theme.valueOf(theme),
++        difficultyLevel = StoicismLevel.valueOf(difficultyLevel)
++    )
++}
++
++@Serializable
++private data class PhilosopherDto(
++    val id: String,
++    val name: String,
++    val lived: String,
++    val shortBio: String
++) {
++    fun toEntity() = PhilosopherEntity(
++        id = id,
++        name = name,
++        lived = lived,
++        shortBio = shortBio
++    )
++}
+diff --git a/gradle/libs.versions.toml b/gradle/libs.versions.toml
+index a6e9bd5..feb8c4f 100644
+--- a/gradle/libs.versions.toml
++++ b/gradle/libs.versions.toml
+@@ -4,20 +4,21 @@ kotlin = "2.0.0"
+ coreKtx = "1.13.1"
+ lifecycle = "2.8.2"
+ activityCompose = "1.9.0"
+ composeBom = "2024.06.00"
+ navigation = "2.7.7"
+ hilt = "2.51.1"
+ hiltNavigation = "1.2.0"
+ room = "2.6.1"
+ datastore = "1.1.1"
+ work = "2.9.0"
++kotlinxSerialization = "1.6.3"
+ junit = "4.13.2"
+ junitExt = "1.2.1"
+ espresso = "3.6.1"
+ 
+ [libraries]
+ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+ androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
+ androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+ androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
+ androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+@@ -33,23 +34,25 @@ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", vers
+ androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+ androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
+ hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+ hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
+ hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigation" }
+ junit = { group = "junit", name = "junit", version.ref = "junit" }
+ androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitExt" }
+ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
+ android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
+ kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
++kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+ 
+ [plugins]
+ android-application = { id = "com.android.application", version.ref = "agp" }
+ android-library = { id = "com.android.library", version.ref = "agp" }
+ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+ kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+ hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
++kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ stoic-android-application = { id = "stoic.android.application", version = "unspecified" }
+ stoic-android-library = { id = "stoic.android.library", version = "unspecified" }
+ stoic-android-feature = { id = "stoic.android.feature", version = "unspecified" }
+ stoic-android-hilt = { id = "stoic.android.hilt", version = "unspecified" }
+ stoic-android-room = { id = "stoic.android.room", version = "unspecified" }

@@ -1,0 +1,250 @@
+# Review package: 4848dac0d5f12141260a1b6f38af982118d62168..HEAD
+
+## Commits
+9bee959 fix(core:domain): move StreakCalculator to domain layer to resolve circular dependency
+
+## Files changed
+ core/domain/build.gradle.kts                       |  2 ++
+ .../domain/usecase/GetJournalEntriesUseCase.kt     | 18 ++++++++++
+ .../domain/usecase/GetQuoteForPromptUseCase.kt     | 18 ++++++++++
+ .../core/domain/usecase/GetStreakUseCase.kt        | 15 +++++++++
+ .../core/domain/usecase/GetTodayPromptUseCase.kt   | 38 ++++++++++++++++++++++
+ .../core/domain/usecase/SaveJournalEntryUseCase.kt | 37 +++++++++++++++++++++
+ .../domain/usecase/ToggleFavoriteQuoteUseCase.kt   | 12 +++++++
+ .../core/domain/util}/StreakCalculator.kt          |  2 +-
+ .../core/domain/util}/StreakCalculatorTest.kt      |  2 +-
+ 9 files changed, 142 insertions(+), 2 deletions(-)
+
+## Diff
+diff --git a/core/domain/build.gradle.kts b/core/domain/build.gradle.kts
+index c8cc6bd..c2a04cb 100644
+--- a/core/domain/build.gradle.kts
++++ b/core/domain/build.gradle.kts
+@@ -6,11 +6,13 @@ android {
+     namespace = "com.stoicjournal.core.domain"
+     buildFeatures {
+         compose = false
+     }
+ }
+ 
+ dependencies {
+     implementation(libs.androidx.core.ktx)
+     implementation(libs.hilt.android)
+     kapt(libs.hilt.compiler)
++
++    testImplementation(libs.junit)
+ }
+diff --git a/core/domain/src/main/java/com/stoicjournal/core/domain/usecase/GetJournalEntriesUseCase.kt b/core/domain/src/main/java/com/stoicjournal/core/domain/usecase/GetJournalEntriesUseCase.kt
+new file mode 100644
+index 0000000..439e020
+--- /dev/null
++++ b/core/domain/src/main/java/com/stoicjournal/core/domain/usecase/GetJournalEntriesUseCase.kt
+@@ -0,0 +1,18 @@
++package com.stoicjournal.core.domain.usecase
++
++import com.stoicjournal.core.domain.model.EntryType
++import com.stoicjournal.core.domain.model.JournalEntry
++import com.stoicjournal.core.domain.repository.JournalRepository
++import kotlinx.coroutines.flow.Flow
++import kotlinx.coroutines.flow.map
++import javax.inject.Inject
++
++class GetJournalEntriesUseCase @Inject constructor(
++    private val journalRepository: JournalRepository
++) {
++    operator fun invoke(filter: EntryType? = null): Flow<List<JournalEntry>> {
++        return journalRepository.getAllEntries().map { entries ->
++            filter?.let { entries.filter { entry -> entry.type == filter } } ?: entries
++        }
++    }
++}
+diff --git a/core/domain/src/main/java/com/stoicjournal/core/domain/usecase/GetQuoteForPromptUseCase.kt b/core/domain/src/main/java/com/stoicjournal/core/domain/usecase/GetQuoteForPromptUseCase.kt
+new file mode 100644
+index 0000000..b3e1508
+--- /dev/null
++++ b/core/domain/src/main/java/com/stoicjournal/core/domain/usecase/GetQuoteForPromptUseCase.kt
+@@ -0,0 +1,18 @@
++package com.stoicjournal.core.domain.usecase
++
++import com.stoicjournal.core.domain.model.Prompt
++import com.stoicjournal.core.domain.model.Quote
++import com.stoicjournal.core.domain.repository.QuoteRepository
++import kotlinx.coroutines.flow.Flow
++import kotlinx.coroutines.flow.map
++import javax.inject.Inject
++
++class GetQuoteForPromptUseCase @Inject constructor(
++    private val quoteRepository: QuoteRepository
++) {
++    operator fun invoke(prompt: Prompt): Flow<Quote?> =
++        quoteRepository.getAllQuotes().map { quotes ->
++            val matching = quotes.filter { it.theme == prompt.theme || it.philosopherId == prompt.philosopherId }
++            matching.firstOrNull() ?: quotes.firstOrNull()
++        }
++}
+diff --git a/core/domain/src/main/java/com/stoicjournal/core/domain/usecase/GetStreakUseCase.kt b/core/domain/src/main/java/com/stoicjournal/core/domain/usecase/GetStreakUseCase.kt
+new file mode 100644
+index 0000000..33aa5e9
+--- /dev/null
++++ b/core/domain/src/main/java/com/stoicjournal/core/domain/usecase/GetStreakUseCase.kt
+@@ -0,0 +1,15 @@
++package com.stoicjournal.core.domain.usecase
++
++import com.stoicjournal.core.domain.util.StreakCalculator
++import com.stoicjournal.core.domain.model.Streak
++import com.stoicjournal.core.domain.repository.JournalRepository
++import kotlinx.coroutines.flow.Flow
++import kotlinx.coroutines.flow.map
++import javax.inject.Inject
++
++class GetStreakUseCase @Inject constructor(
++    private val journalRepository: JournalRepository
++) {
++    operator fun invoke(): Flow<Streak> =
++        journalRepository.getAllEntries().map { StreakCalculator.calculate(it) }
++}
+diff --git a/core/domain/src/main/java/com/stoicjournal/core/domain/usecase/GetTodayPromptUseCase.kt b/core/domain/src/main/java/com/stoicjournal/core/domain/usecase/GetTodayPromptUseCase.kt
+new file mode 100644
+index 0000000..cbd8a16
+--- /dev/null
++++ b/core/domain/src/main/java/com/stoicjournal/core/domain/usecase/GetTodayPromptUseCase.kt
+@@ -0,0 +1,38 @@
++package com.stoicjournal.core.domain.usecase
++
++import com.stoicjournal.core.domain.model.Prompt
++import com.stoicjournal.core.domain.model.StoicismLevel
++import com.stoicjournal.core.domain.repository.PreferencesRepository
++import com.stoicjournal.core.domain.repository.PromptRepository
++import kotlinx.coroutines.flow.Flow
++import kotlinx.coroutines.flow.combine
++import java.time.LocalDate
++import javax.inject.Inject
++
++class GetTodayPromptUseCase @Inject constructor(
++    private val promptRepository: PromptRepository,
++    private val preferencesRepository: PreferencesRepository
++) {
++    operator fun invoke(): Flow<TodayPrompt> = combine(
++        promptRepository.getAllPrompts(),
++        preferencesRepository.preferences
++    ) { prompts, prefs ->
++        val candidates = if (prefs.stoicismLevel == StoicismLevel.BEGINNER) {
++            prompts.filter { it.difficultyLevel == StoicismLevel.BEGINNER }
++        } else {
++            prompts
++        }
++        val selected = candidates.ifEmpty { prompts }.let {
++            it[LocalDate.now().dayOfYear % it.size]
++        }
++        TodayPrompt(
++            prompt = selected,
++            date = LocalDate.now()
++        )
++    }
++}
++
++data class TodayPrompt(
++    val prompt: Prompt,
++    val date: LocalDate
++)
+diff --git a/core/domain/src/main/java/com/stoicjournal/core/domain/usecase/SaveJournalEntryUseCase.kt b/core/domain/src/main/java/com/stoicjournal/core/domain/usecase/SaveJournalEntryUseCase.kt
+new file mode 100644
+index 0000000..cdb4de3
+--- /dev/null
++++ b/core/domain/src/main/java/com/stoicjournal/core/domain/usecase/SaveJournalEntryUseCase.kt
+@@ -0,0 +1,37 @@
++package com.stoicjournal.core.domain.usecase
++
++import com.stoicjournal.core.domain.model.JournalEntry
++import com.stoicjournal.core.domain.repository.JournalRepository
++import java.time.Instant
++import java.util.UUID
++import javax.inject.Inject
++
++class SaveJournalEntryUseCase @Inject constructor(
++    private val journalRepository: JournalRepository
++) {
++    suspend operator fun invoke(entry: JournalEntry) {
++        journalRepository.saveEntry(entry)
++    }
++}
++
++fun createJournalEntry(
++    type: com.stoicjournal.core.domain.model.EntryType,
++    body: String,
++    promptId: String? = null,
++    title: String? = null,
++    quoteId: String? = null,
++    exerciseId: String? = null
++): JournalEntry {
++    val now = Instant.now()
++    return JournalEntry(
++        id = UUID.randomUUID().toString(),
++        type = type,
++        promptId = promptId,
++        title = title,
++        body = body,
++        quoteId = quoteId,
++        exerciseId = exerciseId,
++        createdAt = now,
++        updatedAt = now
++    )
++}
+diff --git a/core/domain/src/main/java/com/stoicjournal/core/domain/usecase/ToggleFavoriteQuoteUseCase.kt b/core/domain/src/main/java/com/stoicjournal/core/domain/usecase/ToggleFavoriteQuoteUseCase.kt
+new file mode 100644
+index 0000000..65b8117
+--- /dev/null
++++ b/core/domain/src/main/java/com/stoicjournal/core/domain/usecase/ToggleFavoriteQuoteUseCase.kt
+@@ -0,0 +1,12 @@
++package com.stoicjournal.core.domain.usecase
++
++import com.stoicjournal.core.domain.repository.QuoteRepository
++import javax.inject.Inject
++
++class ToggleFavoriteQuoteUseCase @Inject constructor(
++    private val quoteRepository: QuoteRepository
++) {
++    suspend operator fun invoke(quoteId: String) {
++        quoteRepository.toggleFavorite(quoteId)
++    }
++}
+diff --git a/core/data/src/main/java/com/stoicjournal/core/data/sync/StreakCalculator.kt b/core/domain/src/main/java/com/stoicjournal/core/domain/util/StreakCalculator.kt
+similarity index 96%
+rename from core/data/src/main/java/com/stoicjournal/core/data/sync/StreakCalculator.kt
+rename to core/domain/src/main/java/com/stoicjournal/core/domain/util/StreakCalculator.kt
+index 3e2f117..289606b 100644
+--- a/core/data/src/main/java/com/stoicjournal/core/data/sync/StreakCalculator.kt
++++ b/core/domain/src/main/java/com/stoicjournal/core/domain/util/StreakCalculator.kt
+@@ -1,11 +1,11 @@
+-package com.stoicjournal.core.data.sync
++package com.stoicjournal.core.domain.util
+ 
+ import com.stoicjournal.core.domain.model.JournalEntry
+ import com.stoicjournal.core.domain.model.Streak
+ import java.time.LocalDate
+ import java.time.ZoneId
+ 
+ object StreakCalculator {
+ 
+     fun calculate(entries: List<JournalEntry>): Streak {
+         if (entries.isEmpty()) return Streak(currentCount = 0, lastEntryDate = null)
+diff --git a/core/data/src/test/java/com/stoicjournal/core/data/sync/StreakCalculatorTest.kt b/core/domain/src/test/java/com/stoicjournal/core/domain/util/StreakCalculatorTest.kt
+similarity index 97%
+rename from core/data/src/test/java/com/stoicjournal/core/data/sync/StreakCalculatorTest.kt
+rename to core/domain/src/test/java/com/stoicjournal/core/domain/util/StreakCalculatorTest.kt
+index 9026cd0..3750d9d 100644
+--- a/core/data/src/test/java/com/stoicjournal/core/data/sync/StreakCalculatorTest.kt
++++ b/core/domain/src/test/java/com/stoicjournal/core/domain/util/StreakCalculatorTest.kt
+@@ -1,11 +1,11 @@
+-package com.stoicjournal.core.data.sync
++package com.stoicjournal.core.domain.util
+ 
+ import com.stoicjournal.core.domain.model.EntryType
+ import com.stoicjournal.core.domain.model.JournalEntry
+ import org.junit.Assert.assertEquals
+ import org.junit.Test
+ import java.time.Instant
+ import java.time.LocalDate
+ import java.time.ZoneId
+ 
+ class StreakCalculatorTest {
