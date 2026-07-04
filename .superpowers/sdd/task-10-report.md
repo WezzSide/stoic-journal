@@ -364,7 +364,7 @@ No Kotlin compilation, kapt, or AAPT2 errors in the affected modules.
 
 ## Commit
 
-- `TBD` fix(journal): add exception handling around draft auto-save and lifecycle unit tests
+- `b4bccbd` fix(journal): add exception handling around draft auto-save and lifecycle unit tests
 
 ## Issues or concerns
 
