@@ -27,7 +27,8 @@ data class ExerciseJournalUiState(
     val exercise: Exercise? = null,
     val reflection: String = "",
     val isSaving: Boolean = false,
-    val saveError: String? = null
+    val saveError: String? = null,
+    val error: String? = null
 )
 
 @HiltViewModel
@@ -53,8 +54,16 @@ class ExerciseJournalViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val exercise = exerciseRepository.getAllExercises().first().find { it.id == exerciseId }
-            _uiState.update { it.copy(exercise = exercise) }
+            if (exerciseId.isBlank()) {
+                _uiState.update { it.copy(error = "Invalid exercise ID") }
+            } else {
+                val exercise = exerciseRepository.getAllExercises().first().find { it.id == exerciseId }
+                if (exercise == null) {
+                    _uiState.update { it.copy(error = "Exercise not found") }
+                } else {
+                    _uiState.update { it.copy(exercise = exercise) }
+                }
+            }
         }
 
         viewModelScope.launch {
@@ -79,6 +88,10 @@ class ExerciseJournalViewModel @Inject constructor(
 
     fun onSaveErrorShown() {
         _uiState.update { it.copy(saveError = null) }
+    }
+
+    fun onErrorShown() {
+        _uiState.update { it.copy(error = null) }
     }
 
     fun discard(onComplete: () -> Unit) {

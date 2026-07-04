@@ -29,14 +29,22 @@ class EntryDetailViewModel @Inject constructor(
     val uiState: StateFlow<EntryDetailUiState> = _uiState
 
     init {
-        viewModelScope.launch {
-            try {
-                val entry = journalRepository.getEntryById(entryId)
-                _uiState.update { it.copy(entry = entry) }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.localizedMessage) }
+        if (entryId.isBlank()) {
+            _uiState.update { it.copy(error = "Invalid entry ID") }
+        } else {
+            viewModelScope.launch {
+                try {
+                    val entry = journalRepository.getEntryById(entryId)
+                    if (entry == null) {
+                        _uiState.update { it.copy(error = "Entry not found") }
+                    } else {
+                        _uiState.update { it.copy(entry = entry) }
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    _uiState.update { it.copy(error = e.localizedMessage) }
+                }
             }
         }
     }

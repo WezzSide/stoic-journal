@@ -32,7 +32,8 @@ data class GuidedJournalUiState(
     val quote: Quote? = null,
     val body: String = "",
     val isSaving: Boolean = false,
-    val saveError: String? = null
+    val saveError: String? = null,
+    val error: String? = null
 )
 
 @HiltViewModel
@@ -59,12 +60,18 @@ class GuidedJournalViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val prompt = promptRepository.getAllPrompts().first().find { it.id == promptId }
-            _uiState.update { it.copy(prompt = prompt) }
-            prompt?.let { p ->
-                getQuoteForPromptUseCase(p).onEach { quote ->
-                    _uiState.update { it.copy(quote = quote) }
-                }.launchIn(viewModelScope)
+            if (promptId.isBlank()) {
+                _uiState.update { it.copy(error = "Invalid prompt ID") }
+            } else {
+                val prompt = promptRepository.getAllPrompts().first().find { it.id == promptId }
+                if (prompt == null) {
+                    _uiState.update { it.copy(error = "Prompt not found") }
+                } else {
+                    _uiState.update { it.copy(prompt = prompt) }
+                    getQuoteForPromptUseCase(prompt).onEach { quote ->
+                        _uiState.update { it.copy(quote = quote) }
+                    }.launchIn(viewModelScope)
+                }
             }
         }
 
@@ -90,6 +97,10 @@ class GuidedJournalViewModel @Inject constructor(
 
     fun onSaveErrorShown() {
         _uiState.update { it.copy(saveError = null) }
+    }
+
+    fun onErrorShown() {
+        _uiState.update { it.copy(error = null) }
     }
 
     fun discard(onComplete: () -> Unit) {

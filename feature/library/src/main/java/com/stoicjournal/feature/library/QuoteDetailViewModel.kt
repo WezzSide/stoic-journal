@@ -12,7 +12,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class QuoteDetailUiState(val quote: Quote? = null)
+data class QuoteDetailUiState(
+    val quote: Quote? = null,
+    val error: String? = null
+)
 
 @HiltViewModel
 class QuoteDetailViewModel @Inject constructor(
@@ -25,9 +28,21 @@ class QuoteDetailViewModel @Inject constructor(
     val uiState: StateFlow<QuoteDetailUiState> = _uiState
 
     init {
-        viewModelScope.launch {
-            val quote = quoteRepository.getQuoteById(quoteId)
-            _uiState.update { it.copy(quote = quote) }
+        if (quoteId.isBlank()) {
+            _uiState.update { it.copy(error = "Invalid quote ID") }
+        } else {
+            viewModelScope.launch {
+                val quote = quoteRepository.getQuoteById(quoteId)
+                if (quote == null) {
+                    _uiState.update { it.copy(error = "Quote not found") }
+                } else {
+                    _uiState.update { it.copy(quote = quote) }
+                }
+            }
         }
+    }
+
+    fun errorShown() {
+        _uiState.update { it.copy(error = null) }
     }
 }
