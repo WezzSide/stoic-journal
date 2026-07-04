@@ -17,17 +17,18 @@ class GetTodayPromptUseCase @Inject constructor(
         promptRepository.getAllPrompts(),
         preferencesRepository.preferences
     ) { prompts, prefs ->
+        val today = LocalDate.now()
         val candidates = if (prefs.stoicismLevel == StoicismLevel.BEGINNER) {
             prompts.filter { it.difficultyLevel == StoicismLevel.BEGINNER }
         } else {
             prompts
         }
-        val selected = candidates.ifEmpty { prompts }.let {
-            it[LocalDate.now().dayOfYear % it.size]
-        }
+        val pool = candidates.ifEmpty { prompts }
+        val selected = pool.firstOrNull()
+            ?: throw IllegalStateException("No prompts available")
         TodayPrompt(
             prompt = selected,
-            date = LocalDate.now()
+            date = today
         )
     }
 }
