@@ -1,6 +1,8 @@
+import com.android.build.api.dsl.LibraryExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalogsExtension
+import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.getByType
 
 class AndroidFeatureConventionPlugin : Plugin<Project> {
@@ -8,11 +10,18 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
         with(pluginManager) {
             apply("stoic.android.library")
             apply("stoic.android.hilt")
+            apply("org.jetbrains.kotlin.plugin.compose")
+        }
+        extensions.configure<LibraryExtension> {
+            buildFeatures {
+                compose = true
+            }
         }
         val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
         project.dependencies.apply {
-            add("implementation", mapOf("path" to ":core:domain"))
-            add("implementation", mapOf("path" to ":core:common"))
+            add("implementation", project(":core:domain"))
+            add("implementation", project(":core:common"))
+            add("implementation", platform(libs.findLibrary("androidx-compose-bom").get()))
             add("implementation", libs.findLibrary("androidx-lifecycle-viewmodel-compose").get())
             add("implementation", libs.findLibrary("androidx-lifecycle-runtime-compose").get())
             add("implementation", libs.findLibrary("androidx-navigation-compose").get())
