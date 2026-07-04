@@ -4,12 +4,15 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.stoicjournal.core.domain.repository.PreferencesRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.flow.first
 
 /**
  * Worker that displays the daily reminder notification and reschedules itself for the next day.
@@ -33,7 +36,8 @@ import dagger.assisted.AssistedInject
 class DailyReminderWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
-    private val reminderScheduler: ReminderScheduler
+    private val reminderScheduler: ReminderScheduler,
+    private val preferencesRepository: PreferencesRepository
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
@@ -61,9 +65,14 @@ class DailyReminderWorker @AssistedInject constructor(
 
         notificationManager.notify(NOTIFICATION_ID, notification)
 
-        val hour = inputData.getInt("hour", DEFAULT_HOUR)
-        val minute = inputData.getInt("minute", DEFAULT_MINUTE)
-        reminderScheduler.schedule(hour, minute)
+        val prefs = preferencesRepository.preferences.first()
+        if (prefs.reminderEnabled) {
+            val hour = inputData.getInt("hour", DEFAULT_HOUR)
+            val minute = inputData.getInt("minute", DEFAULT_MINUTE)
+            reminderScheduler.schedule(hour, minute)
+        } else {
+            Log.d(TAG, "Reminders disabled; skipping next-day reschedule")
+        }
 
         return Result.success()
     }
@@ -75,5 +84,6 @@ class DailyReminderWorker @AssistedInject constructor(
 
         private const val DEFAULT_HOUR = 20
         private const val DEFAULT_MINUTE = 0
+        private const val TAG = "DailyReminderWorker"
     }
 }

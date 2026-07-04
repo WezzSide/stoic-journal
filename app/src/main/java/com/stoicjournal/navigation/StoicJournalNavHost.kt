@@ -1,5 +1,6 @@
 package com.stoicjournal.navigation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -52,7 +53,12 @@ fun StoicJournalNavHost(
             )
         }
         composable(Screen.GuidedJournal.route) { backStackEntry ->
-            val promptId = backStackEntry.arguments?.getString("promptId") ?: return@composable
+            val promptId = backStackEntry.arguments?.getString("promptId")
+            if (promptId == null) {
+                Log.e(TAG, "Missing promptId argument for GuidedJournal")
+                navController.popBackStack()
+                return@composable
+            }
             GuidedJournalScreen(
                 promptId = promptId,
                 onNavigateBack = { navController.popBackStack() }
@@ -64,7 +70,12 @@ fun StoicJournalNavHost(
             )
         }
         composable(Screen.ExerciseJournal.route) { backStackEntry ->
-            val exerciseId = backStackEntry.arguments?.getString("exerciseId") ?: return@composable
+            val exerciseId = backStackEntry.arguments?.getString("exerciseId")
+            if (exerciseId == null) {
+                Log.e(TAG, "Missing exerciseId argument for ExerciseJournal")
+                navController.popBackStack()
+                return@composable
+            }
             ExerciseJournalScreen(
                 exerciseId = exerciseId,
                 onNavigateBack = { navController.popBackStack() }
@@ -79,7 +90,12 @@ fun StoicJournalNavHost(
             )
         }
         composable(Screen.QuoteDetail.route) { backStackEntry ->
-            val quoteId = backStackEntry.arguments?.getString("quoteId") ?: return@composable
+            val quoteId = backStackEntry.arguments?.getString("quoteId")
+            if (quoteId == null) {
+                Log.e(TAG, "Missing quoteId argument for QuoteDetail")
+                navController.popBackStack()
+                return@composable
+            }
             QuoteDetailScreen(
                 quoteId = quoteId,
                 onNavigateBack = { navController.popBackStack() }
@@ -94,7 +110,12 @@ fun StoicJournalNavHost(
             )
         }
         composable(Screen.EntryDetail.route) { backStackEntry ->
-            val entryId = backStackEntry.arguments?.getString("entryId") ?: return@composable
+            val entryId = backStackEntry.arguments?.getString("entryId")
+            if (entryId == null) {
+                Log.e(TAG, "Missing entryId argument for EntryDetail")
+                navController.popBackStack()
+                return@composable
+            }
             EntryDetailScreen(
                 entryId = entryId,
                 onNavigateBack = { navController.popBackStack() }
@@ -107,3 +128,5 @@ fun StoicJournalNavHost(
         }
     }
 }
+
+private const val TAG = "StoicJournalNavHost"

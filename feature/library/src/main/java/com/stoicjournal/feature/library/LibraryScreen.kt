@@ -47,6 +47,7 @@ fun LibraryScreen(
     viewModel: LibraryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val filteredQuotes by viewModel.filteredQuotes.collectAsState()
     val tabs = listOf("Themes", "Philosophers", "Favorites")
     val pagerState = rememberPagerState(pageCount = { tabs.size })
     var selectedTab by rememberSaveable { mutableIntStateOf(pagerState.currentPage) }
@@ -98,7 +99,7 @@ fun LibraryScreen(
                     0 -> ThemesTab(
                         selectedFilter = uiState.selectedFilter,
                         onFilter = viewModel::selectFilter,
-                        quotes = viewModel.filteredQuotes(),
+                        quotes = filteredQuotes,
                         onToggleFavorite = viewModel::toggleFavorite,
                         onQuoteClick = onQuoteClick
                     )
@@ -106,12 +107,12 @@ fun LibraryScreen(
                         philosophers = uiState.philosophers,
                         selectedFilter = uiState.selectedFilter,
                         onFilter = viewModel::selectFilter,
-                        quotes = viewModel.filteredQuotes(),
+                        quotes = filteredQuotes,
                         onToggleFavorite = viewModel::toggleFavorite,
                         onQuoteClick = onQuoteClick
                     )
                     2 -> QuotesList(
-                        quotes = viewModel.filteredQuotes(),
+                        quotes = filteredQuotes,
                         onToggleFavorite = viewModel::toggleFavorite,
                         onQuoteClick = onQuoteClick
                     )
@@ -129,12 +130,12 @@ private fun filterForTab(
     1 -> if (currentFilter is LibraryFilter.ByPhilosopher) {
         currentFilter
     } else {
-        LibraryFilter.ByTheme(Theme.WISDOM)
+        LibraryFilter.All
     }
     else -> if (currentFilter is LibraryFilter.ByTheme) {
         currentFilter
     } else {
-        LibraryFilter.ByTheme(Theme.WISDOM)
+        LibraryFilter.All
     }
 }
 

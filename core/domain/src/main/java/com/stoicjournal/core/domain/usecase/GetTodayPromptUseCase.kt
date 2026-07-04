@@ -25,7 +25,6 @@ class GetTodayPromptUseCase @Inject constructor(
         }
         val pool = candidates.ifEmpty { prompts }
         val selected = pool.firstOrNull()
-            ?: throw IllegalStateException("No prompts available")
         TodayPrompt(
             prompt = selected,
             date = today
@@ -34,6 +33,6 @@ class GetTodayPromptUseCase @Inject constructor(
 }
 
 data class TodayPrompt(
-    val prompt: Prompt,
+    val prompt: Prompt?,
     val date: LocalDate
 )

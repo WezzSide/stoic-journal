@@ -1,5 +1,6 @@
 package com.stoicjournal
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.stoicjournal.core.data.seed.AssetSeedImporter
@@ -25,7 +26,11 @@ class MainViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            assetSeedImporter.seedIfEmpty()
+            try {
+                assetSeedImporter.seedIfEmpty()
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to seed bundled content", e)
+            }
             val prefs = preferencesRepository.preferences.first()
             if (prefs.reminderEnabled) {
                 reminderScheduler.schedule(prefs.reminderHour, prefs.reminderMinute)
@@ -36,5 +41,9 @@ class MainViewModel @Inject constructor(
                 Screen.Onboarding
             }
         }
+    }
+
+    private companion object {
+        const val TAG = "MainViewModel"
     }
 }
