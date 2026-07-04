@@ -3,6 +3,7 @@ package com.stoicjournal.feature.journal.exercise
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.stoicjournal.core.common.di.ApplicationScope
 import com.stoicjournal.core.domain.model.EntryType
 import com.stoicjournal.core.domain.model.Exercise
 import com.stoicjournal.core.domain.model.JournalDraft
@@ -10,16 +11,15 @@ import com.stoicjournal.core.domain.repository.ExerciseRepository
 import com.stoicjournal.core.domain.repository.JournalDraftRepository
 import com.stoicjournal.core.domain.usecase.SaveJournalEntryUseCase
 import com.stoicjournal.core.domain.usecase.createJournalEntry
+import com.stoicjournal.feature.journal.draft.JournalDraftSaver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class ExerciseJournalUiState(
@@ -34,14 +34,21 @@ class ExerciseJournalViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val exerciseRepository: ExerciseRepository,
     private val saveJournalEntryUseCase: SaveJournalEntryUseCase,
-    private val journalDraftRepository: JournalDraftRepository
+    private val journalDraftRepository: JournalDraftRepository,
+    @ApplicationScope private val applicationScope: CoroutineScope
 ) : ViewModel() {
 
     private val exerciseId: String = savedStateHandle["exerciseId"] ?: ""
     private val _uiState = MutableStateFlow(ExerciseJournalUiState())
     val uiState: StateFlow<ExerciseJournalUiState> = _uiState
 
-    private var draftSaveJob: Job? = null
+    private val draftSaver = JournalDraftSaver(
+        viewModelScope = viewModelScope,
+        entryType = EntryType.EXERCISE,
+        key = exerciseId,
+        produceDraft = { JournalDraft(reflection = _uiState.value.reflection) },
+        saveDraft = journalDraftRepository::saveDraft
+    )
 
     init {
         viewModelScope.launch {
@@ -58,7 +65,7 @@ class ExerciseJournalViewModel @Inject constructor(
 
     fun updateReflection(reflection: String) {
         _uiState.update { it.copy(reflection = reflection, saveError = null) }
-        scheduleDraftSave()
+        draftSaver.scheduleSave()
     }
 
     fun onSaveErrorShown() {
@@ -95,32 +102,8 @@ class ExerciseJournalViewModel @Inject constructor(
         }
     }
 
-    private fun scheduleDraftSave() {
-        draftSaveJob?.cancel()
-        draftSaveJob = viewModelScope.launch {
-            delay(DRAFT_SAVE_DEBOUNCE_MS)
-            flushDraft()
-        }
-    }
-
     override fun onCleared() {
-        val pendingSave = draftSaveJob?.isCompleted == false
-        draftSaveJob?.cancel()
-        if (pendingSave) {
-            runBlocking { flushDraft() }
-        }
+        draftSaver.flushOnExit(applicationScope)
         super.onCleared()
-    }
-
-    private suspend fun flushDraft() {
-        journalDraftRepository.saveDraft(
-            EntryType.EXERCISE,
-            exerciseId,
-            JournalDraft(reflection = _uiState.value.reflection)
-        )
-    }
-
-    companion object {
-        private const val DRAFT_SAVE_DEBOUNCE_MS = 300L
     }
 }

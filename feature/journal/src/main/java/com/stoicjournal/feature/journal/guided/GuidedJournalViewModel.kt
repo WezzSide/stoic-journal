@@ -3,6 +3,7 @@ package com.stoicjournal.feature.journal.guided
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.stoicjournal.core.common.di.ApplicationScope
 import com.stoicjournal.core.domain.model.EntryType
 import com.stoicjournal.core.domain.model.JournalDraft
 import com.stoicjournal.core.domain.model.Prompt
@@ -12,10 +13,10 @@ import com.stoicjournal.core.domain.repository.PromptRepository
 import com.stoicjournal.core.domain.usecase.GetQuoteForPromptUseCase
 import com.stoicjournal.core.domain.usecase.SaveJournalEntryUseCase
 import com.stoicjournal.core.domain.usecase.createJournalEntry
+import com.stoicjournal.feature.journal.draft.JournalDraftSaver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -23,7 +24,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class GuidedJournalUiState(
@@ -40,14 +40,21 @@ class GuidedJournalViewModel @Inject constructor(
     promptRepository: PromptRepository,
     private val getQuoteForPromptUseCase: GetQuoteForPromptUseCase,
     private val saveJournalEntryUseCase: SaveJournalEntryUseCase,
-    private val journalDraftRepository: JournalDraftRepository
+    private val journalDraftRepository: JournalDraftRepository,
+    @ApplicationScope private val applicationScope: CoroutineScope
 ) : ViewModel() {
 
     private val promptId: String = savedStateHandle["promptId"] ?: ""
     private val _uiState = MutableStateFlow(GuidedJournalUiState())
     val uiState: StateFlow<GuidedJournalUiState> = _uiState
 
-    private var draftSaveJob: Job? = null
+    private val draftSaver = JournalDraftSaver(
+        viewModelScope = viewModelScope,
+        entryType = EntryType.GUIDED,
+        key = promptId,
+        produceDraft = { JournalDraft(body = _uiState.value.body) },
+        saveDraft = journalDraftRepository::saveDraft
+    )
 
     init {
         viewModelScope.launch {
@@ -69,7 +76,7 @@ class GuidedJournalViewModel @Inject constructor(
 
     fun updateBody(body: String) {
         _uiState.update { it.copy(body = body, saveError = null) }
-        scheduleDraftSave()
+        draftSaver.scheduleSave()
     }
 
     fun onSaveErrorShown() {
@@ -107,32 +114,8 @@ class GuidedJournalViewModel @Inject constructor(
         }
     }
 
-    private fun scheduleDraftSave() {
-        draftSaveJob?.cancel()
-        draftSaveJob = viewModelScope.launch {
-            delay(DRAFT_SAVE_DEBOUNCE_MS)
-            flushDraft()
-        }
-    }
-
     override fun onCleared() {
-        val pendingSave = draftSaveJob?.isCompleted == false
-        draftSaveJob?.cancel()
-        if (pendingSave) {
-            runBlocking { flushDraft() }
-        }
+        draftSaver.flushOnExit(applicationScope)
         super.onCleared()
-    }
-
-    private suspend fun flushDraft() {
-        journalDraftRepository.saveDraft(
-            EntryType.GUIDED,
-            promptId,
-            JournalDraft(body = _uiState.value.body)
-        )
-    }
-
-    companion object {
-        private const val DRAFT_SAVE_DEBOUNCE_MS = 300L
     }
 }

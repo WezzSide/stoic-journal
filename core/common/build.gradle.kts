@@ -1,5 +1,6 @@
 plugins {
     id("stoic.android.library")
+    id("stoic.android.hilt")
 }
 
 android {

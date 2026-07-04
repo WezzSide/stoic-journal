@@ -2,6 +2,7 @@ package com.stoicjournal.feature.journal.freeform
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.stoicjournal.core.common.di.ApplicationScope
 import com.stoicjournal.core.domain.model.EntryType
 import com.stoicjournal.core.domain.model.JournalDraft
 import com.stoicjournal.core.domain.model.Quote
@@ -9,10 +10,10 @@ import com.stoicjournal.core.domain.repository.JournalDraftRepository
 import com.stoicjournal.core.domain.repository.QuoteRepository
 import com.stoicjournal.core.domain.usecase.SaveJournalEntryUseCase
 import com.stoicjournal.core.domain.usecase.createJournalEntry
+import com.stoicjournal.feature.journal.draft.JournalDraftSaver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -20,7 +21,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 data class FreeFormJournalUiState(
@@ -36,32 +36,48 @@ data class FreeFormJournalUiState(
 class FreeFormJournalViewModel @Inject constructor(
     quoteRepository: QuoteRepository,
     private val saveJournalEntryUseCase: SaveJournalEntryUseCase,
-    private val journalDraftRepository: JournalDraftRepository
+    private val journalDraftRepository: JournalDraftRepository,
+    @ApplicationScope private val applicationScope: CoroutineScope
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FreeFormJournalUiState())
     val uiState: StateFlow<FreeFormJournalUiState> = _uiState
 
-    private var draftSaveJob: Job? = null
     private var draftQuoteIdToRestore: String? = null
     private var quoteExplicitlySet: Boolean = false
 
-    init {
-        quoteRepository.getAllQuotes().onEach { quotes ->
-            _uiState.update { it.copy(quotes = quotes) }
-            restoreDraftQuoteIfNeeded(quotes)
-        }.launchIn(viewModelScope)
+    private val draftSaver = JournalDraftSaver(
+        viewModelScope = viewModelScope,
+        entryType = EntryType.FREE_FORM,
+        key = FREE_FORM_DRAFT_KEY,
+        produceDraft = {
+            val state = _uiState.value
+            JournalDraft(
+                title = state.title,
+                body = state.body,
+                quoteId = state.attachedQuote?.id
+            )
+        },
+        saveDraft = journalDraftRepository::saveDraft
+    )
 
+    init {
         viewModelScope.launch {
-            journalDraftRepository.getDraft(EntryType.FREE_FORM, FREE_FORM_DRAFT_KEY).first()?.let { draft ->
-                draftQuoteIdToRestore = draft.quoteId
+            val draft = journalDraftRepository.getDraft(EntryType.FREE_FORM, FREE_FORM_DRAFT_KEY).first()
+            draft?.let {
+                draftQuoteIdToRestore = it.quoteId
                 _uiState.update { state ->
                     state.copy(
-                        title = draft.title,
-                        body = draft.body
+                        title = it.title,
+                        body = it.body
                     )
                 }
             }
+
+            quoteRepository.getAllQuotes().onEach { quotes ->
+                _uiState.update { it.copy(quotes = quotes) }
+                restoreDraftQuoteIfNeeded(quotes)
+            }.launchIn(viewModelScope)
         }
     }
 
@@ -77,12 +93,12 @@ class FreeFormJournalViewModel @Inject constructor(
 
     fun updateTitle(title: String) {
         _uiState.update { it.copy(title = title, saveError = null) }
-        scheduleDraftSave()
+        draftSaver.scheduleSave()
     }
 
     fun updateBody(body: String) {
         _uiState.update { it.copy(body = body, saveError = null) }
-        scheduleDraftSave()
+        draftSaver.scheduleSave()
     }
 
     fun attachRandomQuote() {
@@ -90,14 +106,14 @@ class FreeFormJournalViewModel @Inject constructor(
         if (quotes.isNotEmpty()) {
             quoteExplicitlySet = true
             _uiState.update { it.copy(attachedQuote = quotes.random(), saveError = null) }
-            scheduleDraftSave()
+            draftSaver.scheduleSave()
         }
     }
 
     fun removeQuote() {
         quoteExplicitlySet = true
         _uiState.update { it.copy(attachedQuote = null, saveError = null) }
-        scheduleDraftSave()
+        draftSaver.scheduleSave()
     }
 
     fun onSaveErrorShown() {
@@ -135,38 +151,12 @@ class FreeFormJournalViewModel @Inject constructor(
         }
     }
 
-    private fun scheduleDraftSave() {
-        draftSaveJob?.cancel()
-        draftSaveJob = viewModelScope.launch {
-            delay(DRAFT_SAVE_DEBOUNCE_MS)
-            flushDraft()
-        }
-    }
-
     override fun onCleared() {
-        val pendingSave = draftSaveJob?.isCompleted == false
-        draftSaveJob?.cancel()
-        if (pendingSave) {
-            runBlocking { flushDraft() }
-        }
+        draftSaver.flushOnExit(applicationScope)
         super.onCleared()
     }
 
-    private suspend fun flushDraft() {
-        val state = _uiState.value
-        journalDraftRepository.saveDraft(
-            EntryType.FREE_FORM,
-            FREE_FORM_DRAFT_KEY,
-            JournalDraft(
-                title = state.title,
-                body = state.body,
-                quoteId = state.attachedQuote?.id
-            )
-        )
-    }
-
     companion object {
-        private const val DRAFT_SAVE_DEBOUNCE_MS = 300L
         private const val FREE_FORM_DRAFT_KEY = "freeform"
     }
 }
