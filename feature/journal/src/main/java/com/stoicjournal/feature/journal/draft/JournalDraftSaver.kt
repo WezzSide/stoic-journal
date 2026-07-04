@@ -1,7 +1,9 @@
 package com.stoicjournal.feature.journal.draft
 
+import android.util.Log
 import com.stoicjournal.core.domain.model.EntryType
 import com.stoicjournal.core.domain.model.JournalDraft
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -29,7 +31,13 @@ class JournalDraftSaver(
         saveJob?.cancel()
         saveJob = viewModelScope.launch {
             delay(DEBOUNCE_MS)
-            saveDraft(entryType, key, produceDraft())
+            try {
+                saveDraft(entryType, key, produceDraft())
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to auto-save journal draft", e)
+            }
         }
     }
 
@@ -49,12 +57,19 @@ class JournalDraftSaver(
         saveJob?.cancel()
         if (pendingSave) {
             scope.launch {
-                saveDraft(entryType, key, produceDraft())
+                try {
+                    saveDraft(entryType, key, produceDraft())
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to auto-save journal draft", e)
+                }
             }
         }
     }
 
     companion object {
+        private const val TAG = "JournalDraftSaver"
         private const val DEBOUNCE_MS = 300L
     }
 }

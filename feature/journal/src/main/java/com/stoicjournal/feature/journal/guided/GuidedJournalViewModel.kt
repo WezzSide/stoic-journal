@@ -1,5 +1,6 @@
 package com.stoicjournal.feature.journal.guided
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -68,7 +69,15 @@ class GuidedJournalViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            journalDraftRepository.getDraft(EntryType.GUIDED, promptId).first()?.let { draft ->
+            val draft = try {
+                journalDraftRepository.getDraft(EntryType.GUIDED, promptId).first()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to read journal draft", e)
+                null
+            }
+            draft?.let {
                 _uiState.update { it.copy(body = draft.body) }
             }
         }
@@ -85,7 +94,13 @@ class GuidedJournalViewModel @Inject constructor(
 
     fun discard(onComplete: () -> Unit) {
         viewModelScope.launch {
-            journalDraftRepository.clearDraft(EntryType.GUIDED, promptId)
+            try {
+                journalDraftRepository.clearDraft(EntryType.GUIDED, promptId)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to clear journal draft", e)
+            }
             draftSaver.disableAutoSave()
             onComplete()
         }
@@ -103,7 +118,14 @@ class GuidedJournalViewModel @Inject constructor(
                     quoteId = state.quote?.id
                 )
                 saveJournalEntryUseCase(entry)
-                journalDraftRepository.clearDraft(EntryType.GUIDED, promptId)
+                try {
+                    journalDraftRepository.clearDraft(EntryType.GUIDED, promptId)
+                } catch (e: CancellationException) {
+                    _uiState.update { it.copy(isSaving = false) }
+                    throw e
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to clear journal draft", e)
+                }
                 draftSaver.disableAutoSave()
                 _uiState.update { it.copy(isSaving = false) }
                 onComplete()
@@ -119,5 +141,9 @@ class GuidedJournalViewModel @Inject constructor(
     override fun onCleared() {
         draftSaver.flushOnExit(applicationScope)
         super.onCleared()
+    }
+
+    companion object {
+        private const val TAG = "GuidedJournalViewModel"
     }
 }

@@ -243,3 +243,129 @@ No Kotlin compilation, kapt, or AAPT2 errors in the affected modules.
 ## Issues or concerns
 
 - None. All three Important reviewer findings are addressed and the affected modules build cleanly.
+
+---
+
+# Task 10 Third Fix Report
+
+## What was changed
+
+### 1. Lifecycle guard in `JournalDraftSaver`
+
+- Added a private `autoSaveDisabled` flag to `JournalDraftSaver`.
+- Added `disableAutoSave()` which:
+  - Sets `autoSaveDisabled = true`.
+  - Cancels any in-flight `saveJob`.
+  - Clears the job reference.
+- `scheduleSave()` now returns early when disabled, preventing any new debounced saves.
+- `flushOnExit()` now returns early when disabled, so the pending-job check and exit flush are skipped entirely.
+- Updated the class docstring to remove the stale "synchronous-on-exit flush" wording.
+
+### 2. Disable auto-save after successful draft cleanup
+
+- In `FreeFormJournalViewModel`, `GuidedJournalViewModel`, and `ExerciseJournalViewModel`:
+  - `discard()` now calls `draftSaver.disableAutoSave()` after `journalDraftRepository.clearDraft(...)` succeeds and before invoking the navigation callback.
+  - `save()` now calls `draftSaver.disableAutoSave()` after clearing the draft and before invoking the navigation callback.
+- This prevents `onCleared()` from re-launching an exit flush that could overwrite the just-cleared draft.
+
+## Files modified
+
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/draft/JournalDraftSaver.kt`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/freeform/FreeFormJournalViewModel.kt`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/guided/GuidedJournalViewModel.kt`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/exercise/ExerciseJournalViewModel.kt`
+
+## Files created
+
+- None.
+
+## Test results
+
+Ran the requested build:
+
+```bash
+./gradlew :feature:journal:assembleDebug :core:data:assembleDebug :core:domain:assembleDebug :core:common:assembleDebug --no-daemon
+```
+
+Result: `BUILD SUCCESSFUL in 1m 5s` (116 actionable tasks: 9 executed, 107 up-to-date).
+
+No Kotlin compilation, kapt, or AAPT2 errors in the affected modules.
+
+## Commit
+
+- `37fcad6` fix(journal): disable auto-save after draft cleanup to prevent stale drafts
+
+## Issues or concerns
+
+- None. The remaining Important reviewer finding is addressed and the affected modules build cleanly.
+
+---
+
+# Task 10 Fourth Fix Report
+
+## What was changed
+
+### 1. Exception handling in `JournalDraftSaver`
+
+- Wrapped the `saveDraft(entryType, key, produceDraft())` calls inside `scheduleSave()` and `flushOnExit()` with `try/catch`.
+- `CancellationException` is caught explicitly and re-thrown so coroutine cancellation remains correct.
+- Any other `Exception` is logged with `android.util.Log.e(TAG, "Failed to auto-save journal draft", e)` and swallowed so auto-save never crashes the app.
+
+### 2. Exception handling around draft reads and clears in the ViewModels
+
+- In `FreeFormJournalViewModel`, `GuidedJournalViewModel`, and `ExerciseJournalViewModel`:
+  - `journalDraftRepository.getDraft(...).first()` is now wrapped in `try/catch`. If reading fails, the screen behaves as if no draft exists.
+  - `journalDraftRepository.clearDraft(...)` calls inside `discard()` and `save()` are now wrapped in `try/catch`. If clearing fails, `draftSaver.disableAutoSave()` is still called and navigation still proceeds so the user is not trapped.
+  - `CancellationException` is re-thrown where appropriate; other failures are logged with `android.util.Log.e` and do not block user flow.
+
+### 3. Focused unit tests for the draft lifecycle behavior
+
+- Created `feature/journal/src/test/java/com/stoicjournal/feature/journal/draft/JournalDraftSaverTest.kt`.
+- Added a lightweight in-memory `FakeJournalDraftRepository` for the tests.
+- Tests cover:
+  - `scheduleSave` debounces multiple rapid changes and saves only the last draft.
+  - `flushOnExit` saves the current draft when a pending save exists.
+  - `disableAutoSave` prevents `flushOnExit` from saving after discard/save.
+  - Exceptions from `saveDraft` are swallowed so auto-save does not crash.
+- Added `kotlinx-coroutines-test` and `junit` test dependencies to `:feature:journal`, and added the `kotlinxCoroutines` version plus `kotlinx-coroutines-test` library declaration to `gradle/libs.versions.toml`.
+- Enabled `testOptions.unitTests.isReturnDefaultValues = true` in `feature/journal/build.gradle.kts` so `android.util.Log` calls in unit tests do not throw "not mocked" errors.
+
+## Files modified
+
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/draft/JournalDraftSaver.kt`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/freeform/FreeFormJournalViewModel.kt`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/guided/GuidedJournalViewModel.kt`
+- `feature/journal/src/main/java/com/stoicjournal/feature/journal/exercise/ExerciseJournalViewModel.kt`
+- `feature/journal/build.gradle.kts`
+- `gradle/libs.versions.toml`
+- `.superpowers/sdd/task-10-report.md`
+
+## Files created
+
+- `feature/journal/src/test/java/com/stoicjournal/feature/journal/draft/JournalDraftSaverTest.kt`
+
+## Test results
+
+Ran the requested builds and tests:
+
+```bash
+./gradlew :feature:journal:assembleDebug :core:data:assembleDebug :core:domain:assembleDebug :core:common:assembleDebug --no-daemon
+```
+
+Result: `BUILD SUCCESSFUL in 2m 32s` (116 actionable tasks: 113 executed, 3 up-to-date).
+
+```bash
+./gradlew :feature:journal:testDebugUnitTest --no-daemon
+```
+
+Result: `BUILD SUCCESSFUL in 1m 4s` — 5 JournalDraftSaver unit tests passed.
+
+No Kotlin compilation, kapt, or AAPT2 errors in the affected modules.
+
+## Commit
+
+- `TBD` fix(journal): add exception handling around draft auto-save and lifecycle unit tests
+
+## Issues or concerns
+
+- None. All Important reviewer findings are addressed, builds are clean, and the new unit tests pass.

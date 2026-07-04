@@ -1,5 +1,6 @@
 package com.stoicjournal.feature.journal.freeform
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.stoicjournal.core.common.di.ApplicationScope
@@ -63,7 +64,14 @@ class FreeFormJournalViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val draft = journalDraftRepository.getDraft(EntryType.FREE_FORM, FREE_FORM_DRAFT_KEY).first()
+            val draft = try {
+                journalDraftRepository.getDraft(EntryType.FREE_FORM, FREE_FORM_DRAFT_KEY).first()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to read journal draft", e)
+                null
+            }
             draft?.let {
                 draftQuoteIdToRestore = it.quoteId
                 _uiState.update { state ->
@@ -122,7 +130,13 @@ class FreeFormJournalViewModel @Inject constructor(
 
     fun discard(onComplete: () -> Unit) {
         viewModelScope.launch {
-            journalDraftRepository.clearDraft(EntryType.FREE_FORM, FREE_FORM_DRAFT_KEY)
+            try {
+                journalDraftRepository.clearDraft(EntryType.FREE_FORM, FREE_FORM_DRAFT_KEY)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to clear journal draft", e)
+            }
             draftSaver.disableAutoSave()
             onComplete()
         }
@@ -140,7 +154,14 @@ class FreeFormJournalViewModel @Inject constructor(
                     quoteId = state.attachedQuote?.id
                 )
                 saveJournalEntryUseCase(entry)
-                journalDraftRepository.clearDraft(EntryType.FREE_FORM, FREE_FORM_DRAFT_KEY)
+                try {
+                    journalDraftRepository.clearDraft(EntryType.FREE_FORM, FREE_FORM_DRAFT_KEY)
+                } catch (e: CancellationException) {
+                    _uiState.update { it.copy(isSaving = false) }
+                    throw e
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to clear journal draft", e)
+                }
                 draftSaver.disableAutoSave()
                 _uiState.update { it.copy(isSaving = false) }
                 onComplete()
@@ -159,6 +180,7 @@ class FreeFormJournalViewModel @Inject constructor(
     }
 
     companion object {
+        private const val TAG = "FreeFormJournalViewModel"
         private const val FREE_FORM_DRAFT_KEY = "freeform"
     }
 }
