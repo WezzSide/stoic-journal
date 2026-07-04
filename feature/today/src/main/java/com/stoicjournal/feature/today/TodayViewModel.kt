@@ -7,6 +7,7 @@ import com.stoicjournal.core.domain.usecase.GetQuoteForPromptUseCase
 import com.stoicjournal.core.domain.usecase.GetStreakUseCase
 import com.stoicjournal.core.domain.usecase.GetTodayPromptUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class TodayViewModel @Inject constructor(
     getTodayPromptUseCase: GetTodayPromptUseCase,
