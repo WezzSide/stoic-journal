@@ -49,8 +49,8 @@ fun LibraryScreen(
     val uiState by viewModel.uiState.collectAsState()
     val filteredQuotes by viewModel.filteredQuotes.collectAsState()
     val tabs = listOf("Themes", "Philosophers", "Favorites")
-    val pagerState = rememberPagerState(pageCount = { tabs.size })
-    var selectedTab by rememberSaveable { mutableIntStateOf(pagerState.currentPage) }
+    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+    val pagerState = rememberPagerState(initialPage = selectedTab, pageCount = { tabs.size })
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(pagerState) {
