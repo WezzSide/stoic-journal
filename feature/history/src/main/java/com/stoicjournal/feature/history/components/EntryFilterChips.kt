@@ -3,6 +3,7 @@ package com.stoicjournal.feature.history.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
@@ -26,13 +27,15 @@ fun EntryFilterChips(
         FilterChip(
             selected = selectedFilter == null,
             onClick = { onSelect(null) },
-            label = { Text("All") }
+            label = { Text("All") },
+            modifier = Modifier.heightIn(min = 48.dp)
         )
         EntryType.entries.forEach { type ->
             FilterChip(
                 selected = selectedFilter == type,
                 onClick = { onSelect(type) },
-                label = { Text(type.name.replace("_", " ").lowercase().replaceFirstChar { it.uppercase() }) }
+                label = { Text(type.name.replace("_", " ").lowercase().replaceFirstChar { it.uppercase() }) },
+                modifier = Modifier.heightIn(min = 48.dp)
             )
         }
     }
