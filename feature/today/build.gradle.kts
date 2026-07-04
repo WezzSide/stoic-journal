@@ -5,3 +5,7 @@ plugins {
 android {
     namespace = "com.stoicjournal.feature.today"
 }
+
+dependencies {
+    implementation(libs.androidx.material.icons.extended)
+}
