@@ -53,23 +53,21 @@ class TodayViewModel @Inject constructor(
         }
 
         val quoteFlow = contentFlow
-            .flatMapLatest { content ->
-                val quoteFlow = content.prompt?.let { prompt ->
-                    getQuoteForPromptUseCase(prompt)
-                } ?: flowOf(null)
-                quoteFlow
-                    .map { quote -> content.copy(quote = quote) }
-                    .onStart { emit(content) }
+            .map { it.prompt }
+            .distinctUntilChanged()
+            .flatMapLatest { prompt ->
+                (prompt?.let { getQuoteForPromptUseCase(it) } ?: flowOf(null))
+                    .onStart { emit(null) }
             }
 
         val permissionFlow = preferencesRepository.preferences
             .map { it.hasRequestedNotificationPermission to it.reminderEnabled }
             .distinctUntilChanged()
 
-        combine(quoteFlow, permissionFlow) { content, (hasRequested, reminderEnabled) ->
+        combine(contentFlow, quoteFlow, permissionFlow) { content, quote, (hasRequested, reminderEnabled) ->
             TodayUiState(
                 prompt = content.prompt,
-                quote = content.quote,
+                quote = quote,
                 streak = content.streak,
                 exercises = content.exercises,
                 hasRequestedNotificationPermission = hasRequested,
