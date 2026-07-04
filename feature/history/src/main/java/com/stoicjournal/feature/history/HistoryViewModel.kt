@@ -36,7 +36,10 @@ class HistoryViewModel @Inject constructor(
             .flatMapLatest { filter ->
                 getJournalEntriesUseCase(filter)
                     .map { Result.success(it) }
-                    .catch { e -> emit(Result.failure(e)) }
+                    .catch { e ->
+                        if (e is CancellationException) throw e
+                        emit(Result.failure(e))
+                    }
             }
             .onEach { result ->
                 _uiState.update { state ->

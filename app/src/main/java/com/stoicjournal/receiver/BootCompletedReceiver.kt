@@ -8,6 +8,7 @@ import com.stoicjournal.core.common.di.ApplicationScope
 import com.stoicjournal.core.domain.repository.PreferencesRepository
 import com.stoicjournal.core.notifications.ReminderScheduler
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -40,6 +41,8 @@ class BootCompletedReceiver : BroadcastReceiver() {
                 } else {
                     Log.d(TAG, "Reminders disabled; not rescheduling after boot")
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to reschedule reminder after boot", e)
             } finally {

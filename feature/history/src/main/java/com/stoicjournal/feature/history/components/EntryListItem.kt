@@ -29,7 +29,7 @@ fun EntryListItem(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = entry.title ?: entry.type.name.lowercase().replaceFirstChar { it.uppercase() },
+                text = entry.title ?: entry.type.name.replace("_", " ").lowercase().replaceFirstChar { it.uppercase() },
                 style = MaterialTheme.typography.titleMedium
             )
             Text(
