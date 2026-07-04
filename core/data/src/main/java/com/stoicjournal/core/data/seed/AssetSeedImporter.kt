@@ -5,6 +5,7 @@ import com.stoicjournal.core.data.dao.ExerciseDao
 import com.stoicjournal.core.data.dao.PhilosopherDao
 import com.stoicjournal.core.data.dao.PromptDao
 import com.stoicjournal.core.data.dao.QuoteDao
+import com.stoicjournal.core.data.database.StoicJournalDatabase
 import com.stoicjournal.core.data.entity.ExerciseEntity
 import com.stoicjournal.core.data.entity.PhilosopherEntity
 import com.stoicjournal.core.data.entity.PromptEntity
@@ -23,6 +24,7 @@ import javax.inject.Inject
 
 class AssetSeedImporter @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val database: StoicJournalDatabase,
     private val quoteDao: QuoteDao,
     private val promptDao: PromptDao,
     private val exerciseDao: ExerciseDao,
@@ -33,21 +35,23 @@ class AssetSeedImporter @Inject constructor(
         if (quoteDao.getAll().first().isNotEmpty()) return@withContext
         val json = Json { ignoreUnknownKeys = true }
 
-        context.assets.open("quotes.json").use { stream ->
-            val dtos: List<QuoteDto> = json.decodeFromStream(stream)
-            quoteDao.insertAll(dtos.map { it.toEntity() })
-        }
-        context.assets.open("prompts.json").use { stream ->
-            val dtos: List<PromptDto> = json.decodeFromStream(stream)
-            promptDao.insertAll(dtos.map { it.toEntity() })
-        }
-        context.assets.open("exercises.json").use { stream ->
-            val dtos: List<ExerciseDto> = json.decodeFromStream(stream)
-            exerciseDao.insertAll(dtos.map { it.toEntity() })
-        }
-        context.assets.open("philosophers.json").use { stream ->
-            val dtos: List<PhilosopherDto> = json.decodeFromStream(stream)
-            philosopherDao.insertAll(dtos.map { it.toEntity() })
+        database.runInTransaction {
+            context.assets.open("quotes.json").use { stream ->
+                val dtos: List<QuoteDto> = json.decodeFromStream(stream)
+                quoteDao.insertAll(dtos.map { it.toEntity() })
+            }
+            context.assets.open("prompts.json").use { stream ->
+                val dtos: List<PromptDto> = json.decodeFromStream(stream)
+                promptDao.insertAll(dtos.map { it.toEntity() })
+            }
+            context.assets.open("exercises.json").use { stream ->
+                val dtos: List<ExerciseDto> = json.decodeFromStream(stream)
+                exerciseDao.insertAll(dtos.map { it.toEntity() })
+            }
+            context.assets.open("philosophers.json").use { stream ->
+                val dtos: List<PhilosopherDto> = json.decodeFromStream(stream)
+                philosopherDao.insertAll(dtos.map { it.toEntity() })
+            }
         }
     }
 }
