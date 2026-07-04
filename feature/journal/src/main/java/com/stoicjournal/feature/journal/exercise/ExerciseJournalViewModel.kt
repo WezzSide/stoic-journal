@@ -57,7 +57,7 @@ class ExerciseJournalViewModel @Inject constructor(
             if (exerciseId.isBlank()) {
                 _uiState.update { it.copy(error = "Invalid exercise ID") }
             } else {
-                val exercise = exerciseRepository.getAllExercises().first().find { it.id == exerciseId }
+                val exercise = exerciseRepository.getExerciseById(exerciseId)
                 if (exercise == null) {
                     _uiState.update { it.copy(error = "Exercise not found") }
                 } else {

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.stoicjournal.core.domain.model.Quote
 import com.stoicjournal.core.domain.repository.QuoteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -32,11 +33,17 @@ class QuoteDetailViewModel @Inject constructor(
             _uiState.update { it.copy(error = "Invalid quote ID") }
         } else {
             viewModelScope.launch {
-                val quote = quoteRepository.getQuoteById(quoteId)
-                if (quote == null) {
-                    _uiState.update { it.copy(error = "Quote not found") }
-                } else {
-                    _uiState.update { it.copy(quote = quote) }
+                try {
+                    val quote = quoteRepository.getQuoteById(quoteId)
+                    if (quote == null) {
+                        _uiState.update { it.copy(error = "Quote not found") }
+                    } else {
+                        _uiState.update { it.copy(quote = quote) }
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    _uiState.update { it.copy(error = e.message ?: "Failed to load quote") }
                 }
             }
         }
