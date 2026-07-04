@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.stoicjournal.core.domain.model.EntryType
+import java.util.Locale
 
 @Composable
 fun EntryFilterChips(
@@ -34,7 +35,7 @@ fun EntryFilterChips(
             FilterChip(
                 selected = selectedFilter == type,
                 onClick = { onSelect(type) },
-                label = { Text(type.name.replace("_", " ").lowercase().replaceFirstChar { it.uppercase() }) },
+                label = { Text(type.name.replace("_", " ").lowercase(Locale.ROOT).replaceFirstChar { it.uppercase(Locale.ROOT) }) },
                 modifier = Modifier.heightIn(min = 48.dp)
             )
         }

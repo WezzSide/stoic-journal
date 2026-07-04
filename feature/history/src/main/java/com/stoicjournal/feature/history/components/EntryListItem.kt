@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.stoicjournal.core.domain.model.JournalEntry
 import java.time.format.DateTimeFormatter
 import java.time.ZoneId
+import java.util.Locale
 
 @Composable
 fun EntryListItem(
@@ -29,7 +30,7 @@ fun EntryListItem(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = entry.title ?: entry.type.name.replace("_", " ").lowercase().replaceFirstChar { it.uppercase() },
+                text = entry.title ?: entry.type.name.replace("_", " ").lowercase(Locale.ROOT).replaceFirstChar { it.uppercase(Locale.ROOT) },
                 style = MaterialTheme.typography.titleMedium
             )
             Text(

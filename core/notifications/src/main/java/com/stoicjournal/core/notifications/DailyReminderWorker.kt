@@ -53,16 +53,14 @@ class DailyReminderWorker @AssistedInject constructor(
         val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE)
             as NotificationManager
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                applicationContext.getString(R.string.reminder_channel_name),
-                NotificationManager.IMPORTANCE_DEFAULT
-            ).apply {
-                description = applicationContext.getString(R.string.reminder_channel_description)
-            }
-            notificationManager.createNotificationChannel(channel)
+        val channel = NotificationChannel(
+            CHANNEL_ID,
+            applicationContext.getString(R.string.reminder_channel_name),
+            NotificationManager.IMPORTANCE_DEFAULT
+        ).apply {
+            description = applicationContext.getString(R.string.reminder_channel_description)
         }
+        notificationManager.createNotificationChannel(channel)
 
         val notification = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)

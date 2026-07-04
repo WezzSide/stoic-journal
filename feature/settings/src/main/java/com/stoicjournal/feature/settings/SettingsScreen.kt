@@ -16,8 +16,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +43,7 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.stoicjournal.feature.settings.components.ReminderTimePicker
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -100,7 +101,7 @@ fun SettingsScreen(
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Daily reminder", style = MaterialTheme.typography.titleMedium)
                     Text(
-                        text = String.format("%02d:%02d", uiState.reminderHour, uiState.reminderMinute),
+                        text = String.format(Locale.getDefault(), "%02d:%02d", uiState.reminderHour, uiState.reminderMinute),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -145,7 +146,7 @@ fun SettingsScreen(
                     )
                 }
             }
-            Divider()
+            HorizontalDivider()
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -160,7 +161,7 @@ fun SettingsScreen(
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }
-            Divider()
+            HorizontalDivider()
             Text(
                 text = "Stoic Journal v1.0",
                 style = MaterialTheme.typography.bodyMedium,

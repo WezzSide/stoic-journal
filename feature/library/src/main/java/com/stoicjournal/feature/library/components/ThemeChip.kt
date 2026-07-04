@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.stoicjournal.core.domain.model.Theme
+import java.util.Locale
 
 @Composable
 fun ThemeChip(
@@ -18,7 +19,7 @@ fun ThemeChip(
     FilterChip(
         selected = selected,
         onClick = onClick,
-        label = { Text(theme.name.lowercase().replaceFirstChar { it.uppercase() }) },
+        label = { Text(theme.name.lowercase(Locale.ROOT).replaceFirstChar { it.uppercase(Locale.ROOT) }) },
         modifier = modifier.heightIn(min = 48.dp)
     )
 }
