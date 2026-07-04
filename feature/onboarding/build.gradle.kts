@@ -5,3 +5,7 @@ plugins {
 android {
     namespace = "com.stoicjournal.feature.onboarding"
 }
+
+dependencies {
+    implementation(project(":core:notifications"))
+}
