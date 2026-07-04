@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.stoicjournal.core.domain.model.JournalEntry
 import com.stoicjournal.core.domain.repository.JournalRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -32,6 +33,8 @@ class EntryDetailViewModel @Inject constructor(
             try {
                 val entry = journalRepository.getEntryById(entryId)
                 _uiState.update { it.copy(entry = entry) }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.localizedMessage) }
             }
