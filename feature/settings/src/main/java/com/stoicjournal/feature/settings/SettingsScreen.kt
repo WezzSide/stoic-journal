@@ -1,5 +1,9 @@
 package com.stoicjournal.feature.settings
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,6 +43,12 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showTimePicker by remember { mutableStateOf(false) }
 
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { _ ->
+        // Permission result does not block the toggle; the system suppresses notifications if denied.
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -73,7 +83,12 @@ fun SettingsScreen(
                 }
                 Switch(
                     checked = uiState.reminderEnabled,
-                    onCheckedChange = viewModel::setReminderEnabled
+                    onCheckedChange = { enabled ->
+                        viewModel.setReminderEnabled(enabled)
+                        if (enabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                    }
                 )
             }
             if (uiState.reminderEnabled) {

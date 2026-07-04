@@ -3,6 +3,7 @@ package com.stoicjournal.feature.today.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -20,10 +21,16 @@ fun QuickActionsRow(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        OutlinedButton(onClick = onFreeForm, modifier = Modifier.weight(1f)) {
+        OutlinedButton(
+            onClick = onFreeForm,
+            modifier = Modifier.weight(1f).heightIn(min = 48.dp)
+        ) {
             Text("Free-form")
         }
-        Button(onClick = onExercise, modifier = Modifier.weight(1f)) {
+        Button(
+            onClick = onExercise,
+            modifier = Modifier.weight(1f).heightIn(min = 48.dp)
+        ) {
             Text("Exercise")
         }
     }

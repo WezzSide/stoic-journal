@@ -22,7 +22,7 @@ class TodayScreenTest {
         val prompt = Prompt(
             id = "prompt-1",
             text = "What is in your control today?",
-            theme = Theme.DISCIPLINE,
+            theme = Theme.CONTROL,
             difficultyLevel = StoicismLevel.BEGINNER
         )
         val quote = Quote(

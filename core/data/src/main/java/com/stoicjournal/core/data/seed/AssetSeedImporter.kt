@@ -13,6 +13,7 @@ import com.stoicjournal.core.data.entity.QuoteEntity
 import com.stoicjournal.core.domain.model.StoicismLevel
 import com.stoicjournal.core.domain.model.Theme
 import dagger.hilt.android.qualifiers.ApplicationContext
+import androidx.room.withTransaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -35,7 +36,7 @@ class AssetSeedImporter @Inject constructor(
         if (quoteDao.getAll().first().isNotEmpty()) return@withContext
         val json = Json { ignoreUnknownKeys = true }
 
-        database.runInTransaction {
+        database.withTransaction {
             context.assets.open("quotes.json").use { stream ->
                 val dtos: List<QuoteDto> = json.decodeFromStream(stream)
                 quoteDao.insertAll(dtos.map { it.toEntity() })

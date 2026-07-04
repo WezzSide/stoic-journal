@@ -8,4 +8,5 @@ android {
 
 dependencies {
     implementation(project(":core:notifications"))
+    implementation(libs.androidx.activity.compose)
 }

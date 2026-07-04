@@ -27,18 +27,23 @@ class MainViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             try {
-                assetSeedImporter.seedIfEmpty()
+                try {
+                    assetSeedImporter.seedIfEmpty()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to seed bundled content", e)
+                }
+                val prefs = preferencesRepository.preferences.first()
+                if (prefs.reminderEnabled) {
+                    reminderScheduler.schedule(prefs.reminderHour, prefs.reminderMinute)
+                }
+                _startDestination.value = if (prefs.onboardingComplete) {
+                    Screen.Today
+                } else {
+                    Screen.Onboarding
+                }
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to seed bundled content", e)
-            }
-            val prefs = preferencesRepository.preferences.first()
-            if (prefs.reminderEnabled) {
-                reminderScheduler.schedule(prefs.reminderHour, prefs.reminderMinute)
-            }
-            _startDestination.value = if (prefs.onboardingComplete) {
-                Screen.Today
-            } else {
-                Screen.Onboarding
+                Log.e(TAG, "Failed to initialize start destination", e)
+                _startDestination.value = Screen.Onboarding
             }
         }
     }

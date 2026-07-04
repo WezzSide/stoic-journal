@@ -3,6 +3,7 @@ package com.stoicjournal.feature.journal.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -25,14 +26,14 @@ fun SaveDiscardBar(
         OutlinedButton(
             onClick = onDiscard,
             enabled = !isSaving,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f).heightIn(min = 48.dp)
         ) {
             Text("Discard")
         }
         Button(
             onClick = onSave,
             enabled = saveEnabled && !isSaving,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f).heightIn(min = 48.dp)
         ) {
             Text(if (isSaving) "Saving…" else "Save")
         }

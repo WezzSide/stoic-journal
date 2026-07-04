@@ -41,6 +41,12 @@ class DailyReminderWorker @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
+        val prefs = preferencesRepository.preferences.first()
+        if (!prefs.reminderEnabled) {
+            Log.d(TAG, "Reminders disabled; skipping reminder")
+            return Result.success()
+        }
+
         val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE)
             as NotificationManager
 
@@ -65,14 +71,9 @@ class DailyReminderWorker @AssistedInject constructor(
 
         notificationManager.notify(NOTIFICATION_ID, notification)
 
-        val prefs = preferencesRepository.preferences.first()
-        if (prefs.reminderEnabled) {
-            val hour = inputData.getInt("hour", DEFAULT_HOUR)
-            val minute = inputData.getInt("minute", DEFAULT_MINUTE)
-            reminderScheduler.schedule(hour, minute)
-        } else {
-            Log.d(TAG, "Reminders disabled; skipping next-day reschedule")
-        }
+        val hour = inputData.getInt("hour", DEFAULT_HOUR)
+        val minute = inputData.getInt("minute", DEFAULT_MINUTE)
+        reminderScheduler.schedule(hour, minute)
 
         return Result.success()
     }
