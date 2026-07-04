@@ -123,6 +123,7 @@ class FreeFormJournalViewModel @Inject constructor(
     fun discard(onComplete: () -> Unit) {
         viewModelScope.launch {
             journalDraftRepository.clearDraft(EntryType.FREE_FORM, FREE_FORM_DRAFT_KEY)
+            draftSaver.disableAutoSave()
             onComplete()
         }
     }
@@ -140,6 +141,7 @@ class FreeFormJournalViewModel @Inject constructor(
                 )
                 saveJournalEntryUseCase(entry)
                 journalDraftRepository.clearDraft(EntryType.FREE_FORM, FREE_FORM_DRAFT_KEY)
+                draftSaver.disableAutoSave()
                 _uiState.update { it.copy(isSaving = false) }
                 onComplete()
             } catch (e: CancellationException) {

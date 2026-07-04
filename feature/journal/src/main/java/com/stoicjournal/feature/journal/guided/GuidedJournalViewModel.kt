@@ -86,6 +86,7 @@ class GuidedJournalViewModel @Inject constructor(
     fun discard(onComplete: () -> Unit) {
         viewModelScope.launch {
             journalDraftRepository.clearDraft(EntryType.GUIDED, promptId)
+            draftSaver.disableAutoSave()
             onComplete()
         }
     }
@@ -103,6 +104,7 @@ class GuidedJournalViewModel @Inject constructor(
                 )
                 saveJournalEntryUseCase(entry)
                 journalDraftRepository.clearDraft(EntryType.GUIDED, promptId)
+                draftSaver.disableAutoSave()
                 _uiState.update { it.copy(isSaving = false) }
                 onComplete()
             } catch (e: CancellationException) {

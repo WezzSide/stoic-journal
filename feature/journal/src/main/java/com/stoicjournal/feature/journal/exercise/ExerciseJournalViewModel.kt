@@ -75,6 +75,7 @@ class ExerciseJournalViewModel @Inject constructor(
     fun discard(onComplete: () -> Unit) {
         viewModelScope.launch {
             journalDraftRepository.clearDraft(EntryType.EXERCISE, exerciseId)
+            draftSaver.disableAutoSave()
             onComplete()
         }
     }
@@ -91,6 +92,7 @@ class ExerciseJournalViewModel @Inject constructor(
                 )
                 saveJournalEntryUseCase(entry)
                 journalDraftRepository.clearDraft(EntryType.EXERCISE, exerciseId)
+                draftSaver.disableAutoSave()
                 _uiState.update { it.copy(isSaving = false) }
                 onComplete()
             } catch (e: CancellationException) {
