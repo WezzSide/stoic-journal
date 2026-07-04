@@ -1,7 +1,7 @@
 package com.stoicjournal
 
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation.compose.ComposeNavigator
 import androidx.navigation.testing.TestNavHostController
@@ -9,6 +9,7 @@ import com.stoicjournal.navigation.Screen
 import com.stoicjournal.navigation.StoicJournalNavHost
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestActivity
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -20,7 +21,7 @@ class NavigationTest {
     val hiltRule = HiltAndroidRule(this)
 
     @get:Rule(order = 1)
-    val composeTestRule = createComposeRule()
+    val composeTestRule = createAndroidComposeRule(HiltTestActivity::class.java)
 
     private lateinit var navController: TestNavHostController
 
