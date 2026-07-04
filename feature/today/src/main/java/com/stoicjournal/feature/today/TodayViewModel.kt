@@ -10,7 +10,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
@@ -27,24 +30,27 @@ class TodayViewModel @Inject constructor(
     val uiState: StateFlow<TodayUiState> = _uiState
 
     init {
-        combine(
+        val baseStateFlow = combine(
             getTodayPromptUseCase(),
             getStreakUseCase(),
             exerciseRepository.getAllExercises()
         ) { todayPrompt, streak, exercises ->
-            Triple(todayPrompt, streak, exercises)
-        }.onEach { (todayPrompt, streak, exercises) ->
-            _uiState.update {
-                it.copy(
-                    prompt = todayPrompt.prompt,
-                    streak = streak,
-                    exercises = exercises,
-                    isLoading = false
-                )
+            TodayUiState(
+                prompt = todayPrompt.prompt,
+                streak = streak,
+                exercises = exercises,
+                isLoading = false
+            )
+        }
+
+        baseStateFlow
+            .flatMapLatest { state ->
+                val quoteFlow = state.prompt?.let { prompt ->
+                    getQuoteForPromptUseCase(prompt).map { it }
+                } ?: flowOf(null)
+                quoteFlow.map { quote -> state.copy(quote = quote) }
             }
-            getQuoteForPromptUseCase(todayPrompt.prompt).onEach { quote ->
-                _uiState.update { it.copy(quote = quote) }
-            }.launchIn(viewModelScope)
-        }.launchIn(viewModelScope)
+            .onEach { _uiState.value = it }
+            .launchIn(viewModelScope)
     }
 }
