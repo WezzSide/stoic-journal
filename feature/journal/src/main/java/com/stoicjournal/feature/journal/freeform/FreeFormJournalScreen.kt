@@ -44,6 +44,13 @@ fun FreeFormJournalScreen(
         }
     }
 
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.onErrorShown()
+        }
+    }
+
     Scaffold(
         topBar = { TopAppBar(title = { Text("Free-form Entry") }) },
         bottomBar = {

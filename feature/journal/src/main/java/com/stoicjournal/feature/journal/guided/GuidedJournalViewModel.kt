@@ -20,6 +20,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -63,14 +64,27 @@ class GuidedJournalViewModel @Inject constructor(
             if (promptId.isBlank()) {
                 _uiState.update { it.copy(error = "Invalid prompt ID") }
             } else {
-                val prompt = promptRepository.getAllPrompts().first().find { it.id == promptId }
-                if (prompt == null) {
-                    _uiState.update { it.copy(error = "Prompt not found") }
-                } else {
-                    _uiState.update { it.copy(prompt = prompt) }
-                    getQuoteForPromptUseCase(prompt).onEach { quote ->
-                        _uiState.update { it.copy(quote = quote) }
-                    }.launchIn(viewModelScope)
+                try {
+                    val prompt = promptRepository.getAllPrompts().first().find { it.id == promptId }
+                    if (prompt == null) {
+                        _uiState.update { it.copy(error = "Prompt not found") }
+                    } else {
+                        _uiState.update { it.copy(prompt = prompt) }
+                        getQuoteForPromptUseCase(prompt)
+                            .onEach { quote ->
+                                _uiState.update { it.copy(quote = quote) }
+                            }
+                            .catch { e ->
+                                if (e is CancellationException) throw e
+                                Log.e(TAG, "Failed to load quote for prompt", e)
+                                _uiState.update { it.copy(error = e.localizedMessage ?: "Failed to load quote") }
+                            }
+                            .launchIn(viewModelScope)
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    _uiState.update { it.copy(error = e.localizedMessage ?: "Failed to load prompt") }
                 }
             }
         }

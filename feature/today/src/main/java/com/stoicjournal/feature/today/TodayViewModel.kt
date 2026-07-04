@@ -12,9 +12,11 @@ import com.stoicjournal.core.domain.usecase.GetQuoteForPromptUseCase
 import com.stoicjournal.core.domain.usecase.GetStreakUseCase
 import com.stoicjournal.core.domain.usecase.GetTodayPromptUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
@@ -23,6 +25,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -51,6 +54,16 @@ class TodayViewModel @Inject constructor(
                 exercises = exercises
             )
         }
+            .catch { e ->
+                if (e is CancellationException) throw e
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        loadError = e.localizedMessage ?: "Failed to load today's content"
+                    )
+                }
+                emit(ContentData())
+            }
 
         val quoteFlow = contentFlow
             .map { it.prompt }
@@ -58,6 +71,15 @@ class TodayViewModel @Inject constructor(
             .flatMapLatest { prompt ->
                 (prompt?.let { getQuoteForPromptUseCase(it) } ?: flowOf(null))
                     .onStart { emit(null) }
+                    .catch { e ->
+                        if (e is CancellationException) throw e
+                        _uiState.update {
+                            it.copy(
+                                loadError = e.localizedMessage ?: "Failed to load quote"
+                            )
+                        }
+                        emit(null)
+                    }
             }
 
         val permissionFlow = preferencesRepository.preferences
@@ -72,7 +94,8 @@ class TodayViewModel @Inject constructor(
                 exercises = content.exercises,
                 hasRequestedNotificationPermission = hasRequested,
                 reminderEnabled = reminderEnabled,
-                isLoading = false
+                isLoading = false,
+                loadError = _uiState.value.loadError
             )
         }
             .onEach { _uiState.value = it }
@@ -90,5 +113,9 @@ class TodayViewModel @Inject constructor(
         viewModelScope.launch {
             preferencesRepository.setNotificationPermissionRequested(requested)
         }
+    }
+
+    fun loadErrorShown() {
+        _uiState.update { it.copy(loadError = null) }
     }
 }

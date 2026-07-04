@@ -15,5 +15,6 @@ data class LibraryUiState(
     val philosophers: List<Philosopher> = emptyList(),
     val quotes: List<Quote> = emptyList(),
     val selectedFilter: LibraryFilter = LibraryFilter.All,
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val error: String? = null
 )

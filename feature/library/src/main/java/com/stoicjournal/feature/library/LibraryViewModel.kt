@@ -7,9 +7,11 @@ import com.stoicjournal.core.domain.repository.PhilosopherRepository
 import com.stoicjournal.core.domain.repository.QuoteRepository
 import com.stoicjournal.core.domain.usecase.ToggleFavoriteQuoteUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -50,15 +52,27 @@ class LibraryViewModel @Inject constructor(
             philosopherRepository.getAllPhilosophers()
         ) { quotes, philosophers ->
             quotes to philosophers
-        }.onEach { (quotes, philosophers) ->
-            _uiState.update {
-                it.copy(
-                    quotes = quotes,
-                    philosophers = philosophers,
-                    isLoading = false
-                )
+        }
+            .onEach { (quotes, philosophers) ->
+                _uiState.update {
+                    it.copy(
+                        quotes = quotes,
+                        philosophers = philosophers,
+                        isLoading = false,
+                        error = it.error
+                    )
+                }
             }
-        }.launchIn(viewModelScope)
+            .catch { e ->
+                if (e is CancellationException) throw e
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.localizedMessage ?: "Failed to load library"
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     fun selectFilter(filter: LibraryFilter) {
@@ -67,7 +81,19 @@ class LibraryViewModel @Inject constructor(
 
     fun toggleFavorite(quoteId: String) {
         viewModelScope.launch {
-            toggleFavoriteQuoteUseCase(quoteId)
+            try {
+                toggleFavoriteQuoteUseCase(quoteId)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(error = e.localizedMessage ?: "Failed to update favorite")
+                }
+            }
         }
+    }
+
+    fun errorShown() {
+        _uiState.update { it.copy(error = null) }
     }
 }

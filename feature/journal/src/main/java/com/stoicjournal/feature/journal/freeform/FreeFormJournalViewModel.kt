@@ -17,6 +17,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -30,7 +31,8 @@ data class FreeFormJournalUiState(
     val attachedQuote: Quote? = null,
     val quotes: List<Quote> = emptyList(),
     val isSaving: Boolean = false,
-    val saveError: String? = null
+    val saveError: String? = null,
+    val error: String? = null
 )
 
 @HiltViewModel
@@ -82,10 +84,17 @@ class FreeFormJournalViewModel @Inject constructor(
                 }
             }
 
-            quoteRepository.getAllQuotes().onEach { quotes ->
-                _uiState.update { it.copy(quotes = quotes) }
-                restoreDraftQuoteIfNeeded(quotes)
-            }.launchIn(viewModelScope)
+            quoteRepository.getAllQuotes()
+                .onEach { quotes ->
+                    _uiState.update { it.copy(quotes = quotes) }
+                    restoreDraftQuoteIfNeeded(quotes)
+                }
+                .catch { e ->
+                    if (e is CancellationException) throw e
+                    Log.e(TAG, "Failed to load quotes", e)
+                    _uiState.update { it.copy(error = e.localizedMessage ?: "Failed to load quotes") }
+                }
+                .launchIn(viewModelScope)
         }
     }
 
@@ -126,6 +135,10 @@ class FreeFormJournalViewModel @Inject constructor(
 
     fun onSaveErrorShown() {
         _uiState.update { it.copy(saveError = null) }
+    }
+
+    fun onErrorShown() {
+        _uiState.update { it.copy(error = null) }
     }
 
     fun discard(onComplete: () -> Unit) {

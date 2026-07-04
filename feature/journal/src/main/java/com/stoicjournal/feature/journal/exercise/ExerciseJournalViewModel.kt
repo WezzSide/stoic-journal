@@ -57,11 +57,17 @@ class ExerciseJournalViewModel @Inject constructor(
             if (exerciseId.isBlank()) {
                 _uiState.update { it.copy(error = "Invalid exercise ID") }
             } else {
-                val exercise = exerciseRepository.getExerciseById(exerciseId)
-                if (exercise == null) {
-                    _uiState.update { it.copy(error = "Exercise not found") }
-                } else {
-                    _uiState.update { it.copy(exercise = exercise) }
+                try {
+                    val exercise = exerciseRepository.getExerciseById(exerciseId)
+                    if (exercise == null) {
+                        _uiState.update { it.copy(error = "Exercise not found") }
+                    } else {
+                        _uiState.update { it.copy(exercise = exercise) }
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    _uiState.update { it.copy(error = e.localizedMessage ?: "Failed to load exercise") }
                 }
             }
         }

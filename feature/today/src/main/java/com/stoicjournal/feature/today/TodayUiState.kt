@@ -12,5 +12,6 @@ data class TodayUiState(
     val exercises: List<Exercise> = emptyList(),
     val hasRequestedNotificationPermission: Boolean = false,
     val reminderEnabled: Boolean = true,
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val loadError: String? = null
 )
