@@ -1,4 +1,4 @@
-package com.stoicjournal.core.data.sync
+package com.stoicjournal.core.domain.util
 
 import com.stoicjournal.core.domain.model.EntryType
 import com.stoicjournal.core.domain.model.JournalEntry
