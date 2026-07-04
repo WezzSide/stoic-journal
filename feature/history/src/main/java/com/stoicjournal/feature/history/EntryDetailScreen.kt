@@ -67,8 +67,9 @@ fun EntryDetailScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             uiState.entry?.let { entry ->
+                val typeFallback = entry.type.name.replace("_", " ").lowercase(Locale.ROOT).replaceFirstChar { it.uppercase(Locale.ROOT) }
                 Text(
-                    text = entry.title ?: entry.type.name.replace("_", " ").lowercase(Locale.ROOT).replaceFirstChar { it.uppercase(Locale.ROOT) },
+                    text = entry.title?.takeIf { it.isNotBlank() } ?: typeFallback,
                     style = MaterialTheme.typography.headlineMedium,
                     modifier = Modifier.padding(top = 16.dp)
                 )

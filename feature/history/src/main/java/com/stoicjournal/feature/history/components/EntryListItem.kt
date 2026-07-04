@@ -23,6 +23,7 @@ fun EntryListItem(
 ) {
     val formatter = DateTimeFormatter.ofPattern("MMM d, yyyy")
     val date = entry.createdAt.atZone(ZoneId.systemDefault()).format(formatter)
+    val typeFallback = entry.type.name.replace("_", " ").lowercase(Locale.ROOT).replaceFirstChar { it.uppercase(Locale.ROOT) }
 
     Card(
         onClick = onClick,
@@ -30,7 +31,7 @@ fun EntryListItem(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = entry.title ?: entry.type.name.replace("_", " ").lowercase(Locale.ROOT).replaceFirstChar { it.uppercase(Locale.ROOT) },
+                text = entry.title?.takeIf { it.isNotBlank() } ?: typeFallback,
                 style = MaterialTheme.typography.titleMedium
             )
             Text(

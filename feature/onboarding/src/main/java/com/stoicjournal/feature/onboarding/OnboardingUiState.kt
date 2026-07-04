@@ -7,5 +7,6 @@ data class OnboardingUiState(
     val selectedLevel: StoicismLevel = StoicismLevel.BEGINNER,
     val reminderHour: Int = 20,
     val reminderMinute: Int = 0,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val completeError: String? = null
 )
