@@ -9,7 +9,6 @@ import com.stoicjournal.navigation.Screen
 import com.stoicjournal.navigation.StoicJournalNavHost
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import dagger.hilt.android.testing.HiltTestActivity
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test

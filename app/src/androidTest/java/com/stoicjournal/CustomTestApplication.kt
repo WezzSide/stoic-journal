@@ -1,6 +1,7 @@
 package com.stoicjournal
 
+import android.app.Application
 import dagger.hilt.android.testing.CustomTestApplication
 
-@CustomTestApplication(StoicJournalApplication::class)
+@CustomTestApplication(Application::class)
 interface HiltTestApplication
