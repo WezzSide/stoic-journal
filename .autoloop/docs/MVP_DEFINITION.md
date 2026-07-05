@@ -20,7 +20,7 @@ Updated 2026-07-05 (autoloop run 0001). Source: `docs/prd.md` §2 + README "MVP 
 - No open Critical/High risks in RISK_REGISTER.md
 
 ## Definition of Done for MVP release
-- [ ] All required gates green (baseline being established in run 0001)
+- [x] All required gates green (run 0001; baseline promoted 2026-07-05)
 - [ ] Instrumentation tests executed on an emulator at least once per release (4 androidTest files exist; not in CI)
 - [ ] PRD success criteria verified on device (incl. < 2-min guided entry)
 - [ ] Release readiness score ≥ 85

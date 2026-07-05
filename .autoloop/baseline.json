@@ -1,10 +1,10 @@
 {
-  "ts": "2026-07-05T12:51:17",
-  "label": "pre",
+  "ts": "2026-07-05T12:52:25",
+  "label": "post",
   "ok": true,
   "passed": 3,
   "total": 4,
-  "total_seconds": 174.27,
+  "total_seconds": 39.87,
   "gates": [
     {
       "name": "build",
@@ -12,7 +12,7 @@
       "required": true,
       "ok": true,
       "exit": 0,
-      "seconds": 28.84,
+      "seconds": 13.06,
       "tail": ""
     },
     {
@@ -21,7 +21,7 @@
       "required": true,
       "ok": true,
       "exit": 0,
-      "seconds": 42.93,
+      "seconds": 13.34,
       "tail": ""
     },
     {
@@ -30,7 +30,7 @@
       "required": false,
       "ok": true,
       "exit": 0,
-      "seconds": 102.41,
+      "seconds": 13.26,
       "tail": ""
     },
     {
@@ -39,7 +39,7 @@
       "required": false,
       "ok": false,
       "exit": 1,
-      "seconds": 0.09,
+      "seconds": 0.21,
       "tail": "'.' is not recognized as an internal or external command,\noperable program or batch file."
     }
   ]

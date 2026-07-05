@@ -25,6 +25,12 @@
   R-8 mitigated; AC-1 status flips to ✅ verified+documented in living docs.
 
 ## Outcome (fill AFTER decide)
-- Verdict:
-- Evidence:
-- If reverted — why it failed, and the improved next hypothesis:
+- Verdict: **keep** (commit `df3c884fa9`).
+- Evidence: post-change gates passed build (13.06s), unit tests (13.34s), and lint
+  (13.26s). `decision.json` records "all required gates pass, no regressions vs
+  baseline." The standard Windows workstation also completed the initial cold build
+  in 12m17s (376 tasks). The 39.87s warm post-gate run replaced the 174.27s warm-up
+  baseline after the result was kept.
+- If reverted — not applicable. The optional dependency-audit gate remains invalid on
+  Windows because its configured command starts with `./gradlew`; this was present in
+  both pre- and post-change results and did not affect the required-gate verdict.

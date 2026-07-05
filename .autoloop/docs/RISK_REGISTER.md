@@ -11,6 +11,6 @@ Updated 2026-07-05 (autoloop run 0001). Owned by Security Auditor + Reviewer.
 | R-5 | Journal entries are sensitive personal data; DB currently unencrypted (standard Room/SQLite) | M | M | Medium | evaluate SQLCipher/EncryptedFile or documented accept-risk for MVP (device-local only) | Open |
 | R-6 | CI builds debug APK only; unit tests/lint not enforced on PRs | M | M | Medium | extend `build.yml` with `testDebugUnitTest` + `lintDebug` (backlog) | Open |
 | R-7 | Single-maintainer bus factor; private repo without branch protection | M | M | Medium | enable branch protection on main; document release process | Open |
-| R-8 | Termux-era docs (`build-environment.md` AAPT2 override) can misconfigure standard hosts if copied blindly | L | M | Low | add standard-workstation section (candidate hypothesis run 0001) | Open |
+| R-8 | Termux-era docs (`build-environment.md` AAPT2 override) can misconfigure standard hosts if copied blindly | L | M | Low | standard-workstation instructions added and override explicitly limited to Termux/aarch64 in run 0001 | Mitigated |
 
 Security review notes (2026-07-05, clone-time scan): no secrets in repo (keystore correctly ignored), no network permissions expected in offline MVP — verify `AndroidManifest.xml` permissions in a future run.

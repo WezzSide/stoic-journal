@@ -3,7 +3,6 @@
 Updated 2026-07-05 (autoloop run 0001). One hypothesis per iteration from the top of "Now".
 
 ## Now (next 1–3 iterations)
-- [ ] **Docs: standard-workstation build instructions** — `docs/build-environment.md` only documents the Termux/aarch64 host; README "Getting Started" predates this machine. Verify + document the standard path (JDK 17, ANDROID_HOME, API 34 auto-provisioning). *(selected for run 0001 — smallest, unblocks contributors, zero code risk)*
 - [ ] **CI: add `testDebugUnitTest` to build.yml** — tests exist but CI only assembles; a PR can break tests silently (R-6).
 - [ ] **CI: add `lintDebug`** — no static-analysis gate at all today.
 
@@ -22,3 +21,5 @@ Updated 2026-07-05 (autoloop run 0001). One hypothesis per iteration from the to
 - [ ] Screenshots for README + store listing
 
 ## Done (moved here with run number)
+- [x] **Run 0001:** verified and documented the standard Windows workstation build
+  path; scoped the Termux AAPT2 workaround so it cannot be mistaken for general setup.
