@@ -209,3 +209,25 @@ ls -lhS /sdcard/Download/termux-backups
 du -h --max-depth=1 /tmp
 du -sh /data/local/tmp
 ```
+
+---
+
+## Cleanup Actions Taken
+
+| Action | Before | After | Reclaimed |
+|--------|--------|-------|-----------|
+| Removed old Termux backups (kept 2 newest) | 242 GB | 72 GB | **170 GB** |
+| Cleaned `/tmp` temp caches | 5.2 GB | 995 MB | **~4.2 GB** |
+| Removed old Gradle version caches (8.9, 8.11.1, 8.14.3) | 14 GB | ~6.1 GB | **~7.9 GB** |
+| Cleared old APKs from `/data/local/tmp` | 148 MB | 68 KB | **~148 MB** |
+| Ran `./gradlew clean` for Stoic Journal | 507 MB | 51 MB | **456 MB** |
+
+### Overall Disk Impact
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Used space | 457 GB (99%) | 275 GB (60%) |
+| Free space | 7.8 GB | 191 GB |
+| Inode use | 83% | 20% |
+
+The device is no longer critically low on space.
