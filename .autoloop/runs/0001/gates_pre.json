@@ -1,0 +1,46 @@
+{
+  "ts": "2026-07-05T12:51:17",
+  "label": "pre",
+  "ok": true,
+  "passed": 3,
+  "total": 4,
+  "total_seconds": 174.27,
+  "gates": [
+    {
+      "name": "build",
+      "cmd": "cmd /c \"gradlew.bat assembleDebug --console=plain > .autoloop\\gate-build.log 2>&1\"",
+      "required": true,
+      "ok": true,
+      "exit": 0,
+      "seconds": 28.84,
+      "tail": ""
+    },
+    {
+      "name": "unit_tests",
+      "cmd": "cmd /c \"gradlew.bat testDebugUnitTest --console=plain > .autoloop\\gate-test.log 2>&1\"",
+      "required": true,
+      "ok": true,
+      "exit": 0,
+      "seconds": 42.93,
+      "tail": ""
+    },
+    {
+      "name": "lint",
+      "cmd": "cmd /c \"gradlew.bat lintDebug --console=plain > .autoloop\\gate-lint.log 2>&1\"",
+      "required": false,
+      "ok": true,
+      "exit": 0,
+      "seconds": 102.41,
+      "tail": ""
+    },
+    {
+      "name": "dependency_audit",
+      "cmd": "./gradlew dependencies --configuration releaseRuntimeClasspath -q",
+      "required": false,
+      "ok": false,
+      "exit": 1,
+      "seconds": 0.09,
+      "tail": "'.' is not recognized as an internal or external command,\noperable program or batch file."
+    }
+  ]
+}
