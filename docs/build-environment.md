@@ -65,15 +65,38 @@ Because the local environment is unusual, `.github/workflows/build.yml` builds
 the same targets on an Ubuntu x86_64 runner where the AGP-bundled AAPT2 runs
 natively. The workflow uploads the debug APK and build reports as artifacts.
 
-## On-Device Verification (Shizuku)
+ ## On-Device Verification (Shizuku)
 
-No Android device or emulator was attached during this session, so installation
-and Shizuku-based privileged verification could not be performed. Once a device
-is available, run:
+A Shizuku service was available in the Termux/PRoot environment, so the debug
+APK was installed and verified on-device using the privileged shell.
+
+Run the automated verification script:
+
+```bash
+./scripts/shizuku_verify.sh [path/to/app-debug.apk]
+```
+
+The script uses `rish` to:
+
+1. Push the APK to `/data/local/tmp` with shell ownership/SELinux context.
+2. Install the APK with `pm install -r -t`.
+3. Verify package metadata (`pm list packages`, `dumpsys package`).
+4. Launch the main activity (`am start`).
+5. Confirm the app process is alive (`pidof`).
+6. Capture a logcat snapshot and fail on fatal exceptions.
+
+### Verified on-device results
+
+- Package: `com.stoicjournal`
+- Version: `1.0` (versionCode 1)
+- minSdk: 26, targetSdk: 34
+- Install: Success
+- Launch: `com.stoicjournal/.MainActivity`
+- Process: Running
+- Logcat: No fatal exceptions
+
+If no Shizuku service is available, fall back to:
 
 ```bash
 adb install app/build/outputs/apk/debug/app-debug.apk
 ```
-
-and use Shizuku to inspect the installed package, permissions, and signing
-information programmatically.
