@@ -12,3 +12,7 @@ captures/
 .cxx
 local.properties
 .superpowers/
+
+# Signing keys
+*.keystore
+*.jks
