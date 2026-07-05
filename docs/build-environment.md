@@ -59,21 +59,37 @@ Static APK checks performed:
 - `aapt dump badging app-debug.apk`
 - `apksigner verify --print-certs app-debug.apk`
 
+### Release build
+
+A signed release APK is also produced with the `release` signing config:
+
+```bash
+./gradlew :app:assembleRelease --no-daemon
+```
+
+Output: `app/build/outputs/apk/release/app-release.apk`
+
+Verified with:
+
+- `aapt dump badging app-release.apk`
+- `apksigner verify --print-certs app-release.apk`
+
 ## CI Fallback
 
 Because the local environment is unusual, `.github/workflows/build.yml` builds
 the same targets on an Ubuntu x86_64 runner where the AGP-bundled AAPT2 runs
 natively. The workflow uploads the debug APK and build reports as artifacts.
 
- ## On-Device Verification (Shizuku)
+## On-Device Verification (Shizuku)
 
-A Shizuku service was available in the Termux/PRoot environment, so the debug
-APK was installed and verified on-device using the privileged shell.
+A Shizuku service was available in the Termux/PRoot environment, so both the
+debug and release APKs were installed and verified on-device using the
+privileged shell.
 
 Run the automated verification script:
 
 ```bash
-./scripts/shizuku_verify.sh [path/to/app-debug.apk]
+./scripts/shizuku_verify.sh [path/to/app.apk]
 ```
 
 The script uses `rish` to:
@@ -90,7 +106,8 @@ The script uses `rish` to:
 - Package: `com.stoicjournal`
 - Version: `1.0` (versionCode 1)
 - minSdk: 26, targetSdk: 34
-- Install: Success
+- Debug APK install: Success
+- Release APK install: Success
 - Launch: `com.stoicjournal/.MainActivity`
 - Process: Running
 - Logcat: No fatal exceptions
