@@ -1,0 +1,11 @@
+Stoic Journal is your companion for building a resilient mind and a more meaningful life. Rooted in the ancient wisdom of Stoic philosophy, this offline-first journaling app helps you apply the teachings of Marcus Aurelius, Epictetus, and Seneca to your modern challenges.
+
+Key Features:
+- Guided Stoic Reflections: Receive personalized Stoic insights on your thoughts powered by the latest AI (Gemini).
+- Daily Wisdom: A fresh daily prompt and primary-source quote to ground your day.
+- Stoic Exercises: Step-by-step guidance for classical exercises like the Dichotomy of Control and Evening Review.
+- Private by Design: Your data never leaves your device. No cloud sync, no tracking.
+- Wisdom Library: Browse favorite quotes by theme or philosopher.
+- Habit Reinforcement: Home screen widget and streak insights to keep you consistent.
+
+Transform your thinking. Build your character. Live according to nature.
