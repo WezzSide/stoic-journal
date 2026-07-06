@@ -1,6 +1,7 @@
 [versions]
-agp = "8.5.0"
-kotlin = "2.0.0"
+agp = "9.2.1"
+kotlin = "2.2.10"
+composeCompiler = "1.5.14"
 kotlinxCoroutines = "1.8.1"
 coreKtx = "1.13.1"
 lifecycle = "2.8.2"
@@ -17,6 +18,9 @@ kotlinxSerialization = "1.6.3"
 junit = "4.13.2"
 junitExt = "1.2.1"
 espresso = "3.6.1"
+google-generativeai = "0.9.0"
+secrets-gradle-plugin = "2.0.1"
+glance = "1.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -53,6 +57,10 @@ android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", ver
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+google-generative-ai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "google-generativeai" }
+androidx-glance = { group = "androidx.glance", name = "glance", version.ref = "glance" }
+androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
+androidx-glance-material3 = { group = "androidx.glance", name = "glance-material3", version.ref = "glance" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -67,3 +75,4 @@ stoic-android-library = { id = "stoic.android.library", version = "unspecified" 
 stoic-android-feature = { id = "stoic.android.feature", version = "unspecified" }
 stoic-android-hilt = { id = "stoic.android.hilt", version = "unspecified" }
 stoic-android-room = { id = "stoic.android.room", version = "unspecified" }
+secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secrets-gradle-plugin" }

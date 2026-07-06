@@ -15,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -39,6 +40,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.stoicjournal.feature.today.components.DailyPromptCard
 import com.stoicjournal.feature.today.components.QuickActionsRow
 import com.stoicjournal.feature.today.components.StreakIndicator
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,6 +52,7 @@ fun TodayScreen(
     onNavigateToLibrary: () -> Unit,
     onNavigateToHistory: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    onNavigateToAiReflection: () -> Unit,
     viewModel: TodayViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -83,6 +87,7 @@ fun TodayScreen(
         onNavigateToLibrary = onNavigateToLibrary,
         onNavigateToHistory = onNavigateToHistory,
         onNavigateToSettings = onNavigateToSettings,
+        onNavigateToAiReflection = onNavigateToAiReflection,
         onLoadErrorShown = viewModel::loadErrorShown
     )
 }
@@ -97,6 +102,7 @@ internal fun TodayScreenContent(
     onNavigateToLibrary: () -> Unit,
     onNavigateToHistory: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    onNavigateToAiReflection: () -> Unit,
     onLoadErrorShown: () -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -114,6 +120,9 @@ internal fun TodayScreenContent(
             TopAppBar(
                 title = { Text("Stoic Journal") },
                 actions = {
+                    IconButton(onClick = onNavigateToAiReflection) {
+                        Icon(Icons.Default.Psychology, contentDescription = "AI Reflection")
+                    }
                     IconButton(onClick = onNavigateToLibrary) {
                         Icon(Icons.AutoMirrored.Filled.LibraryBooks, contentDescription = "Library")
                     }
@@ -136,6 +145,18 @@ internal fun TodayScreenContent(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             StreakIndicator(streak = uiState.streak)
+
+            AnimatedVisibility(
+                visible = uiState.streakInsight != null,
+                enter = fadeIn()
+            ) {
+                Text(
+                    text = uiState.streakInsight ?: "",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+            }
 
             uiState.prompt?.let { prompt ->
                 DailyPromptCard(

@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.stoicjournal.feature.history.HistoryScreen
 import com.stoicjournal.feature.history.EntryDetailScreen
+import com.stoicjournal.feature.ai.AiReflectionScreen
 import com.stoicjournal.feature.journal.exercise.ExerciseJournalScreen
 import com.stoicjournal.feature.journal.freeform.FreeFormJournalScreen
 import com.stoicjournal.feature.journal.guided.GuidedJournalScreen
@@ -49,7 +50,8 @@ fun StoicJournalNavHost(
                 },
                 onNavigateToLibrary = { navController.navigate(Screen.Library.route) },
                 onNavigateToHistory = { navController.navigate(Screen.History.route) },
-                onNavigateToSettings = { navController.navigate(Screen.Settings.route) }
+                onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
+                onNavigateToAiReflection = { navController.navigate(Screen.AiReflection.route) }
             )
         }
         composable(Screen.GuidedJournal.route) { backStackEntry ->
@@ -123,6 +125,11 @@ fun StoicJournalNavHost(
         }
         composable(Screen.Settings.route) {
             SettingsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.AiReflection.route) {
+            AiReflectionScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

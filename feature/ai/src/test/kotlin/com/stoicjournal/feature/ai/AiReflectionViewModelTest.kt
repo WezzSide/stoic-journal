@@ -1,11 +1,19 @@
 package com.stoicjournal.feature.ai
 
+import com.stoicjournal.core.domain.model.AiReflectionRequest
 import com.stoicjournal.core.domain.model.AiReflectionResponse
 import com.stoicjournal.core.domain.model.AiReflectionTheme
+import com.stoicjournal.core.domain.model.JournalEntry
+import com.stoicjournal.core.domain.repository.AiRepository
+import com.stoicjournal.core.domain.repository.JournalRepository
+import com.stoicjournal.core.domain.usecase.GetRecentJournalEntriesUseCase
 import com.stoicjournal.core.domain.usecase.GetStoicReflectionUseCase
 import com.stoicjournal.core.domain.usecase.SaveAiReflectionUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -15,15 +23,12 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import java.time.LocalDateTime
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AiReflectionViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
 
-    private lateinit var getStoicReflectionUseCase: GetStoicReflectionUseCase
-    private lateinit var saveAiReflectionUseCase: SaveAiReflectionUseCase
     private lateinit var viewModel: AiReflectionViewModel
 
     private val fakeAiResponse = AiReflectionResponse(
@@ -38,22 +43,21 @@ class AiReflectionViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         
-        // Manual fakes
-        getStoicReflectionUseCase = object : GetStoicReflectionUseCase(
-            aiRepository = object : com.stoicjournal.core.domain.repository.AiRepository {
-                override suspend fun getReflection(request: com.stoicjournal.core.domain.model.AiReflectionRequest) = Result.success(fakeAiResponse)
-                override fun streamReflection(request: com.stoicjournal.core.domain.model.AiReflectionRequest) = kotlinx.coroutines.flow.emptyFlow<AiReflectionResponse>()
-            }
-        ) {}
+        val fakeAiRepository = object : AiRepository {
+            override suspend fun getReflection(request: AiReflectionRequest) = Result.success(fakeAiResponse)
+            override fun streamReflection(request: AiReflectionRequest): Flow<AiReflectionResponse> = flowOf(fakeAiResponse)
+        }
 
-        saveAiReflectionUseCase = object : SaveAiReflectionUseCase(
-            journalRepository = object : com.stoicjournal.core.domain.repository.JournalRepository {
-                override fun getAllEntries() = kotlinx.coroutines.flow.emptyFlow<List<com.stoicjournal.core.domain.model.JournalEntry>>()
-                override suspend fun getEntryById(id: String) = null
-                override suspend fun saveEntry(entry: com.stoicjournal.core.domain.model.JournalEntry) {}
-                override suspend fun deleteEntry(entry: com.stoicjournal.core.domain.model.JournalEntry) {}
-            }
-        ) {}
+        val fakeJournalRepository = object : JournalRepository {
+            override fun getAllEntries(): Flow<List<JournalEntry>> = flowOf(emptyList())
+            override suspend fun getEntryById(id: String): JournalEntry? = null
+            override suspend fun saveEntry(entry: JournalEntry) {}
+            override suspend fun deleteEntry(entry: JournalEntry) {}
+        }
+
+        val getRecentJournalEntriesUseCase = GetRecentJournalEntriesUseCase(fakeJournalRepository)
+        val getStoicReflectionUseCase = GetStoicReflectionUseCase(fakeAiRepository, getRecentJournalEntriesUseCase)
+        val saveAiReflectionUseCase = SaveAiReflectionUseCase(fakeJournalRepository)
 
         viewModel = AiReflectionViewModel(getStoicReflectionUseCase, saveAiReflectionUseCase)
     }

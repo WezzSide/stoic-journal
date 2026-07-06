@@ -4,6 +4,7 @@ import com.stoicjournal.core.domain.model.AiReflectionResponse
 import com.stoicjournal.core.domain.model.EntryType
 import com.stoicjournal.core.domain.model.JournalEntry
 import com.stoicjournal.core.domain.repository.JournalRepository
+import java.time.Instant
 import java.util.UUID
 import javax.inject.Inject
 
@@ -16,7 +17,7 @@ class SaveAiReflectionUseCase @Inject constructor(
     ): Result<Unit> {
         val entry = JournalEntry(
             id = UUID.randomUUID().toString(),
-            type = EntryType.GUIDED, // Mapping AI reflection to a guided entry type for now
+            type = EntryType.GUIDED,
             title = "AI Reflection: ${reflection.theme.displayName}",
             body = """
                 My thought: $userThought
@@ -32,12 +33,12 @@ class SaveAiReflectionUseCase @Inject constructor(
                 ${reflection.quote?.let { "Quote: $it" } ?: ""}
                 ${reflection.principle?.let { "Principle: $it" } ?: ""}
             """.trimIndent(),
-            createdAtMillis = System.currentTimeMillis(),
-            updatedAtMillis = System.currentTimeMillis()
+            createdAt = Instant.now(),
+            updatedAt = Instant.now()
         )
         
         return try {
-            journalRepository.insertEntry(entry)
+            journalRepository.saveEntry(entry)
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

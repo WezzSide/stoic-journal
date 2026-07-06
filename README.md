@@ -22,6 +22,8 @@ journal is private by default.
 - [Building](#building)
 - [Distribution](#distribution)
 - [Testing](#testing)
+- [AI & Gemini Integration](#ai--gemini-integration)
+- [Architecture & Security](#architecture--security)
 - [On-Device Verification with Shizuku](#on-device-verification-with-shizuku)
 - [Privacy](#privacy)
 - [Roadmap](#roadmap)
@@ -102,11 +104,51 @@ feature:library/      # Quote and philosopher browsing
 feature:history/      # Entry list and detail
 feature:settings/     # Reminders and preferences
 feature:onboarding/   # First-launch onboarding
+feature:ai/           # Gemini API integration and AI features
 core:data/            # Room entities, DAOs, repositories, seeders
 core:domain/          # Use cases and models
 core:common/          # Utilities, date helpers, constants
 core:notifications/   # Daily reminder worker and scheduler
 ```
+
+---
+
+## AI & Gemini Integration
+
+Stoic Journal integrates **Google Gemini** to provide intelligent reflections and personal Stoic guidance.
+
+### Setup
+
+1.  **API Key**: Obtain a Gemini API Key from the [Google AI Studio](https://aistudio.google.com/).
+2.  **local.properties**: Add your key to `local.properties`:
+    ```properties
+    GEMINI_API_KEY=your_api_key_here
+    ```
+3.  **Secrets Plugin**: The project uses the `secrets-gradle-plugin` to securely inject the API key into the build config.
+
+### Agentic AI Foundational Structure
+
+The project is designed to support autonomous Stoic agents:
+- **Tool Invocation**: Agents can access the Wisdom Library and Journal History as tools.
+- **Memory Management**: Context-aware reflections based on previous journal entries (locally processed).
+- **Prompt Engineering**: Structured system prompts rooted in primary Stoic sources.
+
+---
+
+## Architecture & Security
+
+### AI Hardening
+The AI Reflection feature is built with a resilient multi-layered repository strategy:
+1. **GeminiAiRepositoryImpl**: Direct SDK interaction.
+2. **SafeAiRepository**: Error handling and SDK isolation.
+3. **CachedAiRepository**: Room-based caching for offline support.
+4. **FakeAiRepository**: Deterministic responses for testing.
+
+### Documentation Links
+- [AI Feature Architecture](AI_FEATURE_ARCHITECTURE.md)
+- [Security Notes](SECURITY_NOTES.md)
+- [Test Evidence](TEST_EVIDENCE.md)
+- [MVP Gap Analysis](MVP_GAP_ANALYSIS.md)
 
 ---
 

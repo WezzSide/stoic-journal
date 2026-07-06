@@ -2,14 +2,19 @@ package com.stoicjournal.core.data.di
 
 import android.content.Context
 import androidx.room.Room
+import com.stoicjournal.core.data.dao.AiReflectionDao
 import com.stoicjournal.core.data.database.StoicJournalDatabase
+import com.stoicjournal.core.data.repository.CachedAiRepository
 import com.stoicjournal.core.data.repository.ExerciseRepositoryImpl
+import com.stoicjournal.core.data.repository.GeminiAiRepositoryImpl
 import com.stoicjournal.core.data.repository.JournalDraftRepositoryImpl
 import com.stoicjournal.core.data.repository.JournalRepositoryImpl
 import com.stoicjournal.core.data.repository.PhilosopherRepositoryImpl
 import com.stoicjournal.core.data.repository.PreferencesRepositoryImpl
 import com.stoicjournal.core.data.repository.PromptRepositoryImpl
 import com.stoicjournal.core.data.repository.QuoteRepositoryImpl
+import com.stoicjournal.core.data.repository.SafeAiRepository
+import com.stoicjournal.core.domain.repository.AiRepository
 import com.stoicjournal.core.domain.repository.ExerciseRepository
 import com.stoicjournal.core.domain.repository.JournalDraftRepository
 import com.stoicjournal.core.domain.repository.JournalRepository
@@ -52,6 +57,20 @@ abstract class RepositoryModule {
 
 @Module
 @InstallIn(SingletonComponent::class)
+object AiModule {
+    @Provides
+    @Singleton
+    fun provideAiRepository(
+        geminiRepo: GeminiAiRepositoryImpl,
+        aiReflectionDao: AiReflectionDao
+    ): AiRepository {
+        val cached = CachedAiRepository(geminiRepo, aiReflectionDao)
+        return SafeAiRepository(cached)
+    }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
 object DatabaseModule {
     @Provides
     @Singleton
@@ -60,7 +79,7 @@ object DatabaseModule {
             context,
             StoicJournalDatabase::class.java,
             "stoic_journal.db"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
     }
 
     @Provides
@@ -77,4 +96,7 @@ object DatabaseModule {
 
     @Provides
     fun providePhilosopherDao(db: StoicJournalDatabase) = db.philosopherDao()
+
+    @Provides
+    fun provideAiReflectionDao(db: StoicJournalDatabase) = db.aiReflectionDao()
 }

@@ -4,11 +4,13 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
+import com.stoicjournal.core.data.dao.AiReflectionDao
 import com.stoicjournal.core.data.dao.ExerciseDao
 import com.stoicjournal.core.data.dao.JournalEntryDao
 import com.stoicjournal.core.data.dao.PhilosopherDao
 import com.stoicjournal.core.data.dao.PromptDao
 import com.stoicjournal.core.data.dao.QuoteDao
+import com.stoicjournal.core.data.entity.AiReflectionEntity
 import com.stoicjournal.core.data.entity.ExerciseEntity
 import com.stoicjournal.core.data.entity.JournalEntryEntity
 import com.stoicjournal.core.data.entity.PhilosopherEntity
@@ -24,9 +26,10 @@ import com.stoicjournal.core.domain.model.Theme
         QuoteEntity::class,
         PromptEntity::class,
         ExerciseEntity::class,
-        PhilosopherEntity::class
+        PhilosopherEntity::class,
+        AiReflectionEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(StoicJournalTypeConverters::class)
@@ -36,6 +39,7 @@ abstract class StoicJournalDatabase : RoomDatabase() {
     abstract fun promptDao(): PromptDao
     abstract fun exerciseDao(): ExerciseDao
     abstract fun philosopherDao(): PhilosopherDao
+    abstract fun aiReflectionDao(): AiReflectionDao
 }
 
 class StoicJournalTypeConverters {

@@ -1,28 +1,15 @@
 # Task Management
 
-- [/] Phase 1: Architecture & Security Hardening
-    - [ ] Audit Git configuration for local.properties and secrets
-    - [ ] Implement `FakeAiRepository` for testing and previews
-    - [ ] Implement `SafeAiRepository` for error handling and SDK isolation
-    - [ ] Implement `CachedAiRepository` for offline support
-    - [ ] Update `AiReflectionViewModel` to handle new repository structure
-- [ ] Phase 2: Domain Model Expansion
-    - [ ] Define `AiReflectionRequest`, `AiReflectionResponse`, and `AiFailureReason`
-    - [ ] Implement `StoicPromptTemplate` engine
-    - [ ] Update `GetStoicReflectionUseCase` with new domain models
-- [ ] Phase 3: UI/UX Enhancements
-    - [ ] Implement Theme Selector on `AiReflectionScreen`
-    - [ ] Add Loading, Error, and Success UI states
-    - [ ] Add "Save to Journal" functionality
-    - [ ] Add "Regenerate" functionality
-    - [ ] Improve keyboard handling and responsive layout
-- [ ] Phase 4: Testing & Verification
-    - [ ] Write Unit Tests for UseCases and ViewModels
-    - [ ] Write Integration Tests for Repositories
-    - [ ] Perform UI testing for AI Reflection flow
-    - [ ] Build and verify Debug APK
-    - [ ] Perform Shizuku-based on-device verification
-- [ ] Phase 5: Documentation & Release Prep
-    - [ ] Update `README.md` and security notes
-    - [ ] Generate `APK_VERIFICATION_REPORT.md`
-    - [ ] Finalize `MVP_GAP_ANALYSIS.md`
+- [x] Phase 1-5: AI Hardening & MVP Prep
+- [x] Phase 6: Streaming & Advanced Context
+- [x] Phase 7: Final Polish & UI Testing
+- [x] Phase 8: Habit Reinforcement & UX Polish
+    - [x] Implement Typewriter effect for AI reflections
+    - [x] Implement "Stoic Quote of the Day" Home Screen Widget
+    - [x] Create `GetStreakInsightsUseCase` for retention analysis
+    - [x] Add Weekly Reflection Summary logic
+    - [x] Finalize Phase 8 verification
+- [ ] Phase 9: Export & Search
+    - [ ] Implement Markdown export for entries
+    - [ ] Implement PDF export for entries
+    - [ ] Add search functionality to History screen
