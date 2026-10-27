@@ -3,12 +3,20 @@ plugins {
     id("stoic.android.hilt")
     id("stoic.android.room")
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.secrets)
 }
 
 android {
     namespace = "com.stoicjournal.core.data"
     buildFeatures {
         compose = false
+        buildConfig = true
+    }
+}
+
+kapt {
+    arguments {
+        arg("room.schemaLocation", "$projectDir/schemas")
     }
 }
 
@@ -20,6 +28,7 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.google.generative.ai)
     kapt(libs.androidx.room.compiler)
 
     testImplementation(libs.junit)

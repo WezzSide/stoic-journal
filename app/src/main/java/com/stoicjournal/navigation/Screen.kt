@@ -19,4 +19,5 @@ sealed class Screen(val route: String) {
         fun createRoute(entryId: String) = "entry_detail/$entryId"
     }
     data object Settings : Screen("settings")
+    data object AiReflection : Screen("ai_reflection")
 }

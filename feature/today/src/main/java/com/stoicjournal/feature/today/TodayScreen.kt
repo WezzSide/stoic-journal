@@ -51,6 +51,7 @@ fun TodayScreen(
     onNavigateToLibrary: () -> Unit,
     onNavigateToHistory: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    onNavigateToAiReflection: () -> Unit,
     viewModel: TodayViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -85,6 +86,7 @@ fun TodayScreen(
         onNavigateToLibrary = onNavigateToLibrary,
         onNavigateToHistory = onNavigateToHistory,
         onNavigateToSettings = onNavigateToSettings,
+        onNavigateToAiReflection = onNavigateToAiReflection,
         onLoadErrorShown = viewModel::loadErrorShown
     )
 }
@@ -99,6 +101,7 @@ internal fun TodayScreenContent(
     onNavigateToLibrary: () -> Unit,
     onNavigateToHistory: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    onNavigateToAiReflection: () -> Unit,
     onLoadErrorShown: () -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -162,6 +165,7 @@ internal fun TodayScreenContent(
                     val exerciseId = uiState.exercises.firstOrNull()?.id ?: "exercise-dichotomy-of-control"
                     onExercise(exerciseId)
                 },
+                onAiReflection = onNavigateToAiReflection,
                 modifier = Modifier.fillMaxWidth()
             )
 
