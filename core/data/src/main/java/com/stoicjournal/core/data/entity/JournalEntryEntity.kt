@@ -13,6 +13,7 @@ data class JournalEntryEntity(
     val body: String,
     val quoteId: String? = null,
     val exerciseId: String? = null,
+    val virtues: String = "",
     val createdAtMillis: Long,
     val updatedAtMillis: Long
 )

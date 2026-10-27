@@ -10,6 +10,7 @@ data class JournalEntry(
     val body: String,
     val quoteId: String? = null,
     val exerciseId: String? = null,
+    val virtues: List<Virtue> = emptyList(),
     val createdAt: Instant,
     val updatedAt: Instant
 )

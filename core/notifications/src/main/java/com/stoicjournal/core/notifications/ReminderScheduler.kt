@@ -19,6 +19,18 @@ class ReminderScheduler @Inject constructor(
     private val workManager = WorkManager.getInstance(context)
 
     fun schedule(hour: Int, minute: Int) {
+        scheduleEvening(hour, minute)
+    }
+
+    fun scheduleMorning(hour: Int = 8, minute: Int = 0) {
+        scheduleInternal(DailyReminderWorker.WORK_NAME_MORNING, hour, minute, isMorning = true)
+    }
+
+    fun scheduleEvening(hour: Int = 21, minute: Int = 0) {
+        scheduleInternal(DailyReminderWorker.WORK_NAME_EVENING, hour, minute, isMorning = false)
+    }
+
+    private fun scheduleInternal(workName: String, hour: Int, minute: Int, isMorning: Boolean) {
         val now = LocalDateTime.now(ZoneId.systemDefault())
         var target = now.withHour(hour).withMinute(minute).withSecond(0).withNano(0)
         if (target.isBefore(now)) {
@@ -28,12 +40,18 @@ class ReminderScheduler @Inject constructor(
 
         val request = OneTimeWorkRequestBuilder<DailyReminderWorker>()
             .setInitialDelay(delay)
-            .setInputData(workDataOf("hour" to hour, "minute" to minute))
-            .addTag(DailyReminderWorker.WORK_NAME)
+            .setInputData(
+                workDataOf(
+                    "hour" to hour,
+                    "minute" to minute,
+                    "is_morning" to isMorning
+                )
+            )
+            .addTag(workName)
             .build()
 
         workManager.enqueueUniqueWork(
-            DailyReminderWorker.WORK_NAME,
+            workName,
             ExistingWorkPolicy.REPLACE,
             request
         )
@@ -41,5 +59,15 @@ class ReminderScheduler @Inject constructor(
 
     fun cancel() {
         workManager.cancelUniqueWork(DailyReminderWorker.WORK_NAME)
+        workManager.cancelUniqueWork(DailyReminderWorker.WORK_NAME_MORNING)
+        workManager.cancelUniqueWork(DailyReminderWorker.WORK_NAME_EVENING)
+    }
+
+    fun cancelMorning() {
+        workManager.cancelUniqueWork(DailyReminderWorker.WORK_NAME_MORNING)
+    }
+
+    fun cancelEvening() {
+        workManager.cancelUniqueWork(DailyReminderWorker.WORK_NAME_EVENING)
     }
 }

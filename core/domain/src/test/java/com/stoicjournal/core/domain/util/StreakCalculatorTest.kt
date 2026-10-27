@@ -4,7 +4,6 @@ import com.stoicjournal.core.domain.model.EntryType
 import com.stoicjournal.core.domain.model.JournalEntry
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -27,13 +26,23 @@ class StreakCalculatorTest {
     }
 
     @Test
-    fun `gap breaks streak`() {
+    fun `gap breaks streak when allowFreeze is false`() {
         val entries = listOf(
             entryOn(LocalDate.now()),
             entryOn(LocalDate.now().minusDays(2))
         )
-        val result = StreakCalculator.calculate(entries)
+        val result = StreakCalculator.calculate(entries, allowFreeze = false)
         assertEquals(1, result.currentCount)
+    }
+
+    @Test
+    fun `streak freeze protects single missed day`() {
+        val entries = listOf(
+            entryOn(LocalDate.now()),
+            entryOn(LocalDate.now().minusDays(2))
+        )
+        val result = StreakCalculator.calculate(entries, allowFreeze = true)
+        assertEquals(2, result.currentCount)
     }
 
     private fun entryOn(date: LocalDate): JournalEntry {

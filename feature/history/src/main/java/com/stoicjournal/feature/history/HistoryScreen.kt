@@ -1,7 +1,6 @@
 package com.stoicjournal.feature.history
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.stoicjournal.feature.history.components.EntryFilterChips
 import com.stoicjournal.feature.history.components.EntryListItem
+import com.stoicjournal.feature.history.components.VirtueStatsCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,6 +101,10 @@ fun HistoryScreen(
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
                     verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)
                 ) {
+                    item {
+                        VirtueStatsCard(entries = uiState.entries)
+                    }
+
                     items(uiState.entries, key = { it.id }) { entry ->
                         val dismissState = rememberSwipeToDismissBoxState(
                             confirmValueChange = { dismissValue ->

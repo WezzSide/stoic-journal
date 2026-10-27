@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.stoicjournal.feature.today.components.DailyPromptCard
+import com.stoicjournal.feature.today.components.OnThisDayCard
 import com.stoicjournal.feature.today.components.QuickActionsRow
 import com.stoicjournal.feature.today.components.StreakIndicator
 
@@ -137,6 +139,14 @@ internal fun TodayScreenContent(
         ) {
             StreakIndicator(streak = uiState.streak)
 
+            uiState.onThisDayEntry?.let { pastEntry ->
+                OnThisDayCard(
+                    entry = pastEntry,
+                    onClick = onNavigateToHistory,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             uiState.prompt?.let { prompt ->
                 DailyPromptCard(
                     prompt = prompt,
@@ -149,7 +159,7 @@ internal fun TodayScreenContent(
             QuickActionsRow(
                 onFreeForm = onFreeFormJournal,
                 onExercise = {
-                    val exerciseId = uiState.exercises.firstOrNull()?.id ?: return@QuickActionsRow
+                    val exerciseId = uiState.exercises.firstOrNull()?.id ?: "exercise-dichotomy-of-control"
                     onExercise(exerciseId)
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -165,7 +175,9 @@ internal fun TodayScreenContent(
                     ListItem(
                         headlineContent = { Text(exercise.title) },
                         supportingContent = { Text(exercise.description) },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onExercise(exercise.id) },
                         trailingContent = {
                             IconButton(onClick = { onExercise(exercise.id) }) {
                                 Icon(Icons.AutoMirrored.Filled.LibraryBooks, contentDescription = "Start exercise")

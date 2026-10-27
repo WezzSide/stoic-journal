@@ -3,6 +3,7 @@ package com.stoicjournal.core.data.repository
 import com.stoicjournal.core.data.dao.JournalEntryDao
 import com.stoicjournal.core.data.entity.JournalEntryEntity
 import com.stoicjournal.core.domain.model.JournalEntry
+import com.stoicjournal.core.domain.model.Virtue
 import com.stoicjournal.core.domain.repository.JournalRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -40,6 +41,9 @@ private fun JournalEntryEntity.toDomain() = JournalEntry(
     body = body,
     quoteId = quoteId,
     exerciseId = exerciseId,
+    virtues = if (virtues.isBlank()) emptyList() else virtues.split(",").mapNotNull { name ->
+        try { Virtue.valueOf(name.trim()) } catch (_: Exception) { null }
+    },
     createdAt = Instant.ofEpochMilli(createdAtMillis),
     updatedAt = Instant.ofEpochMilli(updatedAtMillis)
 )
@@ -52,6 +56,7 @@ private fun JournalEntry.toEntity() = JournalEntryEntity(
     body = body,
     quoteId = quoteId,
     exerciseId = exerciseId,
+    virtues = virtues.joinToString(",") { it.name },
     createdAtMillis = createdAt.toEpochMilli(),
     updatedAtMillis = updatedAt.toEpochMilli()
 )
