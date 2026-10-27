@@ -29,6 +29,8 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.google.generative.ai)
+    implementation(libs.okhttp.client)
+    implementation(libs.okhttp.logging)
     kapt(libs.androidx.room.compiler)
 
     testImplementation(libs.junit)

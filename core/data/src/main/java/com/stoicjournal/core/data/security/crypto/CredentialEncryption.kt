@@ -4,5 +4,5 @@ import com.stoicjournal.core.data.security.model.EncryptedCredentialEnvelope
 
 interface CredentialEncryption {
     fun encrypt(providerId: String, credentialType: String, plaintext: String): Result<EncryptedCredentialEnvelope>
-    fun decrypt(envelope: EncryptedCredentialEnvelope): Result<String>
+    fun decrypt(requestedProviderId: String, envelope: EncryptedCredentialEnvelope): Result<String>
 }

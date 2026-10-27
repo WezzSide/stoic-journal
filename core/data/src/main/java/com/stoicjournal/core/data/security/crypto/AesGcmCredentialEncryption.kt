@@ -2,7 +2,7 @@ package com.stoicjournal.core.data.security.crypto
 
 import android.util.Base64
 import com.stoicjournal.core.data.security.model.EncryptedCredentialEnvelope
-import com.stoicjournal.core.domain.model.AiError
+import com.stoicjournal.core.domain.model.CredentialSecurityError
 import java.time.Instant
 import javax.crypto.AEADBadTagException
 import javax.crypto.Cipher
@@ -20,6 +20,7 @@ class AesGcmCredentialEncryption @Inject constructor(
         private const val TAG_LENGTH_BIT = 128
         const val CURRENT_FORMAT_VERSION = 1
         const val KEY_ALIAS_V1 = "sj_ai_credential_key_v1"
+        private val ALLOWED_ALIASES = setOf(KEY_ALIAS_V1)
     }
 
     private fun buildAad(providerId: String, credentialType: String): ByteArray {
@@ -29,7 +30,7 @@ class AesGcmCredentialEncryption @Inject constructor(
 
     override fun encrypt(providerId: String, credentialType: String, plaintext: String): Result<EncryptedCredentialEnvelope> {
         return try {
-            val secretKey = keystoreManager.getOrGenerateKey(KEY_ALIAS_V1)
+            val secretKey = keystoreManager.createKeyIfAbsent(KEY_ALIAS_V1)
             val cipher = Cipher.getInstance(TRANSFORMATION)
             cipher.init(Cipher.ENCRYPT_MODE, secretKey)
             
@@ -51,20 +52,25 @@ class AesGcmCredentialEncryption @Inject constructor(
             )
             Result.success(envelope)
         } catch (e: Exception) {
-            Result.failure(Exception("Encryption failed", e))
+            Result.failure(e)
         }
     }
 
-    override fun decrypt(envelope: EncryptedCredentialEnvelope): Result<String> {
+    override fun decrypt(requestedProviderId: String, envelope: EncryptedCredentialEnvelope): Result<String> {
+        if (envelope.providerId != requestedProviderId) {
+            return Result.failure(IllegalStateException(CredentialSecurityError.CorruptedCredentialRecord.toString()))
+        }
         if (envelope.formatVersion != CURRENT_FORMAT_VERSION) {
-            return Result.failure(Exception("Unsupported envelope version"))
+            return Result.failure(IllegalStateException(CredentialSecurityError.UnsupportedEnvelopeVersion.toString()))
         }
-        if (!keystoreManager.hasKey(envelope.keyAlias)) {
-            return Result.failure(Exception("Missing keystore key"))
+        if (!ALLOWED_ALIASES.contains(envelope.keyAlias)) {
+            return Result.failure(IllegalStateException(CredentialSecurityError.CorruptedCredentialRecord.toString()))
         }
-        
+
+        val secretKey = keystoreManager.getExistingKey(envelope.keyAlias)
+            ?: return Result.failure(IllegalStateException(CredentialSecurityError.MissingKeystoreKey.toString()))
+
         return try {
-            val secretKey = keystoreManager.getOrGenerateKey(envelope.keyAlias)
             val cipher = Cipher.getInstance(TRANSFORMATION)
             val nonce = Base64.decode(envelope.nonce, Base64.NO_WRAP)
             val spec = GCMParameterSpec(TAG_LENGTH_BIT, nonce)
@@ -77,9 +83,9 @@ class AesGcmCredentialEncryption @Inject constructor(
             
             Result.success(String(plaintext, Charsets.UTF_8))
         } catch (e: AEADBadTagException) {
-            Result.failure(Exception("Authentication tag mismatch", e))
+            Result.failure(IllegalStateException(CredentialSecurityError.AuthenticationTagMismatch.toString(), e))
         } catch (e: Exception) {
-            Result.failure(Exception("Decryption failed", e))
+            Result.failure(IllegalStateException(CredentialSecurityError.DecryptionFailed.toString(), e))
         }
     }
 }

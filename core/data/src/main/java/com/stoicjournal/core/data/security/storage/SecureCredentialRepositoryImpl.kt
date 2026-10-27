@@ -2,9 +2,13 @@ package com.stoicjournal.core.data.security.storage
 
 import androidx.datastore.core.DataStore
 import com.stoicjournal.core.data.security.crypto.CredentialEncryption
+import com.stoicjournal.core.data.security.model.OAuthCredentialPayload
+import com.stoicjournal.core.domain.model.CredentialSecurityError
 import com.stoicjournal.core.domain.model.ProviderCredential
 import com.stoicjournal.core.domain.repository.SecureCredentialRepository
 import kotlinx.coroutines.flow.first
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,7 +21,14 @@ class SecureCredentialRepositoryImpl @Inject constructor(
     override suspend fun saveCredential(providerId: String, credential: ProviderCredential) {
         val (type, plaintext) = when (credential) {
             is ProviderCredential.ApiKey -> "API_KEY" to credential.key
-            is ProviderCredential.OAuthToken -> "OAUTH_TOKEN" to "${credential.accessToken}|${credential.refreshToken ?: ""}|${credential.expiresAt ?: ""}"
+            is ProviderCredential.OAuthToken -> {
+                val payload = OAuthCredentialPayload(
+                    accessToken = credential.accessToken,
+                    refreshToken = credential.refreshToken,
+                    expiresAt = credential.expiresAt
+                )
+                "OAUTH_TOKEN" to Json.encodeToString(payload)
+            }
         }
         
         val result = encryption.encrypt(providerId, type, plaintext)
@@ -30,27 +41,41 @@ class SecureCredentialRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getCredential(providerId: String): ProviderCredential? {
-        val prefs = dataStore.data.first()
-        val envelope = prefs.credentials[providerId] ?: return null
-        
-        val result = encryption.decrypt(envelope)
-        val plaintext = result.getOrNull() ?: return null
+    override suspend fun getCredential(providerId: String): Result<ProviderCredential> {
+        val prefs = try {
+            dataStore.data.first()
+        } catch (e: Exception) {
+            return Result.failure(IllegalStateException(CredentialSecurityError.StorageUnavailable.toString(), e))
+        }
 
-        return when (envelope.credentialType) {
+        val envelope = prefs.credentials[providerId] 
+            ?: return Result.failure(IllegalStateException(CredentialSecurityError.MissingCredential.toString()))
+        
+        val result = encryption.decrypt(providerId, envelope)
+        if (result.isFailure) {
+            return Result.failure(result.exceptionOrNull()!!)
+        }
+
+        val plaintext = result.getOrThrow()
+
+        val credential = when (envelope.credentialType) {
             "API_KEY" -> ProviderCredential.ApiKey(plaintext)
             "OAUTH_TOKEN" -> {
-                val parts = plaintext.split("|")
-                if (parts.size == 3) {
+                try {
+                    val payload = Json.decodeFromString<OAuthCredentialPayload>(plaintext)
                     ProviderCredential.OAuthToken(
-                        accessToken = parts[0],
-                        refreshToken = parts[1].takeIf { it.isNotEmpty() },
-                        expiresAt = parts[2].takeIf { it.isNotEmpty() }?.toLongOrNull()
+                        accessToken = payload.accessToken,
+                        refreshToken = payload.refreshToken,
+                        expiresAt = payload.expiresAt
                     )
-                } else null
+                } catch (e: Exception) {
+                    return Result.failure(IllegalStateException(CredentialSecurityError.CorruptedCredentialRecord.toString(), e))
+                }
             }
-            else -> null
+            else -> return Result.failure(IllegalStateException(CredentialSecurityError.UnsupportedEnvelopeVersion.toString()))
         }
+
+        return Result.success(credential)
     }
 
     override suspend fun deleteCredential(providerId: String) {
@@ -62,6 +87,10 @@ class SecureCredentialRepositoryImpl @Inject constructor(
     }
 
     override suspend fun hasCredential(providerId: String): Boolean {
-        return dataStore.data.first().credentials.containsKey(providerId)
+        return try {
+            dataStore.data.first().credentials.containsKey(providerId)
+        } catch (e: Exception) {
+            false
+        }
     }
 }

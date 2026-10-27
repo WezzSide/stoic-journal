@@ -1,5 +1,7 @@
 package com.stoicjournal.core.domain.model
 
+import kotlinx.coroutines.flow.Flow
+
 data class AiProviderRequest(
     val conversationId: String,
     val userMessage: String,
@@ -30,13 +32,22 @@ data class UsageMetadata(
     val estimatedMonetaryCost: Double?
 )
 
+sealed interface AiStreamEvent {
+    data class Started(val requestId: String) : AiStreamEvent
+    data class TextDelta(val text: String) : AiStreamEvent
+    data class UsageUpdated(val usage: UsageMetadata) : AiStreamEvent
+    data class Completed(val response: AiProviderResponse) : AiStreamEvent
+    data class Failed(val error: AiError) : AiStreamEvent
+}
+
 interface AiProvider {
     val providerId: String
     suspend fun validateConnection(): Result<Boolean>
     suspend fun listAvailableModels(): Result<List<String>>
     suspend fun generateResponse(request: AiProviderRequest): Result<AiProviderResponse>
-    fun streamResponse(request: AiProviderRequest): kotlinx.coroutines.flow.Flow<Result<AiProviderResponse>>
-    fun cancelResponse()
+    fun streamResponse(request: AiProviderRequest): Flow<Result<AiProviderResponse>>
+    fun streamEvents(request: AiProviderRequest): Flow<AiStreamEvent>
+    fun cancelRequest(requestId: String)
     fun reportUsage(): UsageMetadata
 }
 

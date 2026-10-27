@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.stoicjournal.core.data.dao.AiReflectionDao
 import com.stoicjournal.core.data.database.StoicJournalDatabase
 import com.stoicjournal.core.data.repository.CachedAiRepository
+import com.stoicjournal.core.data.repository.DefaultAiProviderRegistry
 import com.stoicjournal.core.data.repository.ExerciseRepositoryImpl
 import com.stoicjournal.core.data.repository.GeminiAiRepositoryImpl
 import com.stoicjournal.core.data.repository.JournalDraftRepositoryImpl
@@ -14,6 +15,7 @@ import com.stoicjournal.core.data.repository.PreferencesRepositoryImpl
 import com.stoicjournal.core.data.repository.PromptRepositoryImpl
 import com.stoicjournal.core.data.repository.QuoteRepositoryImpl
 import com.stoicjournal.core.data.repository.SafeAiRepository
+import com.stoicjournal.core.domain.model.AiProviderRegistry
 import com.stoicjournal.core.domain.repository.AiRepository
 import com.stoicjournal.core.domain.repository.ExerciseRepository
 import com.stoicjournal.core.domain.repository.JournalDraftRepository
@@ -28,6 +30,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
@@ -53,6 +57,23 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindJournalDraftRepository(impl: JournalDraftRepositoryImpl): JournalDraftRepository
+
+    @Binds
+    abstract fun bindAiProviderRegistry(impl: DefaultAiProviderRegistry): AiProviderRegistry
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object NetworkModule {
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(): OkHttpClient {
+        return OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+    }
 }
 
 @Module

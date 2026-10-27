@@ -5,17 +5,21 @@ import kotlinx.serialization.json.Json
 import java.io.InputStream
 import java.io.OutputStream
 
+import androidx.datastore.core.CorruptionException
+
 object CredentialStorageSerializer : Serializer<CredentialPreferences> {
     override val defaultValue: CredentialPreferences = CredentialPreferences()
 
     override suspend fun readFrom(input: InputStream): CredentialPreferences {
+        val text = input.readBytes().decodeToString()
+        if (text.isBlank()) return defaultValue
         return try {
             Json.decodeFromString(
                 CredentialPreferences.serializer(),
-                input.readBytes().decodeToString()
+                text
             )
         } catch (e: Exception) {
-            defaultValue
+            throw CorruptionException("Cannot read credentials.", e)
         }
     }
 

@@ -13,13 +13,18 @@ class AndroidKeystoreManager @Inject constructor() {
 
     private val keyStore: KeyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }
 
-    fun getOrGenerateKey(keyAlias: String): SecretKey {
+    fun createKeyIfAbsent(keyAlias: String): SecretKey {
         return if (keyStore.containsAlias(keyAlias)) {
-            val entry = keyStore.getEntry(keyAlias, null) as? KeyStore.SecretKeyEntry
-            entry?.secretKey ?: generateKey(keyAlias)
+            getExistingKey(keyAlias) ?: generateKey(keyAlias)
         } else {
             generateKey(keyAlias)
         }
+    }
+
+    fun getExistingKey(keyAlias: String): SecretKey? {
+        if (!keyStore.containsAlias(keyAlias)) return null
+        val entry = keyStore.getEntry(keyAlias, null) as? KeyStore.SecretKeyEntry
+        return entry?.secretKey
     }
 
     private fun generateKey(keyAlias: String): SecretKey {
