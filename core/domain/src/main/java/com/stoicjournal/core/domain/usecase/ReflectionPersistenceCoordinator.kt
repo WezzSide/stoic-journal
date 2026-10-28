@@ -2,9 +2,10 @@ package com.stoicjournal.core.domain.usecase
 
 import com.stoicjournal.core.domain.model.EntryType
 import com.stoicjournal.core.domain.model.JournalEntry
+import com.stoicjournal.core.domain.model.MentorReflectionLink
 import com.stoicjournal.core.domain.model.ReflectionCandidate
 import com.stoicjournal.core.domain.repository.JournalRepository
-import com.stoicjournal.core.domain.repository.StoicMentorRepository
+import com.stoicjournal.core.domain.repository.MentorReflectionLinkRepository
 import java.time.Instant
 import java.util.UUID
 import javax.inject.Inject
@@ -13,15 +14,24 @@ import javax.inject.Singleton
 @Singleton
 class ReflectionPersistenceCoordinator @Inject constructor(
     private val journalRepository: JournalRepository,
-    private val mentorRepository: StoicMentorRepository,
+    private val linkRepository: MentorReflectionLinkRepository,
     private val validator: ReflectionCandidateValidator
 ) {
     suspend fun saveReflectionCandidate(
-        candidate: ReflectionCandidate
+        candidate: ReflectionCandidate,
+        savePolicy: String = "REVIEW_REQUIRED"
     ): Result<JournalEntry> {
         val validation = validator.validate(candidate)
         if (validation.isFailure) {
             return Result.failure(validation.exceptionOrNull()!!)
+        }
+
+        val existingLink = linkRepository.getLink(candidate.conversationId, candidate.candidateId)
+        if (existingLink != null) {
+            val existingEntry = journalRepository.getEntryById(existingLink.journalEntryId)
+            if (existingEntry != null) {
+                return Result.success(existingEntry)
+            }
         }
 
         val entryId = UUID.randomUUID().toString()
@@ -56,6 +66,17 @@ class ReflectionPersistenceCoordinator @Inject constructor(
 
         return try {
             journalRepository.saveEntry(journalEntry)
+
+            val link = MentorReflectionLink(
+                id = UUID.randomUUID().toString(),
+                conversationId = candidate.conversationId,
+                candidateId = candidate.candidateId,
+                journalEntryId = entryId,
+                createdAt = Instant.now(),
+                savePolicy = savePolicy
+            )
+            linkRepository.saveLink(link)
+
             Result.success(journalEntry)
         } catch (e: Exception) {
             Result.failure(e)

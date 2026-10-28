@@ -9,6 +9,7 @@ import com.stoicjournal.core.data.dao.ExerciseDao
 import com.stoicjournal.core.data.dao.JournalEntryDao
 import com.stoicjournal.core.data.dao.MentorConversationDao
 import com.stoicjournal.core.data.dao.MentorMessageDao
+import com.stoicjournal.core.data.dao.MentorReflectionLinkDao
 import com.stoicjournal.core.data.dao.PhilosopherDao
 import com.stoicjournal.core.data.dao.PromptDao
 import com.stoicjournal.core.data.dao.QuoteDao
@@ -17,6 +18,7 @@ import com.stoicjournal.core.data.entity.ExerciseEntity
 import com.stoicjournal.core.data.entity.JournalEntryEntity
 import com.stoicjournal.core.data.entity.MentorConversationEntity
 import com.stoicjournal.core.data.entity.MentorMessageEntity
+import com.stoicjournal.core.data.entity.MentorReflectionLinkEntity
 import com.stoicjournal.core.data.entity.MentorSessionEntity
 import com.stoicjournal.core.data.entity.PhilosopherEntity
 import com.stoicjournal.core.data.entity.PromptEntity
@@ -35,9 +37,10 @@ import com.stoicjournal.core.domain.model.Theme
         AiReflectionEntity::class,
         MentorConversationEntity::class,
         MentorMessageEntity::class,
-        MentorSessionEntity::class
+        MentorSessionEntity::class,
+        MentorReflectionLinkEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = true
 )
 @TypeConverters(StoicJournalTypeConverters::class)
@@ -50,6 +53,7 @@ abstract class StoicJournalDatabase : RoomDatabase() {
     abstract fun aiReflectionDao(): AiReflectionDao
     abstract fun mentorConversationDao(): MentorConversationDao
     abstract fun mentorMessageDao(): MentorMessageDao
+    abstract fun mentorReflectionLinkDao(): MentorReflectionLinkDao
 }
 
 class StoicJournalTypeConverters {

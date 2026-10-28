@@ -14,7 +14,10 @@ import com.stoicjournal.core.data.repository.GeminiAiRepositoryImpl
 import com.stoicjournal.core.data.repository.JournalDraftRepositoryImpl
 import com.stoicjournal.core.data.repository.JournalRepositoryImpl
 import com.stoicjournal.core.data.repository.MentorConversationRepositoryImpl
+import com.stoicjournal.core.data.repository.MentorReflectionLinkRepositoryImpl
 import com.stoicjournal.core.data.repository.PhilosopherRepositoryImpl
+import com.stoicjournal.core.data.repository.ProactiveMentorPreferencesRepositoryImpl
+import com.stoicjournal.core.domain.repository.ProactiveMentorPreferencesRepository
 import com.stoicjournal.core.data.repository.PreferencesRepositoryImpl
 import com.stoicjournal.core.data.repository.PromptRepositoryImpl
 import com.stoicjournal.core.data.repository.QuoteRepositoryImpl
@@ -72,6 +75,12 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindDailyReflectionStatusRepository(impl: DailyReflectionStatusRepositoryImpl): DailyReflectionStatusRepository
+
+    @Binds
+    abstract fun bindMentorReflectionLinkRepository(impl: MentorReflectionLinkRepositoryImpl): com.stoicjournal.core.domain.repository.MentorReflectionLinkRepository
+
+    @Binds
+    abstract fun bindProactiveMentorPreferencesRepository(impl: ProactiveMentorPreferencesRepositoryImpl): ProactiveMentorPreferencesRepository
 }
 
 @Module
@@ -148,13 +157,23 @@ object DatabaseModule {
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_mentor_sessions_conversationId` ON `mentor_sessions` (`conversationId`)")
             }
         }
+        val migration4to5 = object : androidx.room.migration.Migration(4, 5) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `mentor_reflection_links` (`id` TEXT NOT NULL, `conversationId` TEXT NOT NULL, `candidateId` TEXT NOT NULL, `journalEntryId` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `savePolicy` TEXT NOT NULL, PRIMARY KEY(`id`))"
+                )
+                db.execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_mentor_reflection_links_conversationId_candidateId` ON `mentor_reflection_links` (`conversationId`, `candidateId`)"
+                )
+            }
+        }
 
         return Room.databaseBuilder(
             context,
             StoicJournalDatabase::class.java,
             "stoic_journal.db"
         )
-            .addMigrations(migration1to2, migration2to3, migration1to3, migration3to4)
+            .addMigrations(migration1to2, migration2to3, migration1to3, migration3to4, migration4to5)
             .build()
     }
 
@@ -181,4 +200,7 @@ object DatabaseModule {
 
     @Provides
     fun provideMentorMessageDao(db: StoicJournalDatabase) = db.mentorMessageDao()
+
+    @Provides
+    fun provideMentorReflectionLinkDao(db: StoicJournalDatabase) = db.mentorReflectionLinkDao()
 }

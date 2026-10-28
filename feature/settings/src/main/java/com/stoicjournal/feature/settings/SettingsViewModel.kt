@@ -11,6 +11,7 @@ import com.stoicjournal.core.domain.model.Virtue
 import com.stoicjournal.core.domain.model.AiProviderRegistry
 import com.stoicjournal.core.domain.model.ProviderCredential
 import com.stoicjournal.core.domain.repository.SecureCredentialRepository
+import com.stoicjournal.core.domain.repository.ProactiveMentorPreferencesRepository
 import com.stoicjournal.core.domain.repository.JournalRepository
 import com.stoicjournal.core.domain.repository.PreferencesRepository
 import com.stoicjournal.core.notifications.ReminderScheduler
@@ -36,7 +37,8 @@ class SettingsViewModel @Inject constructor(
     private val journalRepository: JournalRepository,
     private val reminderScheduler: ReminderScheduler,
     private val secureCredentialRepository: SecureCredentialRepository,
-    private val aiProviderRegistry: AiProviderRegistry
+    private val aiProviderRegistry: AiProviderRegistry,
+    private val proactivePreferencesRepository: ProactiveMentorPreferencesRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -353,6 +355,12 @@ class SettingsViewModel @Inject constructor(
             } catch (e: Exception) {
                 onResult(false, "Opslaan mislukt: ${e.message}")
             }
+        }
+    }
+
+    fun setProactiveMentorEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            proactivePreferencesRepository.setProactiveMentorEnabled(enabled)
         }
     }
 
