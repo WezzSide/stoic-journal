@@ -57,6 +57,7 @@ class MainActivity : FragmentActivity() {
                 val startDestination by viewModel.startDestination.collectAsState()
                 val userPrefs by viewModel.userPreferences.collectAsState()
                 val isLocked by viewModel.isLocked.collectAsState()
+                val pinLockoutUntil by viewModel.pinLockoutUntilMillis.collectAsState()
 
                 // Register ProcessLifecycleObserver for lock timeouts
                 LaunchedEffect(Unit) {
@@ -96,6 +97,7 @@ class MainActivity : FragmentActivity() {
                         onPinSubmitted = { pin ->
                             viewModel.unlockWithPin(pin)
                         },
+                        lockoutUntilMillis = pinLockoutUntil,
                         onBiometricRequested = {
                             biometricPromptManager.showBiometricPrompt(
                                 onSuccess = { viewModel.unlock() },

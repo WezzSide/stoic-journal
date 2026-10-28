@@ -13,4 +13,6 @@ android {
 
 dependencies {
     implementation(libs.androidx.foundation)
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 }

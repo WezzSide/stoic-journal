@@ -23,7 +23,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.ui.platform.testTag
+import kotlinx.coroutines.delay
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -37,12 +41,26 @@ fun LockScreen(
     showBiometricButton: Boolean,
     onPinSubmitted: (String) -> Boolean,
     onBiometricRequested: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    lockoutUntilMillis: Long = 0L
 ) {
     var enteredPin by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var nowMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
+
+    // Tick once a second while PIN entry is throttled so the countdown and keypad re-enable live.
+    LaunchedEffect(lockoutUntilMillis) {
+        nowMillis = System.currentTimeMillis()
+        while (nowMillis < lockoutUntilMillis) {
+            delay(1_000)
+            nowMillis = System.currentTimeMillis()
+        }
+    }
+    val lockoutSeconds = ((lockoutUntilMillis - nowMillis).coerceAtLeast(0L) + 999) / 1000
+    val isThrottled = lockoutSeconds > 0
 
     fun onNumberClicked(num: String) {
+        if (isThrottled) return
         if (enteredPin.length < 4) {
             enteredPin += num
             errorMessage = null
@@ -124,9 +142,10 @@ fun LockScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            errorMessage?.let { msg ->
+            (if (isThrottled) "Te veel onjuiste pogingen. Probeer over $lockoutSeconds s opnieuw." else errorMessage)?.let { msg ->
                 Text(
                     text = msg,
+                    modifier = Modifier.testTag("lock_error"),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error
                 )

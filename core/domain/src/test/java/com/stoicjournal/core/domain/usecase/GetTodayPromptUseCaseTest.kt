@@ -109,5 +109,7 @@ class GetTodayPromptUseCaseTest {
         override suspend fun clearPinCode() = Unit
         override suspend fun setLockTimeoutSeconds(seconds: Int) = Unit
         override suspend fun setPrivacyScreenEnabled(enabled: Boolean) = Unit
+        override suspend fun recordPinFailure(nowMillis: Long) = Unit
+        override suspend fun resetPinFailures() = Unit
     }
 }

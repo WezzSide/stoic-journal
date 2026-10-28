@@ -10,7 +10,9 @@ import kotlinx.coroutines.runBlocking
 
 /** Shared helpers for the on-device regression suite (QA-14). All data is synthetic ("QA …"). */
 object E2ESupport {
-    const val APP_PACKAGE = "com.stoicjournal"
+    /** Package of the app under test (com.stoicjournal.qa for the isolated `qa` test build type). */
+    val APP_PACKAGE: String
+        get() = InstrumentationRegistry.getInstrumentation().targetContext.packageName
 
     /**
      * The Hilt test application does not implement Configuration.Provider and the manifest removes the

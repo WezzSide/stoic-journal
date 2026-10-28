@@ -1,6 +1,8 @@
 STOIC JOURNAL
 FINAL ANDROID ENGINEERING ACCEPTANCE
 
+> **QA-002 update (branch `qa/final-qa-002`):** an independent re-run on a Windows host reproduced the JVM suite (88/88), lint (0 errors) and the debug, release and bundle builds. It fixed D-24 (PIN brute-force throttle), D-38 (backup rules not wired) and D-39 (P1 test safety: the device suite ran inside the owner's installed package and cleared their PIN; it is now isolated in `com.stoicjournal.qa`), and added Wisdom Library tests. **97/97 JVM tests pass. On device (Pixel 10 Pro, API 37): 17/17 app E2E in the isolated package and 11/11 core:data (migrations, idempotency), each in one clean run. 125/125 total.** Release signing and the QA-002 commit are PENDING (the agent shell failed). Verdict unchanged: **SJ_FINAL_INTEGRATION_BLOCKED**. Details: `QA_ADDENDUM_002_INDEPENDENT_REVERIFICATION.md`.
+
 Repository: WezzSide/stoic-journal (remote URL `B0LK13/stoic-journal.git` redirects; `gh` user WezzSide)
 Branch: feature/stoic-mentor-multiprovider (= PR #1 head `sync/2026-10-27-stoic-journal-icon`, both at 568cbc7) → QA work on `qa/final-qa-001`; integration candidate `integration/mentor-into-main`
 Starting SHA: 712fe71730ac68906b39fcb72a3e63d6d1a013c1 (mission) / 568cbc7071e85b587a5ce084404e029778797fda (branch HEAD at start, one docs commit later)

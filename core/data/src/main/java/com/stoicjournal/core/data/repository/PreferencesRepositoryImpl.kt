@@ -14,6 +14,8 @@ import com.stoicjournal.core.domain.repository.UserPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import androidx.datastore.preferences.core.longPreferencesKey
+import com.stoicjournal.core.domain.usecase.PinAttemptPolicy
 import java.security.MessageDigest
 import javax.inject.Inject
 
@@ -46,6 +48,8 @@ class PreferencesRepositoryImpl @Inject constructor(
         val PIN_CODE_HASH = stringPreferencesKey("pin_code_hash")
         val LOCK_TIMEOUT_SECONDS = intPreferencesKey("lock_timeout_seconds")
         val PRIVACY_SCREEN_ENABLED = booleanPreferencesKey("privacy_screen_enabled")
+        val PIN_FAILED_ATTEMPTS = intPreferencesKey("pin_failed_attempts")
+        val PIN_LOCKOUT_UNTIL = longPreferencesKey("pin_lockout_until_millis")
     }
 
     override val preferences: Flow<UserPreferences> = dataStore.data.map { prefs ->
@@ -66,7 +70,9 @@ class PreferencesRepositoryImpl @Inject constructor(
             pinLockEnabled = prefs[PIN_LOCK_ENABLED] ?: false,
             pinCodeHash = prefs[PIN_CODE_HASH],
             lockTimeoutSeconds = prefs[LOCK_TIMEOUT_SECONDS] ?: 0,
-            privacyScreenEnabled = prefs[PRIVACY_SCREEN_ENABLED] ?: false
+            privacyScreenEnabled = prefs[PRIVACY_SCREEN_ENABLED] ?: false,
+            pinFailedAttempts = prefs[PIN_FAILED_ATTEMPTS] ?: 0,
+            pinLockoutUntilMillis = prefs[PIN_LOCKOUT_UNTIL] ?: 0L
         )
     }
 
@@ -163,6 +169,22 @@ class PreferencesRepositoryImpl @Inject constructor(
     override suspend fun setPrivacyScreenEnabled(enabled: Boolean) {
         dataStore.edit { prefs ->
             prefs[PRIVACY_SCREEN_ENABLED] = enabled
+        }
+    }
+
+    override suspend fun recordPinFailure(nowMillis: Long) {
+        dataStore.edit { prefs ->
+            val failures = (prefs[PIN_FAILED_ATTEMPTS] ?: 0) + 1
+            prefs[PIN_FAILED_ATTEMPTS] = failures
+            val lockout = PinAttemptPolicy.lockoutMillisAfter(failures)
+            if (lockout > 0) prefs[PIN_LOCKOUT_UNTIL] = nowMillis + lockout
+        }
+    }
+
+    override suspend fun resetPinFailures() {
+        dataStore.edit { prefs ->
+            prefs.remove(PIN_FAILED_ATTEMPTS)
+            prefs.remove(PIN_LOCKOUT_UNTIL)
         }
     }
 

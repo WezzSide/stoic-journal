@@ -20,7 +20,11 @@ data class UserPreferences(
     val pinLockEnabled: Boolean = false,
     val pinCodeHash: String? = null,
     val lockTimeoutSeconds: Int = 0,
-    val privacyScreenEnabled: Boolean = false
+    val privacyScreenEnabled: Boolean = false,
+    /** Consecutive wrong PIN entries (reset on a successful unlock). */
+    val pinFailedAttempts: Int = 0,
+    /** Epoch millis until which PIN entry is throttled; 0 = not throttled. */
+    val pinLockoutUntilMillis: Long = 0L
 )
 
 interface PreferencesRepository {
@@ -40,4 +44,8 @@ interface PreferencesRepository {
     suspend fun clearPinCode()
     suspend fun setLockTimeoutSeconds(seconds: Int)
     suspend fun setPrivacyScreenEnabled(enabled: Boolean)
+
+    /** Atomically increments the failed-PIN counter and stores the resulting lock-out deadline. */
+    suspend fun recordPinFailure(nowMillis: Long)
+    suspend fun resetPinFailures()
 }

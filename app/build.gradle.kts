@@ -36,7 +36,23 @@ android {
         }
     }
 
+    // Instrumentation tests run against a separate `qa` build (applicationId com.stoicjournal.qa) so the
+    // E2E suite — which writes PINs, preferences and synthetic journal rows — can never touch the data of
+    // an installed com.stoicjournal (debug or release) on a personal device. Run: connectedQaAndroidTest.
+    testBuildType = "qa"
+    // The qa build reuses the debug-only test host (HiltTestActivity + its manifest entry).
+    sourceSets.maybeCreate("qa").apply {
+        java.srcDir("src/debug/java")
+        manifest.srcFile("src/debug/AndroidManifest.xml")
+    }
+
     buildTypes {
+        create("qa") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".qa"
+            versionNameSuffix = "-qa"
+            matchingFallbacks += listOf("debug")
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true

@@ -15,6 +15,8 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.runBlocking
 import org.junit.After
+import kotlinx.coroutines.flow.first
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -46,6 +48,7 @@ class AppLockDeepLinkE2ETest {
             preferences.setPinCode("4321")
             preferences.setPinLockEnabled(true)
             preferences.setLockTimeoutSeconds(0)
+            preferences.resetPinFailures()
         }
     }
 
@@ -55,7 +58,45 @@ class AppLockDeepLinkE2ETest {
         runBlocking {
             preferences.setPinLockEnabled(false)
             preferences.clearPinCode()
+            preferences.resetPinFailures()
         }
+    }
+
+    /**
+     * D-24 regression: after five wrong PINs the keypad is throttled — even the correct PIN is refused —
+     * and the throttle survives an activity/process relaunch (it is persisted, not in-memory only).
+     */
+    @Test
+    fun repeatedWrongPins_throttleEntry_evenForCorrectPin_andSurviveRelaunch() {
+        scenario = ActivityScenario.launch(MainActivity::class.java)
+        composeRule.waitForText("Bewaak je innerlijke rust")
+
+        repeat(5) {
+            listOf("1", "1", "1", "1").forEach { composeRule.onNodeWithText(it).performClick() }
+        }
+        composeRule.waitForText("Te veel onjuiste pogingen", substring = true)
+
+        // Correct PIN is ignored while throttled: still on the lock screen.
+        listOf("4", "3", "2", "1").forEach { composeRule.onNodeWithText(it).performClick() }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Bewaak je innerlijke rust").assertIsDisplayed()
+
+        val persisted = runBlocking { preferences.preferences.first() }
+        assertEquals(5, persisted.pinFailedAttempts)
+        assertTrue(persisted.pinLockoutUntilMillis > System.currentTimeMillis())
+
+        // Relaunch: the throttle message is shown again immediately.
+        scenario?.close()
+        scenario = ActivityScenario.launch(MainActivity::class.java)
+        composeRule.waitForText("Te veel onjuiste pogingen", substring = true)
+
+        // Expire the throttle (simulated clock: rewrite the deadline) and unlock with the correct PIN.
+        runBlocking { preferences.resetPinFailures() }
+        scenario?.close()
+        scenario = ActivityScenario.launch(MainActivity::class.java)
+        composeRule.waitForText("Bewaak je innerlijke rust")
+        listOf("4", "3", "2", "1").forEach { composeRule.onNodeWithText(it).performClick() }
+        composeRule.waitForTextGone("Bewaak je innerlijke rust")
     }
 
     @Test
