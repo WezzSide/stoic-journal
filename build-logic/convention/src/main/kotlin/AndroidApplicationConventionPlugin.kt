@@ -3,14 +3,12 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 
 class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         with(pluginManager) {
+            // AGP 9 compiles Kotlin itself (built-in Kotlin); org.jetbrains.kotlin.android is no longer applied.
             apply("com.android.application")
-            apply("org.jetbrains.kotlin.android")
             apply("org.jetbrains.kotlin.plugin.compose")
             apply("stoic.android.hilt")
         }
@@ -24,16 +22,12 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
             }
             compileOptions {
+                // With built-in Kotlin, kotlin.compilerOptions.jvmTarget defaults to targetCompatibility (17).
                 sourceCompatibility = JavaVersion.VERSION_17
                 targetCompatibility = JavaVersion.VERSION_17
             }
             buildFeatures {
                 compose = true
-            }
-        }
-        extensions.configure<KotlinAndroidProjectExtension> {
-            compilerOptions {
-                jvmTarget.set(JvmTarget.JVM_17)
             }
         }
     }

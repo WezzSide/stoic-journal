@@ -19,10 +19,9 @@ android {
     }
 }
 
-kapt {
-    arguments {
-        arg("room.schemaLocation", "$projectDir/schemas")
-    }
+ksp {
+    // Keep exporting Room schemas to core/data/schemas (consumed by MigrationTest via androidTest assets).
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {
@@ -35,7 +34,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.google.generative.ai)
     implementation(libs.okhttp.client)
-    kapt(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

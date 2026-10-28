@@ -41,8 +41,9 @@ android {
     // an installed com.stoicjournal (debug or release) on a personal device. Run: connectedQaAndroidTest.
     testBuildType = "qa"
     // The qa build reuses the debug-only test host (HiltTestActivity + its manifest entry).
+    // (Built-in Kotlin only compiles extra directories registered on the `kotlin` source set.)
     sourceSets.maybeCreate("qa").apply {
-        java.srcDir("src/debug/java")
+        kotlin.directories += "src/debug/java"
         manifest.srcFile("src/debug/AndroidManifest.xml")
     }
 
@@ -107,5 +108,5 @@ dependencies {
     androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.uiautomator)
-    kaptAndroidTest(libs.hilt.compiler)
+    kspAndroidTest(libs.hilt.compiler)
 }
