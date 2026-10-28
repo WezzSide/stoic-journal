@@ -58,14 +58,19 @@ class MainViewModel @Inject constructor(
                     Log.e(TAG, "Failed to seed bundled content", e)
                 }
                 val prefs = preferencesRepository.preferences.first()
-                if (prefs.reminderEnabled) {
-                    try {
-                        reminderScheduler.schedule(prefs.reminderHour, prefs.reminderMinute)
-                    } catch (e: CancellationException) {
-                        throw e
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to schedule reminder", e)
+                // Re-arm only the reminders the user actually has enabled; the legacy `reminderEnabled`
+                // flag is always true after onboarding and used to resurrect a disabled evening reminder.
+                try {
+                    if (prefs.eveningReminderEnabled) {
+                        reminderScheduler.scheduleEvening(prefs.eveningReminderHour, prefs.eveningReminderMinute)
                     }
+                    if (prefs.morningReminderEnabled) {
+                        reminderScheduler.scheduleMorning(prefs.morningReminderHour, prefs.morningReminderMinute)
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to schedule reminder", e)
                 }
                 _startDestination.value = if (prefs.onboardingComplete) {
                     Screen.Today

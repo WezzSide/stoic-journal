@@ -6,8 +6,10 @@ import com.stoicjournal.core.data.dao.AiReflectionDao
 import com.stoicjournal.core.data.dao.MentorConversationDao
 import com.stoicjournal.core.data.dao.MentorMessageDao
 import com.stoicjournal.core.data.database.StoicJournalDatabase
+import com.stoicjournal.core.data.database.StoicJournalMigrations
 import com.stoicjournal.core.data.repository.CachedAiRepository
 import com.stoicjournal.core.data.repository.DailyReflectionStatusRepositoryImpl
+import com.stoicjournal.core.data.repository.AiProviderSelectionRepositoryImpl
 import com.stoicjournal.core.data.repository.DefaultAiProviderRegistry
 import com.stoicjournal.core.data.repository.ExerciseRepositoryImpl
 import com.stoicjournal.core.data.repository.GeminiAiRepositoryImpl
@@ -79,6 +81,9 @@ abstract class RepositoryModule {
     abstract fun bindAiProviderRegistry(impl: DefaultAiProviderRegistry): AiProviderRegistry
 
     @Binds
+    abstract fun bindAiProviderSelectionRepository(impl: AiProviderSelectionRepositoryImpl): com.stoicjournal.core.domain.repository.AiProviderSelectionRepository
+
+    @Binds
     abstract fun bindStoicMentorRepository(impl: MentorConversationRepositoryImpl): StoicMentorRepository
 
     @Binds
@@ -137,71 +142,12 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): StoicJournalDatabase {
-        val migration1to2 = object : androidx.room.migration.Migration(1, 2) {
-            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
-                db.execSQL(
-                    "CREATE TABLE IF NOT EXISTS `ai_reflections` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `content` TEXT NOT NULL, `insight` TEXT NOT NULL, `interpretation` TEXT NOT NULL, `reflectiveQuestion` TEXT NOT NULL, `actionableStep` TEXT NOT NULL, `quote` TEXT, `principle` TEXT, `timestamp` INTEGER NOT NULL, `theme` TEXT NOT NULL)"
-                )
-            }
-        }
-        val migration2to3 = object : androidx.room.migration.Migration(2, 3) {
-            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
-                db.execSQL(
-                    "ALTER TABLE `journal_entries` ADD COLUMN `virtues` TEXT NOT NULL DEFAULT ''"
-                )
-            }
-        }
-        val migration1to3 = object : androidx.room.migration.Migration(1, 3) {
-            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
-                db.execSQL(
-                    "CREATE TABLE IF NOT EXISTS `ai_reflections` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `content` TEXT NOT NULL, `insight` TEXT NOT NULL, `interpretation` TEXT NOT NULL, `reflectiveQuestion` TEXT NOT NULL, `actionableStep` TEXT NOT NULL, `quote` TEXT, `principle` TEXT, `timestamp` INTEGER NOT NULL, `theme` TEXT NOT NULL)"
-                )
-                db.execSQL(
-                    "ALTER TABLE `journal_entries` ADD COLUMN `virtues` TEXT NOT NULL DEFAULT ''"
-                )
-            }
-        }
-        val migration3to4 = object : androidx.room.migration.Migration(3, 4) {
-            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
-                db.execSQL(
-                    "CREATE TABLE IF NOT EXISTS `mentor_conversations` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `providerId` TEXT, `modelId` TEXT, `conversationMode` TEXT NOT NULL, `status` TEXT NOT NULL, `lastMessageAt` INTEGER NOT NULL, `linkedJournalEntryId` TEXT, PRIMARY KEY(`id`))"
-                )
-                db.execSQL(
-                    "CREATE TABLE IF NOT EXISTS `mentor_messages` (`id` TEXT NOT NULL, `conversationId` TEXT NOT NULL, `role` TEXT NOT NULL, `content` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `sequenceNumber` INTEGER NOT NULL, `deliveryStatus` TEXT NOT NULL, `requestCorrelationId` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`conversationId`) REFERENCES `mentor_conversations`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
-                )
-                db.execSQL("CREATE INDEX IF NOT EXISTS `index_mentor_messages_conversationId` ON `mentor_messages` (`conversationId`)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS `index_mentor_messages_createdAt` ON `mentor_messages` (`createdAt`)")
-                db.execSQL(
-                    "CREATE TABLE IF NOT EXISTS `mentor_sessions` (`id` TEXT NOT NULL, `conversationId` TEXT NOT NULL, `startedAt` INTEGER NOT NULL, `completedAt` INTEGER, `status` TEXT NOT NULL, `reflectionCandidateId` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`conversationId`) REFERENCES `mentor_conversations`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
-                )
-                db.execSQL("CREATE INDEX IF NOT EXISTS `index_mentor_sessions_conversationId` ON `mentor_sessions` (`conversationId`)")
-            }
-        }
-        val migration4to5 = object : androidx.room.migration.Migration(4, 5) {
-            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
-                db.execSQL(
-                    "CREATE TABLE IF NOT EXISTS `mentor_reflection_links` (`id` TEXT NOT NULL, `conversationId` TEXT NOT NULL, `candidateId` TEXT NOT NULL, `journalEntryId` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `savePolicy` TEXT NOT NULL, PRIMARY KEY(`id`))"
-                )
-                db.execSQL(
-                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_mentor_reflection_links_conversationId_candidateId` ON `mentor_reflection_links` (`conversationId`, `candidateId`)"
-                )
-            }
-        }
-
-        val migration5to6 = object : androidx.room.migration.Migration(5, 6) {
-            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
-                db.execSQL(
-                    "CREATE TABLE IF NOT EXISTS `mentor_memories` (`id` TEXT NOT NULL, `category` TEXT NOT NULL, `content` TEXT NOT NULL, `sourceEntryIds` TEXT NOT NULL, `sourceConversationIds` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `lastReviewedAt` INTEGER, `status` TEXT NOT NULL, `userApproved` INTEGER NOT NULL, PRIMARY KEY(`id`))"
-                )
-            }
-        }
-
         return Room.databaseBuilder(
             context,
             StoicJournalDatabase::class.java,
             "stoic_journal.db"
         )
-            .addMigrations(migration1to2, migration2to3, migration1to3, migration3to4, migration4to5, migration5to6)
+            .addMigrations(*StoicJournalMigrations.ALL)
             .build()
     }
 

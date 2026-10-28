@@ -1,0 +1,1 @@
+night=auto font_scale=0.85 accel=1 user_rot=0

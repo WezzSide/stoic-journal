@@ -15,7 +15,12 @@ interface MentorConversationDao {
     @Query("SELECT * FROM mentor_conversations WHERE id = :id")
     suspend fun getConversationByIdSync(id: String): MentorConversationEntity?
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    /**
+     * Must be an UPSERT, never `@Insert(onConflict = REPLACE)`: REPLACE deletes the existing row before
+     * re-inserting it, which fires `ON DELETE CASCADE` on `mentor_messages` and silently wiped every
+     * message of a conversation each time the conversation row was updated (D-34).
+     */
+    @Upsert
     suspend fun insertOrUpdate(conversation: MentorConversationEntity)
 
     @Query("DELETE FROM mentor_conversations WHERE id = :id")

@@ -42,6 +42,18 @@ sealed interface AiStreamEvent {
 
 interface AiProvider {
     val providerId: String
+
+    /**
+     * The model this provider uses when the caller has not chosen one. Must be a model that is
+     * currently served by the provider; placeholder strings such as "default" are never sent.
+     */
+    val defaultModelId: String
+
+    /** Maps a stored/requested model id to one that can actually be sent to the provider. */
+    fun resolveModelId(requested: String?): String =
+        requested?.takeUnless { it.isBlank() || it.equals(PLACEHOLDER_MODEL_ID, ignoreCase = true) }
+            ?: defaultModelId
+
     suspend fun validateConnection(): Result<Boolean>
     suspend fun listAvailableModels(): Result<List<String>>
     suspend fun generateResponse(request: AiProviderRequest): Result<AiProviderResponse>
@@ -49,11 +61,24 @@ interface AiProvider {
     fun streamEvents(request: AiProviderRequest): Flow<AiStreamEvent>
     fun cancelRequest(requestId: String)
     fun reportUsage(): UsageMetadata
+
+    companion object {
+        /** Legacy value persisted by earlier builds in `mentor_conversations.modelId`. */
+        const val PLACEHOLDER_MODEL_ID = "default"
+    }
 }
 
 interface AiProviderRegistry {
     fun registerProvider(provider: AiProvider)
     fun getSupportedProviders(): List<AiProvider>
     fun getProvider(providerId: String): AiProvider?
-    fun getActiveProvider(): AiProvider?
+
+    /** The provider the user has selected (persisted), or the safe default when none was chosen. */
+    suspend fun getActiveProvider(): AiProvider?
+
+    /** Persists an explicit user choice. Must only be called after the user consented in the UI. */
+    suspend fun setActiveProvider(providerId: String)
+
+    /** Emits the persisted selection (`null` until the user has chosen). */
+    fun observeActiveProviderId(): Flow<String?>
 }

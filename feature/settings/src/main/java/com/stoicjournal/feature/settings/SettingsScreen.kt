@@ -1,5 +1,13 @@
 package com.stoicjournal.feature.settings
 
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -59,6 +67,7 @@ private enum class ReminderPickerType { MORNING, EVENING }
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToMemorySettings: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -399,58 +408,236 @@ fun SettingsScreen(
             var selectedProvider by remember { mutableStateOf("openai") }
             var apiKeyInput by remember { mutableStateOf("") }
             var isTestingConnection by remember { mutableStateOf(false) }
+            var pendingActiveProvider by remember { mutableStateOf<String?>(null) }
+            var showProactiveTimePicker by remember { mutableStateOf(false) }
 
             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                Text("Selecteer AI Provider", style = MaterialTheme.typography.titleMedium)
+                Text("API-sleutel per provider", style = MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(6.dp))
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    FilterChip(
-                        selected = selectedProvider == "openai",
-                        onClick = { selectedProvider = "openai" },
-                        label = { Text("OpenAI") }
-                    )
-                    FilterChip(
-                        selected = selectedProvider == "claude",
-                        onClick = { selectedProvider = "claude" },
-                        label = { Text("Claude") }
-                    )
-                    FilterChip(
-                        selected = selectedProvider == "gemini",
-                        onClick = { selectedProvider = "gemini" },
-                        label = { Text("Gemini") }
-                    )
+                    SettingsViewModel.PROVIDER_IDS.forEach { id ->
+                        FilterChip(
+                            selected = selectedProvider == id,
+                            onClick = { selectedProvider = id },
+                            label = { Text(providerLabel(id) + if (id in uiState.configuredProviderIds) " ✓" else "") },
+                            modifier = Modifier.testTag("KeyChip_$id")
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedTextField(
                     value = apiKeyInput,
                     onValueChange = { apiKeyInput = it },
-                    label = { Text("$selectedProvider API Key") },
+                    label = { Text("${providerLabel(selectedProvider)} API Key") },
                     placeholder = { Text("sk-...") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("ApiKeyField"),
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, autoCorrect = false)
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = {
-                        if (apiKeyInput.isNotBlank()) {
-                            isTestingConnection = true
-                            viewModel.saveAiApiKey(selectedProvider, apiKeyInput) { success, msg ->
-                                isTestingConnection = false
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(msg)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (selectedProvider in uiState.configuredProviderIds) {
+                        TextButton(
+                            onClick = {
+                                viewModel.deleteAiApiKey(selectedProvider) { msg ->
+                                    scope.launch { snackbarHostState.showSnackbar(msg) }
+                                }
+                            },
+                            modifier = Modifier.testTag("DeleteKeyButton")
+                        ) { Text("Verwijder sleutel") }
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                    Button(
+                        onClick = {
+                            if (apiKeyInput.isNotBlank()) {
+                                isTestingConnection = true
+                                viewModel.saveAiApiKey(selectedProvider, apiKeyInput) { _, msg ->
+                                    isTestingConnection = false
+                                    apiKeyInput = ""
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar(msg)
+                                    }
                                 }
                             }
-                        }
+                        },
+                        enabled = apiKeyInput.isNotBlank() && !isTestingConnection,
+                        modifier = Modifier.testTag("SaveKeyButton")
+                    ) {
+                        Text(if (isTestingConnection) "Verbinden..." else "Sleutel Opslaan & Testen")
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Actieve provider voor Stoic Mentor", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = if (uiState.activeProviderExplicitlyChosen) {
+                        "Gesprekken worden verstuurd naar ${providerLabel(uiState.activeProviderId)}."
+                    } else {
+                        "Nog geen keuze gemaakt; standaard ${providerLabel(uiState.activeProviderId)}. Kies hieronder expliciet."
                     },
-                    enabled = apiKeyInput.isNotBlank() && !isTestingConnection,
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Text(if (isTestingConnection) "Verbinden..." else "Sleutel Opslaan & Testen")
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.testTag("ActiveProviderStatus")
+                )
+                SettingsViewModel.PROVIDER_IDS.forEach { id ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp)
+                            .clickable { if (id != uiState.activeProviderId) pendingActiveProvider = id }
+                            .testTag("ActiveProviderRow_$id"),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = uiState.activeProviderId == id,
+                            onClick = { if (id != uiState.activeProviderId) pendingActiveProvider = id }
+                        )
+                        Text(providerLabel(id), style = MaterialTheme.typography.bodyLarge)
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(
+                            if (id in uiState.configuredProviderIds) "sleutel aanwezig" else "geen sleutel",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            pendingActiveProvider?.let { candidate ->
+                AlertDialog(
+                    onDismissRequest = { pendingActiveProvider = null },
+                    title = { Text("Provider wisselen?") },
+                    text = {
+                        Text(
+                            "Vanaf nu worden je Stoic Mentor-gesprekken (en alleen wat je in het gesprek typt, plus de " +
+                                "context die je in Geheugen & Context hebt toegestaan) naar ${providerLabel(candidate)} gestuurd."
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                viewModel.setActiveAiProvider(candidate)
+                                pendingActiveProvider = null
+                            },
+                            modifier = Modifier.testTag("ConfirmProviderSwitch")
+                        ) { Text("Bevestigen") }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { pendingActiveProvider = null }) { Text("Annuleren") }
+                    }
+                )
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+
+            // --- Sectie 3b: Proactieve Stoic Mentor ---
+            Text(
+                text = "Proactieve Stoic Mentor",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp, bottom = 8.dp)
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 56.dp)
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Dagelijkse uitnodiging tot reflectie", style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        "Een lokale melding op je gekozen tijd. Geen AI-verzoeken op de achtergrond, geen dagboektekst in de melding.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Switch(
+                    checked = uiState.proactiveMentorEnabled,
+                    onCheckedChange = { viewModel.setProactiveMentorEnabled(it) },
+                    modifier = Modifier.testTag("ProactiveMentorSwitch")
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp)
+                    .clickable(enabled = uiState.proactiveMentorEnabled) { showProactiveTimePicker = true }
+                    .padding(horizontal = 16.dp)
+                    .testTag("ProactiveTimeRow"),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Herinneringstijd", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                Text(
+                    String.format(java.util.Locale.ROOT, "%02d:%02d", uiState.proactiveReminderHour, uiState.proactiveReminderMinute),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp)
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Stille uren", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                HourStepper(
+                    label = "van",
+                    hour = uiState.proactiveQuietStartHour,
+                    enabled = uiState.proactiveMentorEnabled,
+                    tag = "QuietStart",
+                    onChange = { viewModel.setProactiveQuietHours(it, uiState.proactiveQuietEndHour) }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                HourStepper(
+                    label = "tot",
+                    hour = uiState.proactiveQuietEndHour,
+                    enabled = uiState.proactiveMentorEnabled,
+                    tag = "QuietEnd",
+                    onChange = { viewModel.setProactiveQuietHours(uiState.proactiveQuietStartHour, it) }
+                )
+            }
+            if (showProactiveTimePicker) {
+                ReminderTimePicker(
+                    initialHour = uiState.proactiveReminderHour,
+                    initialMinute = uiState.proactiveReminderMinute,
+                    onConfirm = { h, m ->
+                        viewModel.setProactiveReminderTime(h, m)
+                        showProactiveTimePicker = false
+                    },
+                    onDismiss = { showProactiveTimePicker = false }
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp)
+                    .clickable { onNavigateToMemorySettings() }
+                    .padding(horizontal = 16.dp)
+                    .testTag("MemorySettingsRow"),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Geheugen & context", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        "Beheer wat Stoic Mentor mag onthouden en of historische context naar de provider mag.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 
@@ -544,5 +731,40 @@ fun SettingsScreen(
             },
             onDismiss = { showPinDialog = false }
         )
+    }
+}
+
+private fun providerLabel(id: String): String = when (id) {
+    "openai" -> "OpenAI"
+    "claude" -> "Claude"
+    "gemini" -> "Gemini"
+    else -> id
+}
+
+@Composable
+private fun HourStepper(
+    label: String,
+    hour: Int,
+    enabled: Boolean,
+    tag: String,
+    onChange: (Int) -> Unit
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        IconButton(
+            onClick = { onChange((hour + 23) % 24) },
+            enabled = enabled,
+            modifier = Modifier.testTag("${tag}Minus")
+        ) { Text("−") }
+        Text(
+            String.format(java.util.Locale.ROOT, "%02d", hour),
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.testTag("${tag}Value")
+        )
+        IconButton(
+            onClick = { onChange((hour + 1) % 24) },
+            enabled = enabled,
+            modifier = Modifier.testTag("${tag}Plus")
+        ) { Text("+") }
     }
 }

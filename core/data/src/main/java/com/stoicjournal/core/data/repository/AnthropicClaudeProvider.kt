@@ -8,6 +8,7 @@ import com.stoicjournal.core.domain.model.AiStreamEvent
 import com.stoicjournal.core.domain.model.ProviderCredential
 import com.stoicjournal.core.domain.model.UsageMetadata
 import com.stoicjournal.core.domain.repository.SecureCredentialRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -26,6 +27,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.util.concurrent.ConcurrentHashMap
@@ -39,8 +41,15 @@ class AnthropicClaudeProvider @Inject constructor(
 ) : AiProvider {
 
     override val providerId: String = "claude"
+    override val defaultModelId: String = DEFAULT_MODEL
+
+    /** Overridable for mocked-HTTP tests; production always talks to the public endpoint. */
+    internal var baseUrl: String = "https://api.anthropic.com"
+
     private val activeCalls = ConcurrentHashMap<String, Call>()
     private val jsonParser = Json { ignoreUnknownKeys = true }
+
+    internal fun activeCallCount(): Int = activeCalls.size
 
     private suspend fun getApiKey(): String? {
         val result = credentialRepository.getCredential(providerId)
@@ -48,12 +57,21 @@ class AnthropicClaudeProvider @Inject constructor(
         return credential?.key
     }
 
+    private fun httpRequest(key: String, body: String): Request = Request.Builder()
+        .url("$baseUrl/v1/messages")
+        .addHeader("x-api-key", key)
+        .addHeader("anthropic-version", ANTHROPIC_VERSION)
+        .addHeader("content-type", "application/json")
+        .post(body.toRequestBody("application/json".toMediaType()))
+        .build()
+
     override suspend fun validateConnection(): Result<Boolean> {
         val key = getApiKey() ?: return Result.failure(Exception("Missing Anthropic API Key"))
         return withContext(Dispatchers.IO) {
             try {
-                val dummyPayload = buildJsonObject {
-                    put("model", "claude-3-5-haiku-latest")
+                // Cheapest possible billable probe: current Haiku, one output token.
+                val payload = buildJsonObject {
+                    put("model", VALIDATION_MODEL)
                     put("max_tokens", 1)
                     putJsonArray("messages") {
                         addJsonObject {
@@ -63,21 +81,12 @@ class AnthropicClaudeProvider @Inject constructor(
                     }
                 }.toString()
 
-                val request = Request.Builder()
-                    .url("https://api.anthropic.com/v1/messages")
-                    .addHeader("x-api-key", key)
-                    .addHeader("anthropic-version", "2023-06-01")
-                    .addHeader("content-type", "application/json")
-                    .post(dummyPayload.toRequestBody("application/json".toMediaType()))
-                    .build()
-
-                okHttpClient.newCall(request).execute().use { response ->
-                    if (response.isSuccessful) {
-                        Result.success(true)
-                    } else if (response.code == 401) {
-                        Result.failure(Exception(AiError.InvalidCredentials.toString()))
-                    } else {
-                        Result.failure(Exception("HTTP ${response.code}: ${response.message}"))
+                okHttpClient.newCall(httpRequest(key, payload)).execute().use { response ->
+                    when {
+                        response.isSuccessful -> Result.success(true)
+                        response.code == 401 || response.code == 403 ->
+                            Result.failure(Exception(AiError.InvalidCredentials.toString()))
+                        else -> Result.failure(Exception("HTTP ${response.code}: ${response.message}"))
                     }
                 }
             } catch (e: Exception) {
@@ -86,68 +95,49 @@ class AnthropicClaudeProvider @Inject constructor(
         }
     }
 
-    override suspend fun listAvailableModels(): Result<List<String>> {
-        return Result.success(
-            listOf(
-                "claude-3-5-sonnet-latest",
-                "claude-3-5-haiku-latest",
-                "claude-3-7-sonnet-latest",
-                "claude-3-opus-20240229"
-            )
-        )
-    }
+    override suspend fun listAvailableModels(): Result<List<String>> = Result.success(KNOWN_MODELS)
+
+    private fun buildPayload(request: AiProviderRequest, modelId: String, stream: Boolean): String = buildJsonObject {
+        put("model", modelId)
+        put("max_tokens", request.maxOutputTokens.coerceAtLeast(256))
+        if (stream) put("stream", true)
+        if (!request.authorizedHistoricalContext.isNullOrBlank()) {
+            put("system", request.authorizedHistoricalContext)
+        }
+        putJsonArray("messages") {
+            request.conversationHistory.forEach { msg ->
+                addJsonObject {
+                    put("role", if (msg.role.name == "USER") "user" else "assistant")
+                    put("content", msg.content)
+                }
+            }
+            addJsonObject {
+                put("role", "user")
+                put("content", request.userMessage)
+            }
+        }
+    }.toString()
 
     override suspend fun generateResponse(request: AiProviderRequest): Result<AiProviderResponse> {
         val key = getApiKey() ?: return Result.failure(Exception("Missing Anthropic API Key"))
+        val modelId = resolveModelId(request.selectedModel)
         return withContext(Dispatchers.IO) {
+            val call = okHttpClient.newCall(httpRequest(key, buildPayload(request, modelId, stream = false)))
+            activeCalls[request.requestCorrelationId] = call
             try {
-                val payload = buildJsonObject {
-                    put("model", request.selectedModel.ifBlank { "claude-3-5-sonnet-latest" })
-                    put("max_tokens", request.maxOutputTokens.coerceAtLeast(256))
-                    if (!request.authorizedHistoricalContext.isNullOrBlank()) {
-                        put("system", request.authorizedHistoricalContext)
-                    }
-                    putJsonArray("messages") {
-                        request.conversationHistory.forEach { msg ->
-                            addJsonObject {
-                                put("role", if (msg.role.name == "USER") "user" else "assistant")
-                                put("content", msg.content)
-                            }
-                        }
-                        addJsonObject {
-                            put("role", "user")
-                            put("content", request.userMessage)
-                        }
-                    }
-                }.toString()
-
-                val httpRequest = Request.Builder()
-                    .url("https://api.anthropic.com/v1/messages")
-                    .addHeader("x-api-key", key)
-                    .addHeader("anthropic-version", "2023-06-01")
-                    .addHeader("content-type", "application/json")
-                    .post(payload.toRequestBody("application/json".toMediaType()))
-                    .build()
-
-                val call = okHttpClient.newCall(httpRequest)
-                activeCalls[request.requestCorrelationId] = call
-
                 call.execute().use { response ->
-                    activeCalls.remove(request.requestCorrelationId)
                     if (!response.isSuccessful) {
-                        val error = when (response.code) {
-                            401 -> AiError.InvalidCredentials
-                            429 -> AiError.RateLimited
-                            else -> AiError.Unknown("HTTP_${response.code}")
-                        }
-                        return@withContext Result.failure(Exception(error.toString()))
+                        return@withContext Result.failure(Exception(classifyHttpError(response.code).toString()))
                     }
 
                     val bodyStr = response.body?.string() ?: ""
                     val root = jsonParser.parseToJsonElement(bodyStr).jsonObject
                     val contentArr = root["content"]?.jsonArray
-                    val firstContent = contentArr?.firstOrNull()?.jsonObject
-                    val text = firstContent?.get("text")?.jsonPrimitive?.content ?: ""
+                    val text = contentArr
+                        ?.map { it.jsonObject }
+                        ?.firstOrNull { it["type"]?.jsonPrimitive?.content == "text" }
+                        ?.get("text")?.jsonPrimitive?.content
+                        ?: ""
 
                     val usageObj = root["usage"]?.jsonObject
                     val inputTokens = usageObj?.get("input_tokens")?.jsonPrimitive?.content?.toIntOrNull() ?: 0
@@ -157,7 +147,7 @@ class AnthropicClaudeProvider @Inject constructor(
                         AiProviderResponse(
                             content = text,
                             provider = providerId,
-                            model = request.selectedModel,
+                            model = modelId,
                             completionStatus = "completed",
                             usageMetadata = UsageMetadata(inputTokens, outputTokens, 0, null),
                             finishReason = root["stop_reason"]?.jsonPrimitive?.content ?: "end_turn",
@@ -166,8 +156,9 @@ class AnthropicClaudeProvider @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
-                activeCalls.remove(request.requestCorrelationId)
                 Result.failure(e)
+            } finally {
+                activeCalls.remove(request.requestCorrelationId)
             }
         }
     }
@@ -185,106 +176,104 @@ class AnthropicClaudeProvider @Inject constructor(
 
         emit(AiStreamEvent.Started(request.requestCorrelationId))
 
-        val payload = buildJsonObject {
-            put("model", request.selectedModel.ifBlank { "claude-3-5-sonnet-latest" })
-            put("max_tokens", request.maxOutputTokens.coerceAtLeast(256))
-            put("stream", true)
-            if (!request.authorizedHistoricalContext.isNullOrBlank()) {
-                put("system", request.authorizedHistoricalContext)
-            }
-            putJsonArray("messages") {
-                request.conversationHistory.forEach { msg ->
-                    addJsonObject {
-                        put("role", if (msg.role.name == "USER") "user" else "assistant")
-                        put("content", msg.content)
-                    }
-                }
-                addJsonObject {
-                    put("role", "user")
-                    put("content", request.userMessage)
-                }
-            }
-        }.toString()
-
-        val httpRequest = Request.Builder()
-            .url("https://api.anthropic.com/v1/messages")
-            .addHeader("x-api-key", key)
-            .addHeader("anthropic-version", "2023-06-01")
-            .addHeader("content-type", "application/json")
-            .post(payload.toRequestBody("application/json".toMediaType()))
-            .build()
-
-        val call = okHttpClient.newCall(httpRequest)
+        val modelId = resolveModelId(request.selectedModel)
+        val call = okHttpClient.newCall(httpRequest(key, buildPayload(request, modelId, stream = true)))
         activeCalls[request.requestCorrelationId] = call
+        var response: Response? = null
 
         try {
-            val response = withContext(Dispatchers.IO) { call.execute() }
+            // The flow runs on Dispatchers.IO (flowOn below); blocking I/O is fine here and, crucially,
+            // emit() must stay in the flow's own coroutine (no nested withContext) or the Flow invariant
+            // "emission from another coroutine" is violated and the stream dies after the first delta.
+            response = call.execute()
             if (!response.isSuccessful) {
-                val error = when (response.code) {
-                    401 -> AiError.InvalidCredentials
-                    429 -> AiError.RateLimited
-                    else -> AiError.ProviderUnavailable
-                }
-                emit(AiStreamEvent.Failed(error))
-                activeCalls.remove(request.requestCorrelationId)
+                emit(AiStreamEvent.Failed(classifyHttpError(response.code)))
                 return@flow
             }
 
             val body = response.body
             if (body == null) {
                 emit(AiStreamEvent.Failed(AiError.InvalidResponse))
-                activeCalls.remove(request.requestCorrelationId)
                 return@flow
             }
 
-            val reader = BufferedReader(InputStreamReader(body.byteStream()))
             var accumulatedText = ""
-
-            withContext(Dispatchers.IO) {
-                var line = reader.readLine()
-                while (line != null) {
-                    if (line.startsWith("data: ")) {
-                        val dataStr = line.removePrefix("data: ").trim()
-                        try {
-                            val root = jsonParser.parseToJsonElement(dataStr).jsonObject
-                            val type = root["type"]?.jsonPrimitive?.content
-                            if (type == "content_block_delta") {
-                                val delta = root["delta"]?.jsonObject
-                                val text = delta?.get("text")?.jsonPrimitive?.content
-                                if (!text.isNullOrEmpty()) {
-                                    accumulatedText += text
-                                    emit(AiStreamEvent.TextDelta(text))
+            BufferedReader(InputStreamReader(body.byteStream())).use { reader ->
+                run {
+                    var line = reader.readLine()
+                    while (line != null) {
+                        if (line.startsWith("data: ")) {
+                            val dataStr = line.removePrefix("data: ").trim()
+                            try {
+                                val root = jsonParser.parseToJsonElement(dataStr).jsonObject
+                                val type = root["type"]?.jsonPrimitive?.content
+                                if (type == "content_block_delta") {
+                                    val delta = root["delta"]?.jsonObject
+                                    val text = delta?.get("text")?.jsonPrimitive?.content
+                                    if (!text.isNullOrEmpty()) {
+                                        accumulatedText += text
+                                        emit(AiStreamEvent.TextDelta(text))
+                                    }
+                                } else if (type == "message_stop") {
+                                    break
                                 }
+                            } catch (_: kotlinx.serialization.SerializationException) {
+                            } catch (_: IllegalArgumentException) {
                             }
-                        } catch (_: Exception) {}
+                        }
+                        line = reader.readLine()
                     }
-                    line = reader.readLine()
                 }
             }
 
-            val completedResponse = AiProviderResponse(
-                content = accumulatedText,
-                provider = providerId,
-                model = request.selectedModel,
-                completionStatus = "completed",
-                usageMetadata = UsageMetadata(0, 0, 0, null),
-                finishReason = "end_turn",
-                errorClassification = null
+            emit(
+                AiStreamEvent.Completed(
+                    AiProviderResponse(
+                        content = accumulatedText,
+                        provider = providerId,
+                        model = modelId,
+                        completionStatus = "completed",
+                        usageMetadata = UsageMetadata(0, 0, 0, null),
+                        finishReason = "end_turn",
+                        errorClassification = null
+                    )
+                )
             )
-            emit(AiStreamEvent.Completed(completedResponse))
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             emit(AiStreamEvent.Failed(AiError.Unknown(e.localizedMessage ?: "Stream failed")))
         } finally {
             activeCalls.remove(request.requestCorrelationId)
+            call.cancel()
+            response?.close()
         }
     }.flowOn(Dispatchers.IO)
 
+    private fun classifyHttpError(code: Int): AiError = when (code) {
+        401, 403 -> AiError.InvalidCredentials
+        429 -> AiError.RateLimited
+        else -> AiError.ProviderUnavailable
+    }
+
     override fun cancelRequest(requestId: String) {
-        activeCalls[requestId]?.cancel()
-        activeCalls.remove(requestId)
+        activeCalls.remove(requestId)?.cancel()
     }
 
     override fun reportUsage(): UsageMetadata {
         return UsageMetadata(0, 0, 0, null)
+    }
+
+    companion object {
+        const val ANTHROPIC_VERSION = "2023-06-01"
+
+        /**
+         * Current Claude generation (Oct 2026). The previously shipped ids (claude-3-5-sonnet-latest,
+         * claude-3-5-haiku-latest, claude-3-7-sonnet-latest, claude-3-opus-20240229) are all retired
+         * and return errors from the API.
+         */
+        const val DEFAULT_MODEL = "claude-opus-5-5"
+        const val VALIDATION_MODEL = "claude-haiku-5-5"
+        val KNOWN_MODELS = listOf("claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5")
     }
 }

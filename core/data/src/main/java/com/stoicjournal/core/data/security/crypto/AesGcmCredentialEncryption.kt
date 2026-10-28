@@ -67,8 +67,17 @@ class AesGcmCredentialEncryption @Inject constructor(
             return Result.failure(IllegalStateException(CredentialSecurityError.CorruptedCredentialRecord.toString()))
         }
 
-        val secretKey = keystoreManager.getExistingKey(envelope.keyAlias)
-            ?: return Result.failure(IllegalStateException(CredentialSecurityError.MissingKeystoreKey.toString()))
+        // Keystore lookups can throw (UnrecoverableKeyException / KeyStoreException after OS updates,
+        // credential resets or key invalidation). Map them to a typed error instead of crashing the caller.
+        val secretKey = try {
+            keystoreManager.getExistingKey(envelope.keyAlias)
+        } catch (e: java.security.UnrecoverableKeyException) {
+            return Result.failure(IllegalStateException(CredentialSecurityError.KeyInvalidated.toString(), e))
+        } catch (e: java.security.GeneralSecurityException) {
+            return Result.failure(IllegalStateException(CredentialSecurityError.MissingKeystoreKey.toString(), e))
+        } catch (e: RuntimeException) {
+            return Result.failure(IllegalStateException(CredentialSecurityError.MissingKeystoreKey.toString(), e))
+        } ?: return Result.failure(IllegalStateException(CredentialSecurityError.MissingKeystoreKey.toString()))
 
         return try {
             val cipher = Cipher.getInstance(TRANSFORMATION)

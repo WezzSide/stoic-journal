@@ -1,0 +1,76 @@
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.MentorCoordinatorDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=3
+INSTRUMENTATION_STATUS: stream=
+com.stoicjournal.e2e.MentorCoordinatorDeviceTest:
+INSTRUMENTATION_STATUS: test=coordinator_roundTrip_withFakeProvider_completesOnDevice
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.MentorCoordinatorDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=3
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=coordinator_roundTrip_withFakeProvider_completesOnDevice
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.MentorJourneyE2ETest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=3
+INSTRUMENTATION_STATUS: stream=
+com.stoicjournal.e2e.MentorJourneyE2ETest:
+INSTRUMENTATION_STATUS: test=providerFailure_isRecoverable_andLeavesNoMentorMessage
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.MentorJourneyE2ETest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=3
+INSTRUMENTATION_STATUS: stack=androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 10000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:431)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:306)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText(E2ESupport.kt:63)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText$default(E2ESupport.kt:62)
+	at com.stoicjournal.e2e.MentorJourneyE2ETest.providerFailure_isRecoverable_andLeavesNoMentorMessage(MentorJourneyE2ETest.kt:159)
+
+INSTRUMENTATION_STATUS: stream=
+Error in providerFailure_isRecoverable_andLeavesNoMentorMessage(com.stoicjournal.e2e.MentorJourneyE2ETest):
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 10000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:431)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:306)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText(E2ESupport.kt:63)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText$default(E2ESupport.kt:62)
+	at com.stoicjournal.e2e.MentorJourneyE2ETest.providerFailure_isRecoverable_andLeavesNoMentorMessage(MentorJourneyE2ETest.kt:159)
+
+INSTRUMENTATION_STATUS: test=providerFailure_isRecoverable_andLeavesNoMentorMessage
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.MentorJourneyE2ETest
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=3
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=fullMentorJourney_chat_resume_reflect_saveOnce_appearsInHistory
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.MentorJourneyE2ETest
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=3
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=fullMentorJourney_chat_resume_reflect_saveOnce_appearsInHistory
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_RESULT: stream=
+
+Time: 22,388
+There was 1 failure:
+1) providerFailure_isRecoverable_andLeavesNoMentorMessage(com.stoicjournal.e2e.MentorJourneyE2ETest)
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 10000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:431)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:306)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText(E2ESupport.kt:63)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText$default(E2ESupport.kt:62)
+	at com.stoicjournal.e2e.MentorJourneyE2ETest.providerFailure_isRecoverable_andLeavesNoMentorMessage(MentorJourneyE2ETest.kt:159)
+
+FAILURES!!!
+Tests run: 3,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1

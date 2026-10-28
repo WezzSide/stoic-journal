@@ -34,7 +34,9 @@ class DailyReminderWorker @AssistedInject constructor(
         val prefs = preferencesRepository.preferences.first()
         val isMorning = inputData.getBoolean("is_morning", false)
 
-        val isEnabled = if (isMorning) prefs.morningReminderEnabled else (prefs.eveningReminderEnabled || prefs.reminderEnabled)
+        // The legacy `reminderEnabled` flag (always true after onboarding) must not resurrect an
+        // evening reminder the user switched off in Settings.
+        val isEnabled = if (isMorning) prefs.morningReminderEnabled else prefs.eveningReminderEnabled
         if (!isEnabled) {
             Log.d(TAG, "Reminder (isMorning=$isMorning) disabled; skipping")
             return Result.success()

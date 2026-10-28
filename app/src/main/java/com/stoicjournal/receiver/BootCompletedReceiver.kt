@@ -35,12 +35,13 @@ class BootCompletedReceiver : BroadcastReceiver() {
         applicationScope.launch {
             try {
                 val prefs = preferencesRepository.preferences.first()
-                if (prefs.reminderEnabled) {
-                    reminderScheduler.schedule(prefs.reminderHour, prefs.reminderMinute)
-                    Log.d(TAG, "Rescheduled daily reminder for ${prefs.reminderHour}:${prefs.reminderMinute}")
-                } else {
-                    Log.d(TAG, "Reminders disabled; not rescheduling after boot")
+                if (prefs.eveningReminderEnabled) {
+                    reminderScheduler.scheduleEvening(prefs.eveningReminderHour, prefs.eveningReminderMinute)
                 }
+                if (prefs.morningReminderEnabled) {
+                    reminderScheduler.scheduleMorning(prefs.morningReminderHour, prefs.morningReminderMinute)
+                }
+                Log.d(TAG, "Rescheduled reminders after boot (morning=${prefs.morningReminderEnabled}, evening=${prefs.eveningReminderEnabled})")
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

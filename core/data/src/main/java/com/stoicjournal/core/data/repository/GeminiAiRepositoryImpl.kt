@@ -4,7 +4,6 @@ import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
 import com.google.ai.client.generativeai.type.generationConfig
 import android.util.Log
-import com.stoicjournal.core.data.BuildConfig
 import com.stoicjournal.core.domain.model.AiReflectionRequest
 import com.stoicjournal.core.domain.model.AiReflectionResponse
 import com.stoicjournal.core.domain.model.AiReflectionTheme
@@ -57,7 +56,6 @@ class GeminiAiRepositoryImpl @Inject constructor() : AiRepository {
     }
 
     private fun parseResponse(json: String, theme: AiReflectionTheme): AiReflectionResponse {
-        Log.d("GeminiAiRepository", "Raw JSON: $json")
         
         val cleanJson = json.removeSurrounding("```json", "```").trim()
         

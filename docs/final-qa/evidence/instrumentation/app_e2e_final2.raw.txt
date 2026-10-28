@@ -1,0 +1,151 @@
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.MentorJourneyE2ETest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=4
+INSTRUMENTATION_STATUS: stream=
+com.stoicjournal.e2e.MentorJourneyE2ETest:
+INSTRUMENTATION_STATUS: test=providerFailure_isRecoverable_andLeavesNoMentorMessage
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.MentorJourneyE2ETest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=4
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=providerFailure_isRecoverable_andLeavesNoMentorMessage
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.MentorJourneyE2ETest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=4
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=fullMentorJourney_chat_resume_reflect_saveOnce_appearsInHistory
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.MentorJourneyE2ETest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=4
+INSTRUMENTATION_STATUS: stack=java.lang.IllegalStateException: No compose hierarchies found in the app. Possible reasons include: (1) the Activity that calls setContent did not launch; (2) setContent was not called; (3) setContent was called before the ComposeTestRule ran. If setContent is called by the Activity, make sure the Activity is launched after the ComposeTestRule runs
+	at androidx.compose.ui.test.TestContext.getAllSemanticsNodes$ui_test_release(TestOwner.kt:87)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNodes$ui_test_release(SemanticsNodeInteraction.kt:63)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrDie(SemanticsNodeInteraction.kt:157)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrDie$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performSemanticsAction(Actions.kt:561)
+	at androidx.compose.ui.test.TextActionsKt.performTextInput(TextActions.kt:45)
+	at com.stoicjournal.e2e.MentorJourneyE2ETest.fullMentorJourney_chat_resume_reflect_saveOnce_appearsInHistory(MentorJourneyE2ETest.kt:100)
+
+INSTRUMENTATION_STATUS: stream=
+Error in fullMentorJourney_chat_resume_reflect_saveOnce_appearsInHistory(com.stoicjournal.e2e.MentorJourneyE2ETest):
+java.lang.IllegalStateException: No compose hierarchies found in the app. Possible reasons include: (1) the Activity that calls setContent did not launch; (2) setContent was not called; (3) setContent was called before the ComposeTestRule ran. If setContent is called by the Activity, make sure the Activity is launched after the ComposeTestRule runs
+	at androidx.compose.ui.test.TestContext.getAllSemanticsNodes$ui_test_release(TestOwner.kt:87)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNodes$ui_test_release(SemanticsNodeInteraction.kt:63)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrDie(SemanticsNodeInteraction.kt:157)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrDie$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performSemanticsAction(Actions.kt:561)
+	at androidx.compose.ui.test.TextActionsKt.performTextInput(TextActions.kt:45)
+	at com.stoicjournal.e2e.MentorJourneyE2ETest.fullMentorJourney_chat_resume_reflect_saveOnce_appearsInHistory(MentorJourneyE2ETest.kt:100)
+
+INSTRUMENTATION_STATUS: test=fullMentorJourney_chat_resume_reflect_saveOnce_appearsInHistory
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.JournalAndOnboardingE2ETest
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=4
+INSTRUMENTATION_STATUS: stream=
+com.stoicjournal.e2e.JournalAndOnboardingE2ETest:
+INSTRUMENTATION_STATUS: test=onboarding_firstLaunch_completesAndPersists
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.JournalAndOnboardingE2ETest
+INSTRUMENTATION_STATUS: current=3
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=4
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=onboarding_firstLaunch_completesAndPersists
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.JournalAndOnboardingE2ETest
+INSTRUMENTATION_STATUS: current=4
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=4
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=freeFormEntry_isSaved_reopenedFromHistory
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.JournalAndOnboardingE2ETest
+INSTRUMENTATION_STATUS: current=4
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=4
+INSTRUMENTATION_STATUS: stack=java.lang.NullPointerException: Cannot run onActivity since Activity has been destroyed already
+	at androidx.test.internal.util.Checks.checkNotNull(Checks.java:50)
+	at androidx.test.core.app.ActivityScenario.lambda$onActivity$2$androidx-test-core-app-ActivityScenario(ActivityScenario.java:792)
+	at androidx.test.core.app.ActivityScenario$$ExternalSyntheticLambda2.run(D8$$SyntheticClass:0)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at android.app.Instrumentation$SyncRunnable.run(Instrumentation.java:2675)
+	at android.os.Handler.handleCallback(Handler.java:1082)
+	at android.os.Handler.dispatchMessageImpl(Handler.java:135)
+	at android.os.Handler.dispatchMessage(Handler.java:126)
+	at android.os.Looper.loopOnce(Looper.java:295)
+	at android.os.Looper.loop(Looper.java:398)
+	at android.app.ActivityThread.main(ActivityThread.java:9569)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:575)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:918)
+
+INSTRUMENTATION_STATUS: stream=
+Error in freeFormEntry_isSaved_reopenedFromHistory(com.stoicjournal.e2e.JournalAndOnboardingE2ETest):
+java.lang.NullPointerException: Cannot run onActivity since Activity has been destroyed already
+	at androidx.test.internal.util.Checks.checkNotNull(Checks.java:50)
+	at androidx.test.core.app.ActivityScenario.lambda$onActivity$2$androidx-test-core-app-ActivityScenario(ActivityScenario.java:792)
+	at androidx.test.core.app.ActivityScenario$$ExternalSyntheticLambda2.run(D8$$SyntheticClass:0)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at android.app.Instrumentation$SyncRunnable.run(Instrumentation.java:2675)
+	at android.os.Handler.handleCallback(Handler.java:1082)
+	at android.os.Handler.dispatchMessageImpl(Handler.java:135)
+	at android.os.Handler.dispatchMessage(Handler.java:126)
+	at android.os.Looper.loopOnce(Looper.java:295)
+	at android.os.Looper.loop(Looper.java:398)
+	at android.app.ActivityThread.main(ActivityThread.java:9569)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:575)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:918)
+
+INSTRUMENTATION_STATUS: test=freeFormEntry_isSaved_reopenedFromHistory
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 16,953
+There were 2 failures:
+1) fullMentorJourney_chat_resume_reflect_saveOnce_appearsInHistory(com.stoicjournal.e2e.MentorJourneyE2ETest)
+java.lang.IllegalStateException: No compose hierarchies found in the app. Possible reasons include: (1) the Activity that calls setContent did not launch; (2) setContent was not called; (3) setContent was called before the ComposeTestRule ran. If setContent is called by the Activity, make sure the Activity is launched after the ComposeTestRule runs
+	at androidx.compose.ui.test.TestContext.getAllSemanticsNodes$ui_test_release(TestOwner.kt:87)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNodes$ui_test_release(SemanticsNodeInteraction.kt:63)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrDie(SemanticsNodeInteraction.kt:157)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrDie$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performSemanticsAction(Actions.kt:561)
+	at androidx.compose.ui.test.TextActionsKt.performTextInput(TextActions.kt:45)
+	at com.stoicjournal.e2e.MentorJourneyE2ETest.fullMentorJourney_chat_resume_reflect_saveOnce_appearsInHistory(MentorJourneyE2ETest.kt:100)
+2) freeFormEntry_isSaved_reopenedFromHistory(com.stoicjournal.e2e.JournalAndOnboardingE2ETest)
+java.lang.NullPointerException: Cannot run onActivity since Activity has been destroyed already
+	at androidx.test.internal.util.Checks.checkNotNull(Checks.java:50)
+	at androidx.test.core.app.ActivityScenario.lambda$onActivity$2$androidx-test-core-app-ActivityScenario(ActivityScenario.java:792)
+	at androidx.test.core.app.ActivityScenario$$ExternalSyntheticLambda2.run(D8$$SyntheticClass:0)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:328)
+	at android.app.Instrumentation$SyncRunnable.run(Instrumentation.java:2675)
+	at android.os.Handler.handleCallback(Handler.java:1082)
+	at android.os.Handler.dispatchMessageImpl(Handler.java:135)
+	at android.os.Handler.dispatchMessage(Handler.java:126)
+	at android.os.Looper.loopOnce(Looper.java:295)
+	at android.os.Looper.loop(Looper.java:398)
+	at android.app.ActivityThread.main(ActivityThread.java:9569)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:575)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:918)
+
+FAILURES!!!
+Tests run: 4,  Failures: 2
+
+
+INSTRUMENTATION_CODE: -1

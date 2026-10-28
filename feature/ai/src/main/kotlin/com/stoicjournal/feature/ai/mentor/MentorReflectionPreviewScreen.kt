@@ -1,5 +1,9 @@
 package com.stoicjournal.feature.ai.mentor
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -34,7 +38,40 @@ fun MentorReflectionPreviewScreen(
         }
     }
     
-    val candidate = uiState.candidate ?: return
+    val candidate = uiState.candidate
+    if (candidate == null) {
+        // Candidate missing (e.g. process death between chat and preview, cache is in-memory only).
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Review Reflection") },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    }
+                )
+            },
+            modifier = modifier
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = uiState.error ?: "Loading reflection…",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                if (uiState.error != null) {
+                    Button(onClick = onContinueConversation) { Text("Back to conversation") }
+                }
+            }
+        }
+        return
+    }
 
     var title by remember(candidate) { mutableStateOf(candidate.title) }
     var summary by remember(candidate) { mutableStateOf(candidate.summary) }

@@ -2,6 +2,7 @@ package com.stoicjournal.core.notifications.proactive
 
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.util.Log
 import android.content.Intent
 import androidx.core.app.NotificationManagerCompat
 import com.stoicjournal.core.domain.repository.ProactiveMentorPreferencesRepository
@@ -35,10 +36,13 @@ class ProactiveMentorNotificationReceiver : BroadcastReceiver() {
             ACTION_SNOOZE -> {
                 scope.launch {
                     try {
-                        val snooze30Min = Instant.now().plusSeconds(30 * 60).toEpochMilli()
-                        preferencesRepository.setSnoozedUntil(snooze30Min)
+                        val snoozeUntil = Instant.now().plusSeconds(SNOOZE_MINUTES * 60).toEpochMilli()
+                        preferencesRepository.setSnoozedUntil(snoozeUntil)
                         val prefs = preferencesRepository.preferences.first()
+                        scheduler.scheduleSnoozeWakeup(prefs)
                         scheduler.scheduleNextInvitation(prefs)
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Failed to snooze proactive mentor invitation", e)
                     } finally {
                         pendingResult.finish()
                     }
@@ -48,8 +52,12 @@ class ProactiveMentorNotificationReceiver : BroadcastReceiver() {
                 scope.launch {
                     try {
                         preferencesRepository.setSkippedTodayDate(LocalDate.now().toString())
+                        preferencesRepository.setSnoozedUntil(null)
                         val prefs = preferencesRepository.preferences.first()
+                        scheduler.scheduleSnoozeWakeup(prefs)
                         scheduler.scheduleNextInvitation(prefs)
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Failed to skip proactive mentor invitation", e)
                     } finally {
                         pendingResult.finish()
                     }
@@ -60,7 +68,9 @@ class ProactiveMentorNotificationReceiver : BroadcastReceiver() {
     }
 
     companion object {
-        const val NOTIFICATION_ID = 2002
+        const val NOTIFICATION_ID = ProactiveMentorWorker.NOTIFICATION_ID
+        const val SNOOZE_MINUTES = 30L
+        private const val TAG = "ProactiveMentorReceiver"
         const val EXTRA_NOTIFICATION_ID = "extra_notification_id"
         const val ACTION_SNOOZE = "com.stoicjournal.action.PROACTIVE_SNOOZE"
         const val ACTION_SKIP_TODAY = "com.stoicjournal.action.PROACTIVE_SKIP_TODAY"

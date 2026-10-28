@@ -1,5 +1,6 @@
 package com.stoicjournal
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
@@ -12,6 +13,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
@@ -19,6 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
+import com.stoicjournal.core.common.notifications.NotificationRoutes
 import com.stoicjournal.navigation.StoicJournalNavHost
 import com.stoicjournal.security.BiometricPromptManager
 import com.stoicjournal.security.LockScreen
@@ -30,10 +34,22 @@ class MainActivity : FragmentActivity() {
 
     private lateinit var biometricPromptManager: BiometricPromptManager
 
+    /** Route requested by a notification tap; consumed by the NavHost only after the lock gate. */
+    private var pendingRoute by mutableStateOf<String?>(null)
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        pendingRoute = intent.getStringExtra(NotificationRoutes.EXTRA_ROUTE) ?: pendingRoute
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         biometricPromptManager = BiometricPromptManager(this)
+        if (savedInstanceState == null) {
+            pendingRoute = intent?.getStringExtra(NotificationRoutes.EXTRA_ROUTE)
+        }
 
         setContent {
             StoicJournalTheme {
@@ -90,7 +106,11 @@ class MainActivity : FragmentActivity() {
                 } else {
                     val destination = startDestination
                     if (destination != null) {
-                        StoicJournalNavHost(startDestination = destination)
+                        StoicJournalNavHost(
+                            startDestination = destination,
+                            pendingRoute = pendingRoute,
+                            onPendingRouteConsumed = { pendingRoute = null }
+                        )
                     } else {
                         Box(
                             modifier = Modifier
