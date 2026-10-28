@@ -1,0 +1,39 @@
+settings_open top=
+text="" text="" text="" text="" text="" text="" 
+--- dark mode
+after dark top= pid=6302
+--- font scale 1.3
+after font top= pid=6302
+--- landscape
+after rotate top= pid=6302
+--- restore font/night/rotation
+after restore top= pid=6302
+--- background + warm restore
+warm TotalTime: 0
+restored top=
+text="" text="" text="" 
+--- trim memory
+after trim pid=6302 top=<other app in foreground>
+--- lock / unlock
+after unlock top=<other app in foreground> pid=6302
+--- process kill + relaunch
+cold2 TotalTime: 630
+text="" text="" text="" 
+--- meminfo
+  Native Heap    10164    10148        4        2    14224    19380    12854     2900
+  Dalvik Heap     6541     6520        0        7    11040   262144     5224   256920
+         Native Heap:    10148                          14224
+           TOTAL PSS:   174098            TOTAL RSS:   300656       TOTAL SWAP PSS:       27
+--- gfxinfo
+Total frames rendered: 5
+Janky frames: 2 (40.00%)
+Janky frames (legacy): 3 (60.00%)
+90th percentile: 150ms
+95th percentile: 150ms
+--- crash/ANR scan
+(end scan)
+final settings: night=auto font_scale=0.85 accel=1 user_rot=0
+01_settings_light.png
+02_settings_dark.png
+03_settings_dark_font13.png
+04_settings_landscape.png

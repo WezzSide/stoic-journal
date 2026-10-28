@@ -1,0 +1,96 @@
+10-28 17:36:11.068 18261 25336 I ProximityAuth: [RecentAppsMediator] Package added: (user=UserHandle{10}) com.stoicjournal.test
+10-28 17:36:11.084 18261 25323 W SQLiteLog: (28) double-quoted string literal: "com.stoicjournal.test"
+10-28 17:36:11.092 16046 25380 I ProximityAuth: [RecentAppsMediator] Package added: (user=UserHandle{0}) com.stoicjournal.test
+10-28 17:36:11.113 16046 25395 I NearbySharing: Got package event: PackageReplaced(packageName=com.stoicjournal.test)
+10-28 17:36:11.124 16046 25333 W SQLiteLog: (28) double-quoted string literal: "com.stoicjournal.test"
+10-28 17:36:11.242  1375  1375 I adbd    : adbd service requested 'shell,v2,raw:am instrument -w -r -e class com.stoicjournal.e2e.MentorCoordinatorDeviceTest com.stoicjournal.test/com.stoicjournal.HiltTestRunner'
+10-28 17:36:11.574  1704  7002 I ActivityManager: Force stopping com.stoicjournal appid=10501 user=0: start instr
+10-28 17:36:11.604 18868 25438 I bzc     : Handling installed or updated package: com.stoicjournal.test
+10-28 17:36:11.604 18868 25438 I cta     : Attempting to classify package: com.stoicjournal.test using model: bll_1
+10-28 17:36:11.612  1704  1913 I ActivityManager: Start proc 25439:com.stoicjournal/u0a501 for added application com.stoicjournal
+10-28 17:36:11.639 25439 25439 I Zygote  : Process 25439 created for com.stoicjournal
+10-28 17:36:11.640 25439 25439 I om.stoicjournal: Late-enabling -Xcheck:jni
+10-28 17:36:11.669 25439 25439 I om.stoicjournal: Using generational CollectorTypeCMC GC.
+10-28 17:36:11.734 25439 25439 W ActivityThread: Package uses different ABI(s) than its instrumentation: package[com.stoicjournal]: arm64-v8a, null instrumentation[com.stoicjournal.test]: null, null
+10-28 17:36:11.741 18868 25438 I caj     : BLL finished for package: com.stoicjournal.test, score: 11000016, verdict: HARMFUL
+10-28 17:36:11.744 18868 25438 I cta     : Finished new classification for package: com.stoicjournal.test, model: bll_1, verdict: HARMFUL, score: 1.1000016E7, persisted rows: 1
+10-28 17:36:12.150 25439 25439 D nativeloader: Configuring clns-9 for other apk /system/framework/android.test.runner.jar:/system/framework/android.test.mock.jar:/system/framework/android.test.base.jar:/data/app/~~MKtlO-ZpeOY7homguvrojg==/com.stoicjournal.test-nQmOKRealAjf8bNVb18N8Q==/base.apk:/data/app/~~A4IOM0vNh6vL2mB79J_Qxg==/com.stoicjournal-RfbNPntBWWoqB5nyv-qoVw==/base.apk. target_sdk_version=34, uses_libraries=, library_path=/data/app/~~MKtlO-ZpeOY7homguvrojg==/com.stoicjournal.test-nQmOKRealAjf8bNVb18N8Q==/lib/arm64:/data/app/~~A4IOM0vNh6vL2mB79J_Qxg==/com.stoicjournal-RfbNPntBWWoqB5nyv-qoVw==/lib/arm64:/data/app/~~MKtlO-ZpeOY7homguvrojg==/com.stoicjournal.test-nQmOKRealAjf8bNVb18N8Q==/base.apk!/lib/arm64-v8a:/data/app/~~A4IOM0vNh6vL2mB79J_Qxg==/com.stoicjournal-RfbNPntBWWoqB5nyv-qoVw==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/com.stoicjournal
+10-28 17:36:12.156 25439 25439 D ActivityThread: Set OS env TMPDIR to /data/user/0/com.stoicjournal/cache
+10-28 17:36:12.159 25439 25439 V GraphicsEnvironment: com.stoicjournal is not listed in per-application setting
+10-28 17:36:12.168 25439 25439 D nativeloader: Configuring clns-10 for other apk /system/framework/android.test.mock.jar. target_sdk_version=34, uses_libraries=ALL, library_path=/data/app/~~MKtlO-ZpeOY7homguvrojg==/com.stoicjournal.test-nQmOKRealAjf8bNVb18N8Q==/lib/arm64:/data/app/~~A4IOM0vNh6vL2mB79J_Qxg==/com.stoicjournal-RfbNPntBWWoqB5nyv-qoVw==/lib/arm64, permitted_path=/data:/mnt/expand
+10-28 17:36:12.169 25439 25439 D nativeloader: Configuring clns-11 for other apk /system/framework/android.test.runner.jar. target_sdk_version=34, uses_libraries=ALL, library_path=/data/app/~~MKtlO-ZpeOY7homguvrojg==/com.stoicjournal.test-nQmOKRealAjf8bNVb18N8Q==/lib/arm64:/data/app/~~A4IOM0vNh6vL2mB79J_Qxg==/com.stoicjournal-RfbNPntBWWoqB5nyv-qoVw==/lib/arm64, permitted_path=/data:/mnt/expand
+10-28 17:36:12.501 25439 25439 I AndroidJUnitRunner: newApplication com.stoicjournal.HiltTestApplication_Application
+10-28 17:36:12.642 25439 25476 I TestRunner: run started: 2 tests
+10-28 17:36:12.644 25439 25476 I TestRunner: started: coordinator_withKeylessRealProvider_failsFastWithMissingCredentials(com.stoicjournal.e2e.MentorCoordinatorDeviceTest)
+10-28 17:36:16.787 25439 25476 E TestRunner: failed: coordinator_withKeylessRealProvider_failsFastWithMissingCredentials(com.stoicjournal.e2e.MentorCoordinatorDeviceTest)
+10-28 17:36:16.793 25439 25476 E TestRunner: ----- begin exception -----
+10-28 17:36:16.793 25439 25476 E TestRunner: java.lang.AssertionError: [Started(requestId=48b6d01f-12f8-410c-bb19-416a41f0fa95), TextDelta(text=It), TextDelta(text= s), TextDelta(text=ounds like you may be testing), TextDelta(text= things), TextDelta(text=, or per), TextDelta(text=haps something is), TextDelta(text=n't working as expected.), TextDelta(text= Either way, I'm here and), TextDelta(text= respon), TextDelta(text=ding.
+10-28 17:36:16.793 25439 25476 E TestRunner: 
+10-28 17:36:16.793 25439 25476 E TestRunner: If this is a Q), TextDelta(text=A check, ever), TextDelta(text=ything app), TextDelta(text=ears to be working on my end.), TextDelta(text= If you meant something), TextDelta(text= else, like a lost key or), TextDelta(text= a mo), TextDelta(text=ment of frustration you), TextDelta(text='d like to reflect on), TextDelta(text=, I'm gl), TextDelta(text=ad to explore that), TextDelta(text= with you.
+10-28 17:36:16.793 25439 25476 E TestRunner: 
+10-28 17:36:16.793 25439 25476 E TestRunner: **), TextDelta(text=What br), TextDelta(text=ings), TextDelta(text= you here right), TextDelta(text= now:), TextDelta(text= a qu), TextDelta(text=ick test, or something), TextDelta(text= on your mind today), TextDelta(text=?**), Completed(response=AiProviderResponse(content=It sounds like you may be testing things, or perhaps something isn't working as expected. Either way, I'm here and responding.
+10-28 17:36:16.793 25439 25476 E TestRunner: 
+10-28 17:36:16.793 25439 25476 E TestRunner: If this is a QA check, everything appears to be working on my end. If you meant something else, like a lost key or a moment of frustration you'd like to reflect on, I'm glad to explore that with you.
+10-28 17:36:16.793 25439 25476 E TestRunner: 
+10-28 17:36:16.793 25439 25476 E TestRunner: **What brings you here right now: a quick test, or something on your mind today?**, provider=claude, model=claude-opus-5-5, completionStatus=completed, usageMetadata=UsageMetadata(inputTokens=0, outputTokens=0, cachedTokens=0, estimatedMonetaryCost=null), finishReason=end_turn, errorClassification=null))]
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at org.junit.Assert.fail(Assert.java:89)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at org.junit.Assert.assertTrue(Assert.java:42)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at com.stoicjournal.e2e.MentorCoordinatorDeviceTest$coordinator_withKeylessRealProvider_failsFastWithMissingCredentials$1.invokeSuspend(MentorCoordinatorDeviceTest.kt:51)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at kotlinx.coroutines.internal.ScopeCoroutine.afterResume(Scopes.kt:32)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:102)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:46)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at kotlinx.coroutines.internal.ScopeCoroutine.afterResume(Scopes.kt:32)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:102)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:46)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:108)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:280)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:85)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:59)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-b36260e524a92925ea884aa3d1a62e1ef9115d3e-19229:1)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:38)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-b36260e524a92925ea884aa3d1a62e1ef9115d3e-19230:1)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at com.stoicjournal.e2e.MentorCoordinatorDeviceTest.coordinator_withKeylessRealProvider_failsFastWithMissingCredentials(MentorCoordinatorDeviceTest.kt:47)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at java.lang.reflect.Method.invoke(Native Method)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at androidx.test.internal.runner.junit4.statement.RunBefores.evaluate(RunBefores.java:80)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at dagger.hilt.android.internal.testing.MarkThatRulesRanRule$1.evaluate(MarkThatRulesRanRule.java:108)
+10-28 17:36:16.793 25439 25476 E TestRunner: 	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runners.BlockJUnit4ClassRunner$1.evaluate(BlockJUnit4ClassRunner.java:100)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:366)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:103)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:63)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runners.ParentRunner.run(ParentRunner.java:413)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at androidx.test.ext.junit.runners.AndroidJUnit4.run(AndroidJUnit4.java:162)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runners.Suite.runChild(Suite.java:128)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runners.Suite.runChild(Suite.java:27)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runners.ParentRunner.run(ParentRunner.java:413)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runner.JUnitCore.run(JUnitCore.java:137)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at org.junit.runner.JUnitCore.run(JUnitCore.java:115)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at androidx.test.internal.runner.TestExecutor.execute(TestExecutor.java:68)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at androidx.test.internal.runner.TestExecutor.execute(TestExecutor.java:59)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at androidx.test.runner.AndroidJUnitRunner.onStart(AndroidJUnitRunner.java:467)
+10-28 17:36:16.795 25439 25476 E TestRunner: 	at android.app.Instrumentation$InstrumentationThread.run(Instrumentation.java:2655)
+10-28 17:36:16.795 25439 25476 E TestRunner: ----- end exception -----
+10-28 17:36:16.800 25439 25476 I TestRunner: finished: coordinator_withKeylessRealProvider_failsFastWithMissingCredentials(com.stoicjournal.e2e.MentorCoordinatorDeviceTest)
+10-28 17:36:16.807 25439 25476 I TestRunner: started: coordinator_roundTrip_withFakeProvider_completesOnDevice(com.stoicjournal.e2e.MentorCoordinatorDeviceTest)
+10-28 17:36:17.033 25439 25476 I TestRunner: finished: coordinator_roundTrip_withFakeProvider_completesOnDevice(com.stoicjournal.e2e.MentorCoordinatorDeviceTest)
+10-28 17:36:17.039 25439 25476 I TestRunner: run finished: 2 tests, 1 failed, 0 ignored
+10-28 17:36:17.058  1704  6992 I ActivityManager: Force stopping com.stoicjournal appid=10501 user=0: finished inst
+10-28 17:36:17.062  1704  6992 I ActivityManager: Killing 25439:com.stoicjournal/u0a501 (adj 0): stop com.stoicjournal due to finished inst
+10-28 17:36:17.206  1704  6992 V ActivityManager: Got obituary of 25439:com.stoicjournal

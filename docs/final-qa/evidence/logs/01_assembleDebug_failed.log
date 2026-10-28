@@ -1,0 +1,46 @@
+Downloading https://services.gradle.org/distributions/gradle-8.13-bin.zip
+.............10%.............20%.............30%.............40%.............50%.............60%.............70%.............80%.............90%.............100%
+
+Welcome to Gradle 8.13!
+
+Here are the highlights of this release:
+ - Daemon JVM auto-provisioning
+ - Enhancements for Scala plugin and JUnit testing
+ - Improvements for build authors and plugin developers
+
+For more details see https://docs.gradle.org/8.13/release-notes.html
+
+Starting a Gradle Daemon (subsequent builds will be faster)
+Daemon JVM discovery is an incubating feature.
+> Task :build-logic:convention:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :build-logic:convention:pluginDescriptors
+> Task :build-logic:convention:processResources
+> Task :build-logic:convention:compileKotlin
+> Task :build-logic:convention:compileJava NO-SOURCE
+> Task :build-logic:convention:classes
+> Task :build-logic:convention:jar
+This version only understands SDK XML versions up to 3 but an SDK XML file of version 4 was encountered. This can happen if you use versions of Android Studio and the command-line tools that were released at different times.
+Observed package id 'emulator' in inconsistent location '/mnt/c/Users/Admin/AppData/Local/Android/Sdk/emulator.backup' (Expected '/mnt/c/Users/Admin/AppData/Local/Android/Sdk/emulator')
+Already observed package id 'emulator' in '/mnt/c/Users/Admin/AppData/Local/Android/Sdk/emulator'. Skipping duplicate at '/mnt/c/Users/Admin/AppData/Local/Android/Sdk/emulator.backup'
+Build-tool 35.0.0 is missing AAPT at /mnt/c/Users/Admin/AppData/Local/Android/Sdk/build-tools/35.0.0/aapt
+Observed package id 'emulator' in inconsistent location '/mnt/c/Users/Admin/AppData/Local/Android/Sdk/emulator.backup' (Expected '/mnt/c/Users/Admin/AppData/Local/Android/Sdk/emulator')
+Already observed package id 'emulator' in '/mnt/c/Users/Admin/AppData/Local/Android/Sdk/emulator'. Skipping duplicate at '/mnt/c/Users/Admin/AppData/Local/Android/Sdk/emulator.backup'
+Observed package id 'emulator' in inconsistent location '/mnt/c/Users/Admin/AppData/Local/Android/Sdk/emulator.backup' (Expected '/mnt/c/Users/Admin/AppData/Local/Android/Sdk/emulator')
+Already observed package id 'emulator' in '/mnt/c/Users/Admin/AppData/Local/Android/Sdk/emulator'. Skipping duplicate at '/mnt/c/Users/Admin/AppData/Local/Android/Sdk/emulator.backup'
+Build-tool 35.0.0 is missing AAPT at /mnt/c/Users/Admin/AppData/Local/Android/Sdk/build-tools/35.0.0/aapt
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Could not determine the dependencies of task ':app:compileDebugJavaWithJavac'.
+> Installed Build Tools revision 35.0.0 is corrupted. Remove and install again using the SDK Manager.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 2m 44s
+4 actionable tasks: 4 executed
+EXIT=1

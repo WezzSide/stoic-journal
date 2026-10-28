@@ -1,0 +1,47 @@
+10-28 17:23:07.222 20269  8038 I Finsky  : [421] Asset module broadcast after update successful for package com.stoicjournal.core.data.test.
+10-28 17:23:07.230 16046  7446 W SQLiteLog: (28) double-quoted string literal: "com.stoicjournal.core.data.test"
+10-28 17:23:07.262 18261 29160 W SQLiteLog: (28) double-quoted string literal: "com.stoicjournal.core.data.test"
+10-28 17:23:07.265 18261  7539 I ProximityAuth: [RecentAppsMediator] Package added: (user=UserHandle{10}) com.stoicjournal.core.data.test
+10-28 17:23:07.302 16046  7438 I ProximityAuth: [RecentAppsMediator] Package added: (user=UserHandle{0}) com.stoicjournal.core.data.test
+10-28 17:23:07.485  1375  1375 I adbd    : adbd service requested 'shell,v2,raw:am instrument -w -r com.stoicjournal.core.data.test/androidx.test.runner.AndroidJUnitRunner'
+10-28 17:23:07.835  1704  3471 I ActivityManager: Force stopping com.stoicjournal.core.data.test appid=10502 user=0: start instr
+10-28 17:23:07.856  1704  1913 I ActivityManager: Start proc 8441:com.stoicjournal.core.data.test/u0a502 for added application com.stoicjournal.core.data.test
+10-28 17:23:07.866  8441  8441 I Zygote  : Process 8441 created for com.stoicjournal.core.data.test
+10-28 17:23:07.942  8441  8441 D nativeloader: Configuring clns-9 for other apk /system/framework/android.test.mock.jar. target_sdk_version=26, uses_libraries=ALL, library_path=/data/app/~~Dgk2LbQovO5aXyQUCJLyHA==/com.stoicjournal.core.data.test-GeSgu16iX1GYH2rSXKUo6g==/lib/arm64:/data/app/~~Dgk2LbQovO5aXyQUCJLyHA==/com.stoicjournal.core.data.test-GeSgu16iX1GYH2rSXKUo6g==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/com.stoicjournal.core.data.test
+10-28 17:23:07.946  8441  8441 D nativeloader: Configuring clns-10 for other apk /system/framework/android.test.runner.jar. target_sdk_version=26, uses_libraries=ALL, library_path=/data/app/~~Dgk2LbQovO5aXyQUCJLyHA==/com.stoicjournal.core.data.test-GeSgu16iX1GYH2rSXKUo6g==/lib/arm64:/data/app/~~Dgk2LbQovO5aXyQUCJLyHA==/com.stoicjournal.core.data.test-GeSgu16iX1GYH2rSXKUo6g==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/com.stoicjournal.core.data.test
+10-28 17:23:07.959 18868  8461 I bzc     : Handling installed or updated package: com.stoicjournal.core.data.test
+10-28 17:23:07.959 18868  8461 I cta     : Attempting to classify package: com.stoicjournal.core.data.test using model: bll_1
+10-28 17:23:08.003 18868  8461 I caj     : BLL finished for package: com.stoicjournal.core.data.test, score: 11000016, verdict: HARMFUL
+10-28 17:23:08.005 18868  8461 I cta     : Finished new classification for package: com.stoicjournal.core.data.test, model: bll_1, verdict: HARMFUL, score: 1.1000016E7, persisted rows: 1
+10-28 17:23:08.148  8441  8441 D nativeloader: Configuring clns-11 for other apk /data/app/~~Dgk2LbQovO5aXyQUCJLyHA==/com.stoicjournal.core.data.test-GeSgu16iX1GYH2rSXKUo6g==/base.apk. target_sdk_version=26, uses_libraries=, library_path=/data/app/~~Dgk2LbQovO5aXyQUCJLyHA==/com.stoicjournal.core.data.test-GeSgu16iX1GYH2rSXKUo6g==/lib/arm64:/data/app/~~Dgk2LbQovO5aXyQUCJLyHA==/com.stoicjournal.core.data.test-GeSgu16iX1GYH2rSXKUo6g==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/com.stoicjournal.core.data.test
+10-28 17:23:08.155  8441  8441 D ActivityThread: Set OS env TMPDIR to /data/user/0/com.stoicjournal.core.data.test/cache
+10-28 17:23:08.156  8441  8441 V GraphicsEnvironment: com.stoicjournal.core.data.test is not listed in per-application setting
+10-28 17:23:08.207  8441  8482 I TestRequestBuilder: Scanning classpath to find tests in paths [/data/app/~~Dgk2LbQovO5aXyQUCJLyHA==/com.stoicjournal.core.data.test-GeSgu16iX1GYH2rSXKUo6g==/base.apk]
+10-28 17:23:08.928  8441  8482 W ScanningTestLoader: Caused by: java.lang.ClassNotFoundException: Didn't find class "androidx.paging.PositionalDataSource" on path: DexPathList[[zip file "/data/app/~~Dgk2LbQovO5aXyQUCJLyHA==/com.stoicjournal.core.data.test-GeSgu16iX1GYH2rSXKUo6g==/base.apk"],nativeLibraryDirectories=[/data/app/~~Dgk2LbQovO5aXyQUCJLyHA==/com.stoicjournal.core.data.test-GeSgu16iX1GYH2rSXKUo6g==/lib/arm64, /data/app/~~Dgk2LbQovO5aXyQUCJLyHA==/com.stoicjournal.core.data.test-GeSgu16iX1GYH2rSXKUo6g==/base.apk!/lib/arm64-v8a, /system/lib64, /system_ext/lib64]]
+10-28 17:23:09.284  8441  8482 I TestRunner: run started: 11 tests
+10-28 17:23:09.284  8441  8482 I TestRunner: started: migrate3To6_preservesJournalEntriesAndCreatesMentorTables(com.stoicjournal.core.data.database.MigrationTest)
+10-28 17:23:09.412  8441  8482 I TestRunner: finished: migrate3To6_preservesJournalEntriesAndCreatesMentorTables(com.stoicjournal.core.data.database.MigrationTest)
+10-28 17:23:09.418  8441  8482 I TestRunner: started: migrate4To6_preservesConversationsAndMessagesWithCascade(com.stoicjournal.core.data.database.MigrationTest)
+10-28 17:23:09.536  8441  8482 I TestRunner: finished: migrate4To6_preservesConversationsAndMessagesWithCascade(com.stoicjournal.core.data.database.MigrationTest)
+10-28 17:23:09.539  8441  8482 I TestRunner: started: migrate5To6_preservesReflectionLinksAndUniqueIndex(com.stoicjournal.core.data.database.MigrationTest)
+10-28 17:23:09.618  8441  8482 I TestRunner: finished: migrate5To6_preservesReflectionLinksAndUniqueIndex(com.stoicjournal.core.data.database.MigrationTest)
+10-28 17:23:09.622  8441  8482 I TestRunner: started: freshInstall_opensAtVersion6AndRoundTripsThroughDaos(com.stoicjournal.core.data.database.MigrationTest)
+10-28 17:23:09.799  8441  8482 I TestRunner: finished: freshInstall_opensAtVersion6AndRoundTripsThroughDaos(com.stoicjournal.core.data.database.MigrationTest)
+10-28 17:23:09.802  8441  8482 I TestRunner: started: updatingConversation_keepsMessages_andRemainsResumable(com.stoicjournal.core.data.repository.MentorConversationPersistenceTest)
+10-28 17:23:09.969  8441  8482 I TestRunner: finished: updatingConversation_keepsMessages_andRemainsResumable(com.stoicjournal.core.data.repository.MentorConversationPersistenceTest)
+10-28 17:23:09.973  8441  8482 I TestRunner: started: interruptedSave_rollsBackJournalEntry(com.stoicjournal.core.data.repository.ReflectionPersistenceIdempotencyTest)
+10-28 17:23:10.050  8441  8482 I TestRunner: finished: interruptedSave_rollsBackJournalEntry(com.stoicjournal.core.data.repository.ReflectionPersistenceIdempotencyTest)
+10-28 17:23:10.062  8441  8482 I TestRunner: started: savedEntry_isVisibleThroughJournalDaoWithMentorContent(com.stoicjournal.core.data.repository.ReflectionPersistenceIdempotencyTest)
+10-28 17:23:10.077  8441  8482 I TestRunner: finished: savedEntry_isVisibleThroughJournalDaoWithMentorContent(com.stoicjournal.core.data.repository.ReflectionPersistenceIdempotencyTest)
+10-28 17:23:10.082  8441  8482 I TestRunner: started: invalidCandidate_writesNothing(com.stoicjournal.core.data.repository.ReflectionPersistenceIdempotencyTest)
+10-28 17:23:10.101  8441  8482 I TestRunner: finished: invalidCandidate_writesNothing(com.stoicjournal.core.data.repository.ReflectionPersistenceIdempotencyTest)
+10-28 17:23:10.103  8441  8482 I TestRunner: started: repeatedSaves_createExactlyOneEntry(com.stoicjournal.core.data.repository.ReflectionPersistenceIdempotencyTest)
+10-28 17:23:10.152  8441  8482 I TestRunner: finished: repeatedSaves_createExactlyOneEntry(com.stoicjournal.core.data.repository.ReflectionPersistenceIdempotencyTest)
+10-28 17:23:10.157  8441  8482 I TestRunner: started: concurrentSaves_duplicateCallbacks_createExactlyOneEntry(com.stoicjournal.core.data.repository.ReflectionPersistenceIdempotencyTest)
+10-28 17:23:10.217  8441  8482 I TestRunner: finished: concurrentSaves_duplicateCallbacks_createExactlyOneEntry(com.stoicjournal.core.data.repository.ReflectionPersistenceIdempotencyTest)
+10-28 17:23:10.218  8441  8482 I TestRunner: started: differentCandidates_sameConversation_createSeparateEntries(com.stoicjournal.core.data.repository.ReflectionPersistenceIdempotencyTest)
+10-28 17:23:10.234  8441  8482 I TestRunner: finished: differentCandidates_sameConversation_createSeparateEntries(com.stoicjournal.core.data.repository.ReflectionPersistenceIdempotencyTest)
+10-28 17:23:10.237  8441  8482 I TestRunner: run finished: 11 tests, 0 failed, 0 ignored
+10-28 17:23:10.244  1704  2439 I ActivityManager: Force stopping com.stoicjournal.core.data.test appid=10502 user=0: finished inst
+10-28 17:23:10.245  1704  2439 I ActivityManager: Killing 8441:com.stoicjournal.core.data.test/u0a502 (adj 0): stop com.stoicjournal.core.data.test due to finished inst
+10-28 17:23:10.319  1704  7002 V ActivityManager: Got obituary of 8441:com.stoicjournal.core.data.test
