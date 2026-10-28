@@ -7,6 +7,7 @@ import com.stoicjournal.core.data.dao.MentorConversationDao
 import com.stoicjournal.core.data.dao.MentorMessageDao
 import com.stoicjournal.core.data.database.StoicJournalDatabase
 import com.stoicjournal.core.data.repository.CachedAiRepository
+import com.stoicjournal.core.data.repository.DailyReflectionStatusRepositoryImpl
 import com.stoicjournal.core.data.repository.DefaultAiProviderRegistry
 import com.stoicjournal.core.data.repository.ExerciseRepositoryImpl
 import com.stoicjournal.core.data.repository.GeminiAiRepositoryImpl
@@ -20,6 +21,7 @@ import com.stoicjournal.core.data.repository.QuoteRepositoryImpl
 import com.stoicjournal.core.data.repository.SafeAiRepository
 import com.stoicjournal.core.domain.model.AiProviderRegistry
 import com.stoicjournal.core.domain.repository.AiRepository
+import com.stoicjournal.core.domain.repository.DailyReflectionStatusRepository
 import com.stoicjournal.core.domain.repository.ExerciseRepository
 import com.stoicjournal.core.domain.repository.JournalDraftRepository
 import com.stoicjournal.core.domain.repository.JournalRepository
@@ -67,6 +69,9 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindStoicMentorRepository(impl: MentorConversationRepositoryImpl): StoicMentorRepository
+
+    @Binds
+    abstract fun bindDailyReflectionStatusRepository(impl: DailyReflectionStatusRepositoryImpl): DailyReflectionStatusRepository
 }
 
 @Module

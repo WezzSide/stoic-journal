@@ -10,6 +10,8 @@ import androidx.navigation.compose.rememberNavController
 import com.stoicjournal.feature.history.HistoryScreen
 import com.stoicjournal.feature.history.EntryDetailScreen
 import com.stoicjournal.feature.ai.AiReflectionScreen
+import com.stoicjournal.feature.ai.mentor.MentorChatScreen
+import com.stoicjournal.feature.ai.mentor.MentorConversationListScreen
 import com.stoicjournal.feature.journal.exercise.ExerciseJournalScreen
 import com.stoicjournal.feature.journal.freeform.FreeFormJournalScreen
 import com.stoicjournal.feature.journal.guided.GuidedJournalScreen
