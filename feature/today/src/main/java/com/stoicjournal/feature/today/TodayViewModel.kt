@@ -11,6 +11,7 @@ import com.stoicjournal.core.domain.repository.ExerciseRepository
 import com.stoicjournal.core.domain.repository.JournalRepository
 import com.stoicjournal.core.domain.repository.PreferencesRepository
 import com.stoicjournal.core.domain.usecase.GetQuoteForPromptUseCase
+import com.stoicjournal.core.domain.usecase.GetStreakInsightsUseCase
 import com.stoicjournal.core.domain.usecase.GetStreakUseCase
 import com.stoicjournal.core.domain.usecase.GetTodayPromptUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,6 +40,7 @@ class TodayViewModel @Inject constructor(
     getTodayPromptUseCase: GetTodayPromptUseCase,
     private val getQuoteForPromptUseCase: GetQuoteForPromptUseCase,
     getStreakUseCase: GetStreakUseCase,
+    private val getStreakInsightsUseCase: GetStreakInsightsUseCase,
     exerciseRepository: ExerciseRepository,
     journalRepository: JournalRepository,
     private val preferencesRepository: PreferencesRepository
@@ -110,6 +112,7 @@ class TodayViewModel @Inject constructor(
                 prompt = content.prompt,
                 quote = quote,
                 streak = content.streak,
+                streakInsight = getStreakInsightsUseCase(content.streak.currentCount),
                 exercises = content.exercises,
                 onThisDayEntry = content.onThisDayEntry,
                 hasRequestedNotificationPermission = hasRequested,

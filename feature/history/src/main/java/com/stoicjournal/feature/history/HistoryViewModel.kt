@@ -6,11 +6,13 @@ import com.stoicjournal.core.domain.model.EntryType
 import com.stoicjournal.core.domain.model.JournalEntry
 import com.stoicjournal.core.domain.repository.JournalRepository
 import com.stoicjournal.core.domain.usecase.GetJournalEntriesUseCase
+import com.stoicjournal.core.common.util.ExportUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -28,13 +30,25 @@ class HistoryViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val selectedFilter = MutableStateFlow<EntryType?>(null)
+    private val searchQuery = MutableStateFlow("")
     private val _uiState = MutableStateFlow(HistoryUiState())
     val uiState: StateFlow<HistoryUiState> = _uiState
 
     init {
-        selectedFilter
-            .flatMapLatest { filter ->
-                getJournalEntriesUseCase(filter)
+        combine(selectedFilter, searchQuery) { filter, query ->
+            filter to query
+        }
+            .flatMapLatest { (filter, query) ->
+                getJournalEntriesUseCase(filter).map { entries ->
+                    if (query.isBlank()) {
+                        entries
+                    } else {
+                        entries.filter { entry ->
+                            entry.title?.contains(query, ignoreCase = true) == true ||
+                            entry.body.contains(query, ignoreCase = true)
+                        }
+                    }
+                }
                     .map { Result.success(it) }
                     .catch { e ->
                         if (e is CancellationException) throw e
@@ -56,6 +70,11 @@ class HistoryViewModel @Inject constructor(
     fun selectFilter(filter: EntryType?) {
         selectedFilter.value = filter
         _uiState.update { it.copy(selectedFilter = filter) }
+    }
+
+    fun updateSearchQuery(query: String) {
+        searchQuery.value = query
+        _uiState.update { it.copy(searchQuery = query) }
     }
 
     fun deleteEntry(entry: JournalEntry) {
@@ -86,5 +105,9 @@ class HistoryViewModel @Inject constructor(
 
     fun loadErrorShown() {
         _uiState.update { it.copy(loadError = null) }
+    }
+
+    fun getMarkdownExport(): String {
+        return ExportUtils.entriesToMarkdown(_uiState.value.entries)
     }
 }

@@ -6,6 +6,7 @@ import com.stoicjournal.core.domain.model.JournalEntry
 data class HistoryUiState(
     val entries: List<JournalEntry> = emptyList(),
     val selectedFilter: EntryType? = null,
+    val searchQuery: String = "",
     val isLoading: Boolean = true,
     val loadError: String? = null,
     val deleteError: String? = null,
