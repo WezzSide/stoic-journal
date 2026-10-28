@@ -1,0 +1,103 @@
+> Task :build-logic:convention:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :build-logic:convention:pluginDescriptors UP-TO-DATE
+> Task :build-logic:convention:processResources UP-TO-DATE
+> Task :build-logic:convention:compileKotlin
+> Task :build-logic:convention:compileJava NO-SOURCE
+> Task :build-logic:convention:classes UP-TO-DATE
+> Task :build-logic:convention:jar UP-TO-DATE
+
+> Configure project :app
+Release signing credentials not provided (RELEASE_STORE_PASSWORD / RELEASE_KEY_ALIAS / RELEASE_KEY_PASSWORD); release artifacts will be UNSIGNED.
+
+> Task :core:common:preBuild UP-TO-DATE
+> Task :core:common:preDebugBuild UP-TO-DATE
+> Task :core:common:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:common:generateDebugResValues
+> Task :core:common:generateDebugResources
+> Task :core:common:packageDebugResources
+> Task :core:common:processDebugNavigationResources
+> Task :core:domain:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:domain:preBuild UP-TO-DATE
+> Task :core:domain:preDebugBuild UP-TO-DATE
+> Task :core:domain:generateDebugResValues
+> Task :core:common:parseDebugLocalResources
+> Task :core:domain:generateDebugResources
+> Task :core:common:generateDebugRFile
+> Task :core:domain:packageDebugResources
+> Task :core:domain:processDebugNavigationResources
+> Task :core:domain:parseDebugLocalResources
+> Task :core:domain:javaPreCompileDebug
+> Task :core:common:javaPreCompileDebug
+> Task :core:data:preBuild UP-TO-DATE
+> Task :core:data:preDebugBuild UP-TO-DATE
+> Task :core:data:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:data:generateDebugResValues
+> Task :core:domain:generateDebugRFile
+> Task :core:data:generateDebugResources
+> Task :core:data:packageDebugResources
+> Task :core:data:processDebugNavigationResources
+> Task :core:data:parseDebugLocalResources
+> Task :core:data:javaPreCompileDebug
+> Task :core:data:preDebugUnitTestBuild UP-TO-DATE
+> Task :core:domain:preDebugUnitTestBuild UP-TO-DATE
+> Task :core:data:javaPreCompileDebugUnitTest
+> Task :core:data:generateDebugRFile
+> Task :core:domain:generateDebugUnitTestStubRFile
+> Task :core:domain:javaPreCompileDebugUnitTest
+> Task :core:data:generateDebugUnitTestStubRFile
+> Task :core:domain:kaptGenerateStubsDebugKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :core:domain:kaptDebugKotlin
+> Task :core:domain:compileDebugKotlin
+> Task :core:domain:compileDebugJavaWithJavac
+> Task :core:domain:processDebugJavaRes
+> Task :core:domain:bundleLibCompileToJarDebug
+> Task :core:domain:bundleLibRuntimeToJarDebug
+
+> Task :core:common:kaptGenerateStubsDebugKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :core:domain:kaptGenerateStubsDebugUnitTestKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :core:common:kaptDebugKotlin
+> Task :core:domain:kaptDebugUnitTestKotlin
+> Task :core:common:compileDebugKotlin
+> Task :core:common:compileDebugJavaWithJavac
+> Task :core:common:processDebugJavaRes
+> Task :core:common:transformDebugClassesWithAsm
+> Task :core:common:bundleLibRuntimeToJarDebug
+> Task :core:common:bundleLibCompileToJarDebug
+> Task :core:domain:compileDebugUnitTestKotlin
+> Task :core:domain:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :core:domain:processDebugUnitTestJavaRes
+> Task :core:domain:testDebugUnitTest
+> Task :core:data:kaptGenerateStubsDebugKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :core:data:kaptDebugKotlin
+> Task :core:data:compileDebugKotlin
+> Task :core:data:compileDebugJavaWithJavac
+> Task :core:data:processDebugJavaRes
+> Task :core:data:transformDebugClassesWithAsm
+> Task :core:data:bundleLibRuntimeToJarDebug
+> Task :core:data:bundleLibCompileToJarDebug
+
+> Task :core:data:kaptGenerateStubsDebugUnitTestKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :core:data:kaptDebugUnitTestKotlin
+warning: The following options were not recognized by any processor: '[dagger.fastInit, dagger.hilt.android.internal.disableAndroidSuperclassValidation, dagger.hilt.android.internal.projectType, dagger.hilt.internal.useAggregatingRootProcessor, room.schemaLocation, kapt.kotlin.generated]'
+
+> Task :core:data:compileDebugUnitTestKotlin
+> Task :core:data:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :core:data:hiltAggregateDepsDebugUnitTest
+> Task :core:data:hiltJavaCompileDebugUnitTest NO-SOURCE
+> Task :core:data:processDebugUnitTestJavaRes
+> Task :core:data:transformDebugUnitTestClassesWithAsm
+> Task :core:data:testDebugUnitTest
+
+BUILD SUCCESSFUL in 6m 35s
+64 actionable tasks: 61 executed, 3 up-to-date
+EXIT=0

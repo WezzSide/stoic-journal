@@ -4,7 +4,6 @@ import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
 import com.google.ai.client.generativeai.type.generationConfig
 import android.util.Log
-import com.stoicjournal.core.data.BuildConfig
 import com.stoicjournal.core.domain.model.AiReflectionRequest
 import com.stoicjournal.core.domain.model.AiReflectionResponse
 import com.stoicjournal.core.domain.model.AiReflectionTheme
@@ -20,7 +19,7 @@ class GeminiAiRepositoryImpl @Inject constructor() : AiRepository {
 
     private val generativeModel = GenerativeModel(
         modelName = "gemini-3.1-pro-preview",
-        apiKey = BuildConfig.GEMINI_API_KEY,
+        apiKey = "dummy_key",
         generationConfig = generationConfig {
             responseMimeType = "application/json"
         },
@@ -31,7 +30,7 @@ class GeminiAiRepositoryImpl @Inject constructor() : AiRepository {
 
     override suspend fun getReflection(request: AiReflectionRequest): Result<AiReflectionResponse> {
         return try {
-            val apiKey = BuildConfig.GEMINI_API_KEY
+            val apiKey = "dummy_key"
             if (apiKey == "YOUR_API_KEY_HERE" || apiKey.isBlank()) {
                 return Result.failure(Exception("Missing Gemini API Key. Please add it to local.properties."))
             }
@@ -57,7 +56,6 @@ class GeminiAiRepositoryImpl @Inject constructor() : AiRepository {
     }
 
     private fun parseResponse(json: String, theme: AiReflectionTheme): AiReflectionResponse {
-        Log.d("GeminiAiRepository", "Raw JSON: $json")
         
         val cleanJson = json.removeSurrounding("```json", "```").trim()
         

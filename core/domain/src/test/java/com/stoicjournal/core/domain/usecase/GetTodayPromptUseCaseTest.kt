@@ -96,8 +96,18 @@ class GetTodayPromptUseCaseTest {
 
         override suspend fun setReminderTime(hour: Int, minute: Int) = Unit
         override suspend fun setReminderEnabled(enabled: Boolean) = Unit
+        override suspend fun setMorningReminderTime(hour: Int, minute: Int) = Unit
+        override suspend fun setMorningReminderEnabled(enabled: Boolean) = Unit
+        override suspend fun setEveningReminderTime(hour: Int, minute: Int) = Unit
+        override suspend fun setEveningReminderEnabled(enabled: Boolean) = Unit
         override suspend fun setStoicismLevel(level: StoicismLevel) = Unit
         override suspend fun setOnboardingComplete(complete: Boolean) = Unit
         override suspend fun setNotificationPermissionRequested(requested: Boolean) = Unit
+        override suspend fun setBiometricLockEnabled(enabled: Boolean) = Unit
+        override suspend fun setPinLockEnabled(enabled: Boolean) = Unit
+        override suspend fun setPinCode(pin: String) = Unit
+        override suspend fun clearPinCode() = Unit
+        override suspend fun setLockTimeoutSeconds(seconds: Int) = Unit
+        override suspend fun setPrivacyScreenEnabled(enabled: Boolean) = Unit
     }
 }

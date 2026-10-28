@@ -6,8 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.stoicjournal.core.common.di.ApplicationScope
 import com.stoicjournal.core.domain.model.EntryType
 import com.stoicjournal.core.domain.model.JournalDraft
+import com.stoicjournal.core.domain.model.Prompt
 import com.stoicjournal.core.domain.model.Quote
+import com.stoicjournal.core.domain.model.Virtue
 import com.stoicjournal.core.domain.repository.JournalDraftRepository
+import com.stoicjournal.core.domain.repository.PromptRepository
 import com.stoicjournal.core.domain.repository.QuoteRepository
 import com.stoicjournal.core.domain.usecase.SaveJournalEntryUseCase
 import com.stoicjournal.core.domain.usecase.createJournalEntry
@@ -30,6 +33,8 @@ data class FreeFormJournalUiState(
     val body: String = "",
     val attachedQuote: Quote? = null,
     val quotes: List<Quote> = emptyList(),
+    val prompts: List<Prompt> = emptyList(),
+    val selectedVirtues: List<Virtue> = emptyList(),
     val isSaving: Boolean = false,
     val saveError: String? = null,
     val error: String? = null
@@ -38,6 +43,7 @@ data class FreeFormJournalUiState(
 @HiltViewModel
 class FreeFormJournalViewModel @Inject constructor(
     quoteRepository: QuoteRepository,
+    promptRepository: PromptRepository,
     private val saveJournalEntryUseCase: SaveJournalEntryUseCase,
     private val journalDraftRepository: JournalDraftRepository,
     @ApplicationScope private val applicationScope: CoroutineScope
@@ -84,6 +90,16 @@ class FreeFormJournalViewModel @Inject constructor(
                 }
             }
 
+            promptRepository.getAllPrompts()
+                .onEach { prompts ->
+                    _uiState.update { it.copy(prompts = prompts) }
+                }
+                .catch { e ->
+                    if (e is CancellationException) throw e
+                    Log.e(TAG, "Failed to load prompts", e)
+                }
+                .launchIn(viewModelScope)
+
             quoteRepository.getAllQuotes()
                 .onEach { quotes ->
                     _uiState.update { it.copy(quotes = quotes) }
@@ -116,6 +132,32 @@ class FreeFormJournalViewModel @Inject constructor(
     fun updateBody(body: String) {
         _uiState.update { it.copy(body = body, saveError = null) }
         draftSaver.scheduleSave()
+    }
+
+    fun toggleVirtue(virtue: Virtue) {
+        val current = _uiState.value.selectedVirtues
+        val updated = if (current.contains(virtue)) current - virtue else current + virtue
+        _uiState.update { it.copy(selectedVirtues = updated, saveError = null) }
+        draftSaver.scheduleSave()
+    }
+
+    fun insertPrompt(prompt: Prompt) {
+        val currentBody = _uiState.value.body
+        val header = "🏛️ ${prompt.text}\n"
+        val newBody = if (currentBody.isBlank()) {
+            header
+        } else {
+            "$currentBody\n\n$header"
+        }
+        _uiState.update { it.copy(body = newBody, saveError = null) }
+        draftSaver.scheduleSave()
+    }
+
+    fun insertRandomPrompt() {
+        val prompts = _uiState.value.prompts
+        if (prompts.isNotEmpty()) {
+            insertPrompt(prompts.random())
+        }
     }
 
     fun attachRandomQuote() {
@@ -164,7 +206,8 @@ class FreeFormJournalViewModel @Inject constructor(
                     type = EntryType.FREE_FORM,
                     body = state.body,
                     title = state.title.takeIf { it.isNotBlank() },
-                    quoteId = state.attachedQuote?.id
+                    quoteId = state.attachedQuote?.id,
+                    virtues = state.selectedVirtues
                 )
                 saveJournalEntryUseCase(entry)
                 try {

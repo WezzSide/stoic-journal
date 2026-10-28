@@ -16,3 +16,6 @@ local.properties
 # Signing keys
 *.keystore
 *.jks
+
+# Tool outputs
+graphify-out/

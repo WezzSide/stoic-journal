@@ -1,13 +1,10 @@
 # Stoic Journal
 
-A calm, offline-first Android journaling app for daily Stoic reflection.
+A calm, offline-first Android journaling app for daily Stoic reflection, security, and personal growth.
 
-Stoic Journal helps you build a reflective practice through guided prompts,
-curated wisdom from Marcus Aurelius, Epictetus, Seneca, and structured
-exercises rooted in classical Stoicism. Everything stays on your device — your
-journal is private by default.
+Stoic Journal helps you build a reflective practice through guided prompts, curated wisdom from Marcus Aurelius, Epictetus, and Seneca, and structured exercises rooted in classical Stoicism. Everything stays on your device — your journal is strictly private by default.
 
-[![Build and Verify Debug APK](https://github.com/B0LK13/stoic-journal/actions/workflows/build.yml/badge.svg)](https://github.com/B0LK13/stoic-journal/actions/workflows/build.yml)
+[![Build and Verify Debug APK](https://github.com/WezzSide/stoic-journal/actions/workflows/build.yml/badge.svg)](https://github.com/WezzSide/stoic-journal/actions/workflows/build.yml)
 
 ---
 
@@ -15,68 +12,64 @@ journal is private by default.
 
 - [Why Stoic Journal](#why-stoic-journal)
 - [Features](#features)
-- [Screenshots](#screenshots)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
 - [Getting Started](#getting-started)
 - [Building](#building)
 - [Distribution](#distribution)
 - [Testing](#testing)
-- [AI & Gemini Integration](#ai--gemini-integration)
-- [Architecture & Security](#architecture--security)
-- [On-Device Verification with Shizuku](#on-device-verification-with-shizuku)
-- [Privacy](#privacy)
-- [Roadmap](#roadmap)
-- [Contributing](#contributing)
+- [Privacy & Security](#privacy--security)
 - [License](#license)
 
 ---
 
 ## Why Stoic Journal
 
-Philosophy is a practice, not a lecture. Reading a Stoic quote is useful, but
-real change comes from reflecting on it and applying it to your own life. Stoic
-Journal makes that practice:
+Philosophy is a practice, not a lecture. Reading a Stoic quote is useful, but real change comes from reflecting on it and applying it to your own life. Stoic Journal makes that practice:
 
-- **Private** — journal entries never leave the device in the MVP.
-- **Focused** — no feeds, social features, or distractions.
-- **Grounded** — primary-source quotes with attribution, not generic
-  motivational text.
-- **Practical** — guided exercises like the Dichotomy of Control, Evening
-  Review, Premeditatio Malorum, View from Above, and Amor Fati.
+- **Private & Secure** — Biometric & PIN lock protection with `FLAG_SECURE` privacy screen; journal entries never leave your device.
+- **Focused** — No social feeds, ads, or online tracking.
+- **Grounded** — Primary-source quotes with full attribution from Marcus Aurelius, Seneca, and Epictetus.
+- **Practical** — Guided exercises like the Dichotomy of Control, Seneca's Evening Review, Premeditatio Malorum, View from Above, and Amor Fati.
 
 ---
 
 ## Features
 
-### MVP v1.0
+### Core Capabilities
 
-- **Onboarding** — choose your familiarity with Stoicism, set a daily reminder,
-  and seed bundled content on first launch.
-- **Today / Home** — a fresh daily Stoic prompt with a related quote, quick
-  actions for guided reflection, free-form entry, or a Stoic exercise, plus a
-  consistency indicator.
-- **Journal Entry**
-  - *Guided* — pre-filled prompt and quote.
-  - *Free-form* — blank title and body, optional quote attachment.
-  - *Exercise* — step-by-step guidance with a final reflection prompt.
-- **Wisdom Library** — browse quotes by philosopher or theme, favorite quotes,
-  and view full attribution.
-- **Stoic Exercises** — five classical exercises with explanations and guided
-  steps.
-- **History** — chronological entries, filter by type, detail view, and
-  swipe-to-delete with undo.
-- **Daily Reminder** — local notification at your chosen time, powered by
-  WorkManager.
-- **Settings** — change/disable reminders, reset onboarding, and view
-  attribution.
+- **App Security & Privacy:**
+  - Biometric authentication (fingerprint / face unlock via `androidx.biometric`).
+  - 4-digit PIN fallback hashed with SHA-256 in DataStore.
+  - Configurable lock timeout (Immediate, 1 min, 5 min).
+  - `FLAG_SECURE` Privacy Screen to block screenshots and obscure app content in recent apps.
 
----
+- **Today / Home Screen:**
+  - Daily Stoic prompt and matching classical quote.
+  - Quick action buttons for Free-Form Journaling and Guided Exercises.
+  - **On This Day (Terugblik):** Revisit thoughts and entries written on this day in past weeks or months.
+  - **Compassionate Streak Counter:** Streak protection with a 1-day freeze logic.
 
-## Screenshots
+- **Journal Editor & Prompts:**
+  - **Guided & Free-form:** Blank title, quote attachments, and 1-click **"Geef mij een vraag 💡"** prompt selection bar.
+  - **Voice Journaling:** Integrated Android Speech-to-Text (`RecognizerIntent.ACTION_RECOGNIZE_SPEECH`) microphone button to dictate entries.
+  - **Virtue Tagging:** Tag entries with the 4 Cardinal Virtues (🧠 Wijsheid, 🦁 Moed, ⚖️ Rechtvaardigheid, 🍇 Matigheid).
 
-*Screenshots will be added here after the first release build is captured on a
-device.*
+- **Stoic Exercises:**
+  - **Dichotomy of Control Tool:** Interactive 2-column wizard (*Binnen mijn controle* vs. *Buiten mijn controle*) that automatically formats reflections into structured entries.
+  - Amor Fati, Evening Review, Premeditatio Malorum, and View from Above step-by-step exercises.
+
+- **Wisdom Library & History:**
+  - Browse quotes by philosopher or theme, favorite quotes, and view full attributions.
+  - Chronological history with category filters, swipe-to-delete, and **De 4 Kardinaaldeugden Statistiek** progress card.
+
+- **Dual WorkManager Reminders:**
+  - **Morning Intentions (08:00):** *Premeditatio Malorum* notification.
+  - **Evening Review (21:00):** *Seneca's Avondreview* notification.
+  - **Direct Reply & Quick Check-in:** Type and save journal entries directly from notifications using `RemoteInput` without opening the main UI.
+
+- **Local Backup & Export:**
+  - Local JSON export and import options in Settings using Android Storage Access Framework (`CreateDocument` / `OpenDocument`).
 
 ---
 
@@ -85,70 +78,30 @@ device.*
 | Layer | Technology |
 |-------|------------|
 | Language | Kotlin |
-| UI Toolkit | Jetpack Compose |
-| Design | Material 3 with a custom calm, earthy theme |
-| Architecture | MVVM + Repository pattern |
+| UI Toolkit | Jetpack Compose (Material 3) |
+| Architecture | MVVM + Repository Pattern + Clean Architecture |
 | Dependency Injection | Hilt |
 | Local Database | Room (SQLite) |
+| Preferences | Jetpack DataStore |
 | Async | Kotlin Coroutines + Flow |
 | Background Work | WorkManager |
-| Preferences | DataStore |
+| Security | AndroidX Biometric, SHA-256 Hashing, Window `FLAG_SECURE` |
 
 ### Module Structure
 
 ```text
-app/                  # Application shell, navigation, theme
-feature:today/        # Home screen and daily prompt
-feature:journal/      # Guided, free-form, and exercise entry flows
+app/                  # Shell, Navigation, MainViewModel, Security LockScreen & BiometricPromptManager
+feature:today/        # Home screen, daily prompt, streak, OnThisDayCard
+feature:journal/      # Free-form, guided, exercise entry, PromptSelectionBar, VirtueTagPicker
 feature:library/      # Quote and philosopher browsing
-feature:history/      # Entry list and detail
-feature:settings/     # Reminders and preferences
+feature:history/      # Entry list, detail, and VirtueStatsCard
+feature:settings/     # Dual reminders, PIN/Biometric lock, JSON backup/restore
 feature:onboarding/   # First-launch onboarding
-feature:ai/           # Gemini API integration and AI features
-core:data/            # Room entities, DAOs, repositories, seeders
-core:domain/          # Use cases and models
+core:data/            # Room entities, DAOs, repositories, JSON seeders
+core:domain/          # Use cases, models (Virtue, JournalEntry, Streak)
 core:common/          # Utilities, date helpers, constants
-core:notifications/   # Daily reminder worker and scheduler
+core:notifications/   # WorkManager workers, DailyReminderWorker, DirectReplyReceiver
 ```
-
----
-
-## AI & Gemini Integration
-
-Stoic Journal integrates **Google Gemini** to provide intelligent reflections and personal Stoic guidance.
-
-### Setup
-
-1.  **API Key**: Obtain a Gemini API Key from the [Google AI Studio](https://aistudio.google.com/).
-2.  **local.properties**: Add your key to `local.properties`:
-    ```properties
-    GEMINI_API_KEY=your_api_key_here
-    ```
-3.  **Secrets Plugin**: The project uses the `secrets-gradle-plugin` to securely inject the API key into the build config.
-
-### Agentic AI Foundational Structure
-
-The project is designed to support autonomous Stoic agents:
-- **Tool Invocation**: Agents can access the Wisdom Library and Journal History as tools.
-- **Memory Management**: Context-aware reflections based on previous journal entries (locally processed).
-- **Prompt Engineering**: Structured system prompts rooted in primary Stoic sources.
-
----
-
-## Architecture & Security
-
-### AI Hardening
-The AI Reflection feature is built with a resilient multi-layered repository strategy:
-1. **GeminiAiRepositoryImpl**: Direct SDK interaction.
-2. **SafeAiRepository**: Error handling and SDK isolation.
-3. **CachedAiRepository**: Room-based caching for offline support.
-4. **FakeAiRepository**: Deterministic responses for testing.
-
-### Documentation Links
-- [AI Feature Architecture](AI_FEATURE_ARCHITECTURE.md)
-- [Security Notes](SECURITY_NOTES.md)
-- [Test Evidence](TEST_EVIDENCE.md)
-- [MVP Gap Analysis](MVP_GAP_ANALYSIS.md)
 
 ---
 
@@ -158,20 +111,18 @@ The AI Reflection feature is built with a resilient multi-layered repository str
 
 - Android Studio Hedgehog or newer
 - JDK 17
-- Android SDK with API 34 and build-tools 34.0.0
+- Android SDK API 34
 
 ### Clone
 
 ```bash
-git clone https://github.com/B0LK13/stoic-journal.git
+git clone https://github.com/WezzSide/stoic-journal.git
 cd stoic-journal
 ```
 
 ### IDE Setup
 
-Open the project in Android Studio and sync with Gradle. The project uses
-composite build logic under `build-logic/`, so the first sync may take a few
-minutes.
+Open the project in Android Studio and sync with Gradle.
 
 ---
 
@@ -183,82 +134,21 @@ minutes.
 ./gradlew :app:assembleDebug
 ```
 
-Output:
+Output: `app/build/outputs/apk/debug/app-debug.apk`
 
-```text
-app/build/outputs/apk/debug/app-debug.apk
-```
+### Signed Release APK & App Bundle
 
-### Release APK
+A release upload keystore (`stoic-journal-release.keystore`) is configured in `:app/build.gradle.kts`.
 
-A release keystore is required. One has been generated for this project:
-
-```text
-stoic-journal-release.keystore
-```
-
-The keystore is **gitignored**; you must keep your own copy safe. Signing
-properties are read from `~/.gradle/gradle.properties` or environment variables:
-
-```properties
-RELEASE_STORE_PASSWORD=<password>
-RELEASE_KEY_ALIAS=<alias>
-RELEASE_KEY_PASSWORD=<password>
-```
-
-Build the release APK:
+To build the signed release APK and App Bundle (`.aab`):
 
 ```bash
-./gradlew :app:assembleRelease
+./gradlew :app:bundleRelease :app:assembleRelease
 ```
 
-Output:
-
-```text
-app/build/outputs/apk/release/app-release.apk
-```
-
-### AAPT2 workaround on ARM/Termux
-
-On ARM Linux containers (e.g., PRoot/Ttermux), AGP’s bundled AAPT2 is x86_64
-and cannot run. Force AGP to use the SDK AAPT2 wrapper:
-
-```properties
-# ~/.gradle/gradle.properties
-android.aapt2FromMavenOverride=/path/to/android-sdk/build-tools/34.0.0/aapt2
-```
-
-See [docs/build-environment.md](docs/build-environment.md) for the full root
-cause and workaround.
-
----
-
-## Distribution
-
-### GitHub Releases
-
-1. Bump `versionCode` and `versionName` in the app convention plugin
-   (`build-logic/convention/src/main/kotlin/AndroidApplicationConventionPlugin.kt`).
-2. Build a signed release APK:
-   ```bash
-   ./gradlew :app:assembleRelease
-   ```
-3. Create a new GitHub Release and attach `app-release.apk`.
-
-### Google Play
-
-For Play Store distribution, build an Android App Bundle:
-
-```bash
-./gradlew :app:bundleRelease
-```
-
-Upload `app/build/outputs/bundle/release/app-release.aab` to Google Play
-Console.
-
-> **Note:** The committed release signing config uses a project-level keystore.
-> For Play Store, replace it with your Play App Signing key or keep the existing
-> upload key and enroll in Play App Signing.
+Output artifacts:
+- Release App Bundle: `app/build/outputs/bundle/release/app-release.aab`
+- Release Signed APK: `app/build/outputs/apk/release/app-release.apk`
 
 ---
 
@@ -272,87 +162,21 @@ Console.
 
 ### Instrumentation tests
 
-Build the test APK:
-
-```bash
-./gradlew :app:assembleDebugAndroidTest
-```
-
-Run on a connected device or emulator:
-
 ```bash
 ./gradlew :app:connectedDebugAndroidTest
 ```
 
-### On-device smoke test
-
-If you have Shizuku running, use the included script:
-
-```bash
-./scripts/shizuku_verify.sh app/build/outputs/apk/debug/app-debug.apk
-```
-
 ---
 
-## On-Device Verification with Shizuku
+## Privacy & Security
 
-The project includes a Shizuku-powered verification script that installs the
-APK, checks package metadata, launches the main activity, and scans logcat for
-fatal exceptions.
-
-Verified results on the reference device:
-
-- Package: `com.stoicjournal`
-- Version: `1.0` (versionCode 1)
-- minSdk: 26, targetSdk: 34
-- Debug APK install: Success
-- Release APK install: Success
-- Launch: `com.stoicjournal/.MainActivity`
-- Process: Running
-- Logcat: No fatal exceptions
-
-See [scripts/shizuku_verify.sh](scripts/shizuku_verify.sh) and
-[docs/build-environment.md](docs/build-environment.md).
-
----
-
-## Privacy
-
-- All journal entries, favorites, and preferences are stored locally.
-- No analytics, crash reporting, or cloud sync in the MVP.
-- The app requests only the permissions it needs:
-  - `POST_NOTIFICATIONS` for the optional daily reminder
-  - `RECEIVE_BOOT_COMPLETED` to reschedule reminders after reboot
-
----
-
-## Roadmap
-
-See [docs/product-roadmap.md](docs/product-roadmap.md) for the full plan.
-
-High-level phases:
-
-1. **MVP v1.0** — daily reflection, library, exercises, history, reminders.
-2. **Habit Reinforcement v1.1** — widget, summaries, export, search, streak
-   insights.
-3. **Depth & Learning v1.2** — themed collections, philosopher deep-dives,
-   lesson cards.
-4. **Connected Practice v2.0** — optional encrypted sync, audio reflections,
-   Wear companion.
-
----
-
-## Contributing
-
-Contributions are welcome. Please open an issue or pull request with a clear
-description of the change. For larger features, discuss the approach in an issue
-first.
+- All journal entries, biometric preferences, and PIN hashes stay 100% local on your device.
+- Zero analytics, ads, or online tracking SDKs.
+- Privacy Screen (`FLAG_SECURE`) blocks screenshots and obscures app content in the recent apps task manager.
+- Microphones for Voice Journaling use native Android `SpeechRecognizer` and process speech locally without transmitting audio.
 
 ---
 
 ## License
 
-This project is released under the MIT License. See [LICENSE](LICENSE) for
-details.
-
-Content (quotes, prompts, exercises) is derived from public-domain Stoic texts.
+This project is released under the MIT License. See [LICENSE](LICENSE) for details.

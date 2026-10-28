@@ -1,0 +1,59 @@
+{
+  "ts": "2026-07-05T12:28:31",
+  "repo": "F:\\development\\projects\\stoic-journal",
+  "type": "android",
+  "files": 163,
+  "loc_estimate": 5978,
+  "top_extensions": [
+    [
+      ".kt",
+      109
+    ],
+    [
+      ".kts",
+      15
+    ],
+    [
+      ".png",
+      11
+    ],
+    [
+      ".md",
+      6
+    ],
+    [
+      ".xml",
+      6
+    ],
+    [
+      ".json",
+      4
+    ],
+    [
+      "(none)",
+      3
+    ],
+    [
+      ".properties",
+      3
+    ],
+    [
+      ".bat",
+      1
+    ],
+    [
+      ".pro",
+      1
+    ]
+  ],
+  "signals": {
+    "readme": true,
+    "license": true,
+    "ci": true,
+    "tests": true,
+    "dockerfile": false,
+    "gitignore": true
+  },
+  "git_head": "7f890e6",
+  "git_dirty": true
+}

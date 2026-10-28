@@ -13,6 +13,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.material.icons.extended)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
 }

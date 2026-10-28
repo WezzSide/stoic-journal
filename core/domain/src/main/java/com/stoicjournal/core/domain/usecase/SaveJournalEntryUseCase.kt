@@ -1,6 +1,8 @@
 package com.stoicjournal.core.domain.usecase
 
+import com.stoicjournal.core.domain.model.EntryType
 import com.stoicjournal.core.domain.model.JournalEntry
+import com.stoicjournal.core.domain.model.Virtue
 import com.stoicjournal.core.domain.repository.JournalRepository
 import java.time.Instant
 import java.util.UUID
@@ -15,12 +17,13 @@ class SaveJournalEntryUseCase @Inject constructor(
 }
 
 fun createJournalEntry(
-    type: com.stoicjournal.core.domain.model.EntryType,
+    type: EntryType,
     body: String,
     promptId: String? = null,
     title: String? = null,
     quoteId: String? = null,
-    exerciseId: String? = null
+    exerciseId: String? = null,
+    virtues: List<Virtue> = emptyList()
 ): JournalEntry {
     val now = Instant.now()
     return JournalEntry(
@@ -31,6 +34,7 @@ fun createJournalEntry(
         body = body,
         quoteId = quoteId,
         exerciseId = exerciseId,
+        virtues = virtues,
         createdAt = now,
         updatedAt = now
     )

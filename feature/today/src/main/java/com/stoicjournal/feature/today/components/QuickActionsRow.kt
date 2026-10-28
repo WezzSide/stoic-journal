@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 fun QuickActionsRow(
     onFreeForm: () -> Unit,
     onExercise: () -> Unit,
+    onAiReflection: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -32,6 +33,12 @@ fun QuickActionsRow(
             modifier = Modifier.weight(1f).heightIn(min = 48.dp)
         ) {
             Text("Exercise")
+        }
+        Button(
+            onClick = onAiReflection,
+            modifier = Modifier.weight(1f).heightIn(min = 48.dp)
+        ) {
+            Text("AI Mentor")
         }
     }
 }

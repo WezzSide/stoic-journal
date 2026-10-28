@@ -1,6 +1,30 @@
 # Build Environment Notes
 
-## Verified Host
+## Standard workstation (verified 2026-07-05)
+
+The default, recommended build host. Verified on Windows 11 (HP ZBook, x86_64):
+
+- JDK 17 (any distribution; AGP 8.5.0 requires 17, tested with MS OpenJDK 17.0.19)
+- Android SDK with accepted licenses — `local.properties` pointing at it, e.g.
+  `sdk.dir=D\:\\Android\\Sdk` (never commit this file; it is gitignored)
+- Gradle comes from the wrapper (8.7 — exactly AGP 8.5.0's minimum; no global install needed)
+- Missing SDK packages (platform android-34, build-tools 34.0.0) are auto-provisioned
+  by AGP on first build when SDK licenses are accepted
+
+```bash
+./gradlew assembleDebug        # (Windows: gradlew.bat) first build downloads deps; ~12 min cold, then cached
+./gradlew testDebugUnitTest
+./gradlew lintDebug
+```
+
+Result on the verified host: `BUILD SUCCESSFUL` (376 tasks), APK at
+`app/build/outputs/apk/debug/app-debug.apk`. **No AAPT2 override is needed on
+x86_64 hosts** — the workaround below is strictly for the Termux/aarch64 setup
+and will break a standard build if copied (the path does not exist).
+
+---
+
+## Termux / aarch64 host (historical — original development environment)
 
 - PRoot-Distro Ubuntu on aarch64 (Termux)
 - OpenJDK 17 (aarch64)
@@ -9,7 +33,7 @@
 - Android SDK: `/root/personal-api-hub/android-app/android-sdk`
 - Build-tools: 34.0.0
 
-## Root Cause: AAPT2 Daemon Startup Failure
+## Root Cause: AAPT2 Daemon Startup Failure (Termux/aarch64 only)
 
 `./gradlew :app:assembleDebug` failed with:
 
@@ -22,7 +46,7 @@ The AAPT2 binary that AGP downloads from Maven is an **x86_64 ELF** linked to
 `/lib64/ld-linux-x86-64.so.2`. On this aarch64 container that loader is missing,
 so the kernel reports `No such file or directory`.
 
-## Workaround
+## Workaround (Termux/aarch64 only — do NOT apply on standard hosts)
 
 The SDK `build-tools/34.0.0/aapt2` wrapper already uses `qemu-x86_64` to run the
 x86_64 `aapt2.real` binary, so it works on this host. Force AGP to use that SDK

@@ -1,0 +1,46 @@
+{
+  "project_type": "android",
+  "branch": "autoresearch/mvp-environment-test",
+  "gates": [
+    {
+      "name": "build",
+      "cmd": "./gradlew assembleDebug --console=plain",
+      "cmd_windows": "cmd /c \"gradlew.bat assembleDebug --console=plain > .autoloop\\gate-build.log 2>&1\"",
+      "required": true
+    },
+    {
+      "name": "unit_tests",
+      "cmd": "./gradlew testDebugUnitTest --console=plain",
+      "cmd_windows": "cmd /c \"gradlew.bat testDebugUnitTest --console=plain > .autoloop\\gate-test.log 2>&1\"",
+      "required": true
+    },
+    {
+      "name": "lint",
+      "cmd": "./gradlew lintDebug --console=plain",
+      "cmd_windows": "cmd /c \"gradlew.bat lintDebug --console=plain > .autoloop\\gate-lint.log 2>&1\"",
+      "required": false
+    },
+    {
+      "name": "dependency_audit",
+      "cmd": "./gradlew dependencies --configuration releaseRuntimeClasspath -q",
+      "required": false
+    }
+  ],
+  "limits": {
+    "max_iterations": 30,
+    "gate_timeout_seconds": 1800,
+    "runtime_regression_pct": 30
+  },
+  "approval": {
+    "destructive_requires_yes": true
+  },
+  "notes": "Windows commands redirect to a log file to dodge the Gradle-daemon/WSL-interop pipe hang (see this workstation's TROUBLESHOOTING.md). Add detekt/ktlint/instrumented-test gates when the project adopts them.",
+  "repo_name": "stoic-journal",
+  "initialized": "2026-07-05T12:28:29",
+  "state": {
+    "run": 1,
+    "phase": "kept",
+    "branch": "autoresearch/mvp-environment-test",
+    "pre_sha": "c7cca6d28845d7d833eb0fd48f56ba67b0cf6035"
+  }
+}

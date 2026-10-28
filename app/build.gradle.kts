@@ -1,6 +1,5 @@
 plugins {
     id("stoic.android.application")
-    alias(libs.plugins.secrets)
 }
 
 android {
@@ -11,20 +10,39 @@ android {
         testInstrumentationRunner = "com.stoicjournal.HiltTestRunner"
     }
 
+    // Release signing is only configured when real credentials are supplied; there is deliberately
+    // no silent fallback to default passwords. Without them the release build is UNSIGNED and the
+    // build prints a warning, so a weak or wrong key can never be used by accident.
+    val releaseStorePassword = (project.findProperty("RELEASE_STORE_PASSWORD") as String?)?.takeUnless { it.isBlank() }
+        ?: System.getenv("RELEASE_STORE_PASSWORD")?.takeUnless { it.isBlank() }
+    val releaseKeyAlias = (project.findProperty("RELEASE_KEY_ALIAS") as String?)?.takeUnless { it.isBlank() }
+        ?: System.getenv("RELEASE_KEY_ALIAS")?.takeUnless { it.isBlank() }
+    val releaseKeyPassword = (project.findProperty("RELEASE_KEY_PASSWORD") as String?)?.takeUnless { it.isBlank() }
+        ?: System.getenv("RELEASE_KEY_PASSWORD")?.takeUnless { it.isBlank() }
+    val releaseKeystore = rootProject.file("stoic-journal-release.keystore")
+    val hasReleaseSigning = releaseKeystore.exists() &&
+        releaseStorePassword != null && releaseKeyAlias != null && releaseKeyPassword != null
+
     signingConfigs {
-        create("release") {
-            storeFile = rootProject.file("stoic-journal-release.keystore")
-            storePassword = project.findProperty("RELEASE_STORE_PASSWORD")?.toString() ?: ""
-            keyAlias = project.findProperty("RELEASE_KEY_ALIAS")?.toString() ?: ""
-            keyPassword = project.findProperty("RELEASE_KEY_PASSWORD")?.toString() ?: ""
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = releaseKeystore
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        } else {
+            logger.warn("Release signing credentials not provided (RELEASE_STORE_PASSWORD / RELEASE_KEY_ALIAS / RELEASE_KEY_PASSWORD); release artifacts will be UNSIGNED.")
         }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
-            isShrinkResources = false
-            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -48,7 +66,10 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.biometric)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.work.runtime.ktx)
@@ -58,6 +79,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.material.icons.extended)
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -65,5 +87,9 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     androidTestImplementation(libs.androidx.navigation.testing)
     androidTestImplementation(libs.hilt.android.testing)
+    androidTestImplementation(libs.androidx.work.testing)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.uiautomator)
     kaptAndroidTest(libs.hilt.compiler)
 }

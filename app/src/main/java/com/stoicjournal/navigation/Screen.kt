@@ -20,4 +20,13 @@ sealed class Screen(val route: String) {
     }
     data object Settings : Screen("settings")
     data object AiReflection : Screen("ai_reflection")
+    data object MentorChat : Screen("mentor_chat/{conversationId}") {
+        fun createRoute(conversationId: String) = "mentor_chat/$conversationId"
+    }
+    data object MentorConversationList : Screen("mentor_conversations")
+    data object MentorReflectionPreview : Screen("mentor_reflection_preview/{candidateId}") {
+        fun createRoute(candidateId: String) = "mentor_reflection_preview/$candidateId"
+    }
+    data object MemorySettings : Screen("memory_settings")
+    data object Insights : Screen("insights")
 }

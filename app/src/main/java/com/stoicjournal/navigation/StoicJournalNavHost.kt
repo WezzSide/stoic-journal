@@ -10,6 +10,9 @@ import androidx.navigation.compose.rememberNavController
 import com.stoicjournal.feature.history.HistoryScreen
 import com.stoicjournal.feature.history.EntryDetailScreen
 import com.stoicjournal.feature.ai.AiReflectionScreen
+import com.stoicjournal.feature.ai.mentor.MentorChatScreen
+import com.stoicjournal.feature.ai.mentor.MentorConversationListScreen
+import com.stoicjournal.feature.ai.mentor.MentorReflectionPreviewScreen
 import com.stoicjournal.feature.journal.exercise.ExerciseJournalScreen
 import com.stoicjournal.feature.journal.freeform.FreeFormJournalScreen
 import com.stoicjournal.feature.journal.guided.GuidedJournalScreen
@@ -17,14 +20,34 @@ import com.stoicjournal.feature.library.LibraryScreen
 import com.stoicjournal.feature.library.QuoteDetailScreen
 import com.stoicjournal.feature.onboarding.OnboardingScreen
 import com.stoicjournal.feature.settings.SettingsScreen
+import com.stoicjournal.feature.settings.memory.MemorySettingsScreen
+import com.stoicjournal.core.common.notifications.NotificationRoutes
+import androidx.compose.runtime.LaunchedEffect
 import com.stoicjournal.feature.today.TodayScreen
 
 @Composable
 fun StoicJournalNavHost(
     startDestination: Screen,
     modifier: Modifier = Modifier,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    pendingRoute: String? = null,
+    onPendingRouteConsumed: () -> Unit = {}
 ) {
+    // Notification deep links: rendered only here, i.e. behind the app-lock gate in MainActivity.
+    LaunchedEffect(pendingRoute) {
+        when (pendingRoute) {
+            NotificationRoutes.ROUTE_MENTOR_CHAT -> {
+                navController.navigate(Screen.MentorConversationList.route) { launchSingleTop = true }
+                navController.navigate(Screen.MentorChat.createRoute(java.util.UUID.randomUUID().toString()))
+                onPendingRouteConsumed()
+            }
+            null -> Unit
+            else -> {
+                Log.w(TAG, "Ignoring unknown notification route")
+                onPendingRouteConsumed()
+            }
+        }
+    }
     NavHost(
         navController = navController,
         startDestination = startDestination.route,
@@ -51,7 +74,7 @@ fun StoicJournalNavHost(
                 onNavigateToLibrary = { navController.navigate(Screen.Library.route) },
                 onNavigateToHistory = { navController.navigate(Screen.History.route) },
                 onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
-                onNavigateToAiReflection = { navController.navigate(Screen.AiReflection.route) }
+                onNavigateToAiReflection = { navController.navigate(Screen.MentorConversationList.route) }
             )
         }
         composable(Screen.GuidedJournal.route) { backStackEntry ->
@@ -125,12 +148,48 @@ fun StoicJournalNavHost(
         }
         composable(Screen.Settings.route) {
             SettingsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToMemorySettings = { navController.navigate(Screen.MemorySettings.route) }
+            )
+        }
+        composable(Screen.MemorySettings.route) {
+            MemorySettingsScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }
         composable(Screen.AiReflection.route) {
             AiReflectionScreen(
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.MentorChat.route) { backStackEntry ->
+            val conversationId = backStackEntry.arguments?.getString("conversationId") ?: java.util.UUID.randomUUID().toString()
+            MentorChatScreen(
+                conversationId = conversationId,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToPreview = { candidateId -> 
+                    navController.navigate(Screen.MentorReflectionPreview.createRoute(candidateId)) 
+                }
+            )
+        }
+        composable(Screen.MentorConversationList.route) {
+            MentorConversationListScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onSelectConversation = { id -> navController.navigate(Screen.MentorChat.createRoute(id)) },
+                onNewConversation = { navController.navigate(Screen.MentorChat.createRoute(java.util.UUID.randomUUID().toString())) }
+            )
+        }
+        composable(Screen.MentorReflectionPreview.route) { backStackEntry ->
+            val candidateId = backStackEntry.arguments?.getString("candidateId") ?: ""
+            MentorReflectionPreviewScreen(
+                candidateId = candidateId,
+                onNavigateBack = { navController.popBackStack() },
+                onContinueConversation = { navController.popBackStack() },
+                onSaveSuccess = {
+                    navController.navigate(Screen.Today.route) {
+                        popUpTo(0)
+                    }
+                }
             )
         }
     }

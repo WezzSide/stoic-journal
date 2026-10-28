@@ -3,10 +3,12 @@ package com.stoicjournal.feature.today
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.stoicjournal.core.domain.model.Exercise
+import com.stoicjournal.core.domain.model.JournalEntry
 import com.stoicjournal.core.domain.model.Prompt
 import com.stoicjournal.core.domain.model.Quote
 import com.stoicjournal.core.domain.model.Streak
 import com.stoicjournal.core.domain.repository.ExerciseRepository
+import com.stoicjournal.core.domain.repository.JournalRepository
 import com.stoicjournal.core.domain.repository.PreferencesRepository
 import com.stoicjournal.core.domain.usecase.GetQuoteForPromptUseCase
 import com.stoicjournal.core.domain.usecase.GetStreakInsightsUseCase
@@ -28,6 +30,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.ZoneId
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -38,6 +42,7 @@ class TodayViewModel @Inject constructor(
     getStreakUseCase: GetStreakUseCase,
     private val getStreakInsightsUseCase: GetStreakInsightsUseCase,
     exerciseRepository: ExerciseRepository,
+    journalRepository: JournalRepository,
     private val preferencesRepository: PreferencesRepository
 ) : ViewModel() {
 
@@ -45,15 +50,29 @@ class TodayViewModel @Inject constructor(
     val uiState: StateFlow<TodayUiState> = _uiState
 
     init {
+        val entriesFlow = journalRepository.getAllEntries()
+            .catch { emit(emptyList()) }
+
         val contentFlow = combine(
             getTodayPromptUseCase(),
             getStreakUseCase(),
-            exerciseRepository.getAllExercises()
-        ) { todayPrompt, streak, exercises ->
+            exerciseRepository.getAllExercises(),
+            entriesFlow
+        ) { todayPrompt, streak, exercises, entries ->
+            val today = LocalDate.now()
+            val pastEntry = entries.find { entry ->
+                val entryDate = entry.createdAt.atZone(ZoneId.systemDefault()).toLocalDate()
+                entryDate.isBefore(today) && (
+                    (entryDate.dayOfMonth == today.dayOfMonth && entryDate.month == today.month) ||
+                    entryDate == today.minusDays(7) ||
+                    entryDate == today.minusDays(30)
+                )
+            }
             ContentData(
                 prompt = todayPrompt.prompt,
                 streak = streak,
-                exercises = exercises
+                exercises = exercises,
+                onThisDayEntry = pastEntry
             )
         }
             .catch { e ->
@@ -95,6 +114,7 @@ class TodayViewModel @Inject constructor(
                 streak = content.streak,
                 streakInsight = getStreakInsightsUseCase(content.streak.currentCount),
                 exercises = content.exercises,
+                onThisDayEntry = content.onThisDayEntry,
                 hasRequestedNotificationPermission = hasRequested,
                 reminderEnabled = reminderEnabled,
                 isLoading = false,
@@ -109,7 +129,8 @@ class TodayViewModel @Inject constructor(
         val prompt: Prompt? = null,
         val quote: Quote? = null,
         val streak: Streak = Streak(0, null),
-        val exercises: List<Exercise> = emptyList()
+        val exercises: List<Exercise> = emptyList(),
+        val onThisDayEntry: JournalEntry? = null
     )
 
     fun setNotificationPermissionRequested(requested: Boolean) {

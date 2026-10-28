@@ -1,0 +1,595 @@
+Starting a Gradle Daemon, 1 busy and 1 stopped Daemons could not be reused, use --status for details
+Daemon JVM discovery is an incubating feature.
+> Task :build-logic:convention:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :build-logic:convention:pluginDescriptors
+> Task :build-logic:convention:processResources
+> Task :build-logic:convention:compileKotlin
+> Task :build-logic:convention:compileJava NO-SOURCE
+> Task :build-logic:convention:classes
+> Task :build-logic:convention:jar
+
+> Configure project :app
+Release signing credentials not provided (RELEASE_STORE_PASSWORD / RELEASE_KEY_ALIAS / RELEASE_KEY_PASSWORD); release artifacts will be UNSIGNED.
+
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:common:preBuild UP-TO-DATE
+> Task :core:common:preDebugBuild UP-TO-DATE
+> Task :core:data:preBuild UP-TO-DATE
+> Task :core:data:preDebugBuild UP-TO-DATE
+> Task :core:common:writeDebugAarMetadata
+> Task :core:domain:preBuild UP-TO-DATE
+> Task :core:domain:preDebugBuild UP-TO-DATE
+> Task :core:data:writeDebugAarMetadata
+> Task :core:notifications:preBuild UP-TO-DATE
+> Task :core:notifications:preDebugBuild UP-TO-DATE
+> Task :core:domain:writeDebugAarMetadata
+> Task :feature:ai:preBuild UP-TO-DATE
+> Task :feature:ai:preDebugBuild UP-TO-DATE
+> Task :core:notifications:writeDebugAarMetadata
+> Task :feature:history:preBuild UP-TO-DATE
+> Task :feature:history:preDebugBuild UP-TO-DATE
+> Task :feature:ai:writeDebugAarMetadata
+> Task :feature:journal:preBuild UP-TO-DATE
+> Task :feature:journal:preDebugBuild UP-TO-DATE
+> Task :feature:history:writeDebugAarMetadata
+> Task :feature:library:preBuild UP-TO-DATE
+> Task :feature:library:preDebugBuild UP-TO-DATE
+> Task :feature:journal:writeDebugAarMetadata
+> Task :feature:onboarding:preBuild UP-TO-DATE
+> Task :feature:onboarding:preDebugBuild UP-TO-DATE
+> Task :feature:library:writeDebugAarMetadata
+> Task :feature:settings:preBuild UP-TO-DATE
+> Task :feature:settings:preDebugBuild UP-TO-DATE
+> Task :feature:onboarding:writeDebugAarMetadata
+> Task :feature:today:preBuild UP-TO-DATE
+> Task :feature:today:preDebugBuild UP-TO-DATE
+> Task :feature:settings:writeDebugAarMetadata
+> Task :feature:today:writeDebugAarMetadata
+> Task :core:common:processDebugNavigationResources
+> Task :core:data:processDebugNavigationResources
+> Task :app:checkDebugAarMetadata
+> Task :core:domain:processDebugNavigationResources
+> Task :core:notifications:processDebugNavigationResources
+> Task :feature:ai:processDebugNavigationResources
+> Task :feature:history:processDebugNavigationResources
+> Task :feature:journal:processDebugNavigationResources
+> Task :feature:library:processDebugNavigationResources
+> Task :feature:onboarding:processDebugNavigationResources
+> Task :feature:settings:processDebugNavigationResources
+> Task :feature:today:processDebugNavigationResources
+> Task :app:processDebugNavigationResources
+> Task :app:compileDebugNavigationResources
+> Task :app:generateDebugResValues
+> Task :core:common:generateDebugResValues
+> Task :core:common:generateDebugResources
+> Task :core:common:packageDebugResources
+> Task :core:data:generateDebugResValues
+> Task :core:data:generateDebugResources
+> Task :core:data:packageDebugResources
+> Task :core:domain:generateDebugResValues
+> Task :core:domain:generateDebugResources
+> Task :core:domain:packageDebugResources
+> Task :core:notifications:generateDebugResValues
+> Task :core:notifications:generateDebugResources
+> Task :core:notifications:packageDebugResources
+> Task :feature:ai:generateDebugResValues
+> Task :feature:ai:generateDebugResources
+> Task :feature:ai:packageDebugResources
+> Task :feature:history:generateDebugResValues
+> Task :feature:history:generateDebugResources
+> Task :feature:history:packageDebugResources
+> Task :feature:journal:generateDebugResValues
+> Task :feature:journal:generateDebugResources
+> Task :feature:journal:packageDebugResources
+> Task :feature:library:generateDebugResValues
+> Task :feature:library:generateDebugResources
+> Task :feature:library:packageDebugResources
+> Task :feature:onboarding:generateDebugResValues
+> Task :feature:onboarding:generateDebugResources
+> Task :feature:onboarding:packageDebugResources
+> Task :feature:settings:generateDebugResValues
+> Task :feature:settings:generateDebugResources
+> Task :feature:settings:packageDebugResources
+> Task :feature:today:generateDebugResValues
+> Task :feature:today:generateDebugResources
+> Task :feature:today:packageDebugResources
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources
+> Task :app:packageDebugResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :app:parseDebugLocalResources
+> Task :core:common:extractDeepLinksDebug
+> Task :app:mergeDebugResources
+> Task :core:data:extractDeepLinksDebug
+> Task :core:common:processDebugManifest
+> Task :core:domain:extractDeepLinksDebug
+> Task :core:data:processDebugManifest
+> Task :core:notifications:extractDeepLinksDebug
+> Task :core:domain:processDebugManifest
+> Task :feature:ai:extractDeepLinksDebug
+> Task :core:notifications:processDebugManifest
+> Task :feature:history:extractDeepLinksDebug
+> Task :feature:ai:processDebugManifest
+> Task :feature:journal:extractDeepLinksDebug
+> Task :feature:history:processDebugManifest
+> Task :feature:library:extractDeepLinksDebug
+> Task :feature:journal:processDebugManifest
+> Task :feature:onboarding:extractDeepLinksDebug
+> Task :feature:library:processDebugManifest
+> Task :feature:settings:extractDeepLinksDebug
+> Task :feature:onboarding:processDebugManifest
+> Task :feature:today:extractDeepLinksDebug
+> Task :feature:settings:processDebugManifest
+> Task :core:common:compileDebugLibraryResources
+> Task :core:common:parseDebugLocalResources
+> Task :feature:today:processDebugManifest
+> Task :core:data:compileDebugLibraryResources
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :core:data:parseDebugLocalResources
+> Task :core:common:generateDebugRFile
+> Task :core:domain:compileDebugLibraryResources
+> Task :core:data:generateDebugRFile
+> Task :core:domain:parseDebugLocalResources
+> Task :core:notifications:compileDebugLibraryResources
+> Task :core:domain:generateDebugRFile
+> Task :feature:ai:compileDebugLibraryResources
+> Task :app:processDebugManifestForPackage
+> Task :feature:ai:parseDebugLocalResources
+> Task :core:notifications:parseDebugLocalResources
+> Task :feature:history:compileDebugLibraryResources
+> Task :core:notifications:generateDebugRFile
+> Task :feature:ai:generateDebugRFile
+> Task :feature:history:parseDebugLocalResources
+> Task :feature:journal:compileDebugLibraryResources
+> Task :feature:history:generateDebugRFile
+> Task :feature:journal:parseDebugLocalResources
+> Task :feature:library:compileDebugLibraryResources
+> Task :feature:journal:generateDebugRFile
+> Task :feature:library:parseDebugLocalResources
+> Task :feature:onboarding:compileDebugLibraryResources
+> Task :feature:library:generateDebugRFile
+> Task :feature:onboarding:parseDebugLocalResources
+> Task :feature:settings:compileDebugLibraryResources
+> Task :feature:onboarding:generateDebugRFile
+> Task :feature:settings:parseDebugLocalResources
+> Task :feature:today:compileDebugLibraryResources
+> Task :core:common:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:domain:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :feature:settings:generateDebugRFile
+> Task :feature:today:parseDebugLocalResources
+> Task :feature:today:generateDebugRFile
+> Task :core:domain:javaPreCompileDebug
+> Task :core:common:javaPreCompileDebug
+> Task :core:data:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:notifications:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:data:javaPreCompileDebug
+> Task :feature:ai:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:notifications:javaPreCompileDebug
+> Task :feature:history:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :feature:ai:javaPreCompileDebug
+> Task :feature:journal:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :feature:history:javaPreCompileDebug
+> Task :feature:library:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :feature:journal:javaPreCompileDebug
+> Task :feature:onboarding:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :feature:library:javaPreCompileDebug
+> Task :feature:settings:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :feature:onboarding:javaPreCompileDebug
+> Task :feature:today:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :feature:settings:javaPreCompileDebug
+> Task :feature:today:javaPreCompileDebug
+> Task :app:javaPreCompileDebug
+> Task :app:mergeDebugShaders
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :core:common:mergeDebugShaders
+> Task :core:common:compileDebugShaders NO-SOURCE
+> Task :core:common:generateDebugAssets UP-TO-DATE
+> Task :core:common:mergeDebugAssets
+> Task :core:data:mergeDebugShaders
+> Task :core:data:compileDebugShaders NO-SOURCE
+> Task :core:data:generateDebugAssets UP-TO-DATE
+> Task :core:data:mergeDebugAssets
+> Task :core:domain:mergeDebugShaders
+> Task :core:domain:compileDebugShaders NO-SOURCE
+> Task :core:domain:generateDebugAssets UP-TO-DATE
+> Task :core:domain:mergeDebugAssets
+> Task :core:notifications:mergeDebugShaders
+> Task :core:notifications:compileDebugShaders NO-SOURCE
+> Task :core:notifications:generateDebugAssets UP-TO-DATE
+> Task :core:notifications:mergeDebugAssets
+> Task :feature:ai:mergeDebugShaders
+> Task :feature:ai:compileDebugShaders NO-SOURCE
+> Task :feature:ai:generateDebugAssets UP-TO-DATE
+> Task :feature:ai:mergeDebugAssets
+> Task :feature:history:mergeDebugShaders
+> Task :feature:history:compileDebugShaders NO-SOURCE
+> Task :feature:history:generateDebugAssets UP-TO-DATE
+> Task :feature:history:mergeDebugAssets
+> Task :feature:journal:mergeDebugShaders
+> Task :feature:journal:compileDebugShaders NO-SOURCE
+> Task :feature:journal:generateDebugAssets UP-TO-DATE
+> Task :feature:journal:mergeDebugAssets
+> Task :feature:library:mergeDebugShaders
+> Task :feature:library:compileDebugShaders NO-SOURCE
+> Task :feature:library:generateDebugAssets UP-TO-DATE
+> Task :feature:library:mergeDebugAssets
+> Task :feature:onboarding:mergeDebugShaders
+> Task :feature:onboarding:compileDebugShaders NO-SOURCE
+> Task :feature:onboarding:generateDebugAssets UP-TO-DATE
+> Task :feature:onboarding:mergeDebugAssets
+> Task :feature:settings:mergeDebugShaders
+> Task :feature:settings:compileDebugShaders NO-SOURCE
+> Task :feature:settings:generateDebugAssets UP-TO-DATE
+> Task :feature:settings:mergeDebugAssets
+> Task :feature:today:mergeDebugShaders
+> Task :feature:today:compileDebugShaders NO-SOURCE
+> Task :feature:today:generateDebugAssets UP-TO-DATE
+> Task :feature:today:mergeDebugAssets
+> Task :app:mergeDebugAssets
+> Task :app:compressDebugAssets
+> Task :app:desugarDebugFileDependencies
+> Task :app:checkDebugDuplicateClasses
+> Task :app:mergeDebugJniLibFolders
+> Task :core:common:mergeDebugJniLibFolders
+> Task :core:common:mergeDebugNativeLibs NO-SOURCE
+> Task :core:common:copyDebugJniLibsProjectOnly
+> Task :core:data:mergeDebugJniLibFolders
+> Task :core:data:mergeDebugNativeLibs NO-SOURCE
+> Task :app:processDebugResources
+> Task :core:data:copyDebugJniLibsProjectOnly
+> Task :core:domain:mergeDebugJniLibFolders
+> Task :core:domain:mergeDebugNativeLibs NO-SOURCE
+> Task :core:domain:copyDebugJniLibsProjectOnly
+> Task :core:notifications:mergeDebugJniLibFolders
+> Task :core:notifications:mergeDebugNativeLibs NO-SOURCE
+> Task :core:notifications:copyDebugJniLibsProjectOnly
+> Task :feature:ai:mergeDebugJniLibFolders
+> Task :feature:ai:mergeDebugNativeLibs NO-SOURCE
+> Task :feature:ai:copyDebugJniLibsProjectOnly
+> Task :feature:history:mergeDebugJniLibFolders
+> Task :feature:history:mergeDebugNativeLibs NO-SOURCE
+> Task :feature:history:copyDebugJniLibsProjectOnly
+> Task :feature:journal:mergeDebugJniLibFolders
+> Task :feature:journal:mergeDebugNativeLibs NO-SOURCE
+> Task :feature:journal:copyDebugJniLibsProjectOnly
+> Task :feature:library:mergeDebugJniLibFolders
+> Task :feature:library:mergeDebugNativeLibs NO-SOURCE
+> Task :feature:library:copyDebugJniLibsProjectOnly
+> Task :feature:onboarding:mergeDebugJniLibFolders
+> Task :feature:onboarding:mergeDebugNativeLibs NO-SOURCE
+> Task :feature:onboarding:copyDebugJniLibsProjectOnly
+> Task :feature:settings:mergeDebugJniLibFolders
+> Task :feature:settings:mergeDebugNativeLibs NO-SOURCE
+> Task :feature:settings:copyDebugJniLibsProjectOnly
+> Task :feature:today:mergeDebugJniLibFolders
+> Task :feature:today:mergeDebugNativeLibs NO-SOURCE
+> Task :feature:today:copyDebugJniLibsProjectOnly
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:writeDebugSigningConfigVersions
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :core:common:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:mergeDebugNativeLibs
+> Task :app:javaPreCompileDebugUnitTest
+> Task :core:data:preDebugUnitTestBuild UP-TO-DATE
+> Task :core:common:javaPreCompileDebugUnitTest
+> Task :core:common:generateDebugUnitTestStubRFile
+
+> Task :app:stripDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libdatastore_shared_counter.so. Run with --info option to learn more.
+
+> Task :core:domain:preDebugUnitTestBuild UP-TO-DATE
+> Task :core:data:javaPreCompileDebugUnitTest
+> Task :core:notifications:preDebugUnitTestBuild UP-TO-DATE
+> Task :core:domain:javaPreCompileDebugUnitTest
+> Task :core:data:generateDebugUnitTestStubRFile
+> Task :core:domain:generateDebugUnitTestStubRFile
+> Task :feature:ai:preDebugUnitTestBuild UP-TO-DATE
+> Task :core:notifications:javaPreCompileDebugUnitTest
+> Task :core:notifications:generateDebugUnitTestStubRFile
+> Task :feature:history:preDebugUnitTestBuild UP-TO-DATE
+> Task :feature:ai:javaPreCompileDebugUnitTest
+> Task :feature:ai:generateDebugUnitTestStubRFile
+> Task :feature:journal:preDebugUnitTestBuild UP-TO-DATE
+> Task :feature:history:javaPreCompileDebugUnitTest
+> Task :feature:history:generateDebugUnitTestStubRFile
+> Task :feature:library:preDebugUnitTestBuild UP-TO-DATE
+> Task :feature:journal:javaPreCompileDebugUnitTest
+> Task :feature:journal:generateDebugUnitTestStubRFile
+> Task :feature:onboarding:preDebugUnitTestBuild UP-TO-DATE
+> Task :feature:library:javaPreCompileDebugUnitTest
+> Task :feature:library:generateDebugUnitTestStubRFile
+> Task :feature:settings:preDebugUnitTestBuild UP-TO-DATE
+> Task :feature:onboarding:javaPreCompileDebugUnitTest
+> Task :feature:today:preDebugUnitTestBuild UP-TO-DATE
+> Task :feature:settings:javaPreCompileDebugUnitTest
+> Task :feature:onboarding:generateDebugUnitTestStubRFile
+> Task :feature:today:javaPreCompileDebugUnitTest
+> Task :feature:settings:generateDebugUnitTestStubRFile
+> Task :feature:today:generateDebugUnitTestStubRFile
+> Task :core:domain:kaptGenerateStubsDebugKotlin
+> Task :app:mergeExtDexDebug
+
+> Task :core:domain:kaptGenerateStubsDebugKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :core:domain:kaptDebugKotlin
+> Task :core:domain:compileDebugKotlin
+> Task :core:domain:compileDebugJavaWithJavac
+> Task :core:domain:processDebugJavaRes
+> Task :core:domain:bundleLibRuntimeToJarDebug
+> Task :core:domain:bundleLibCompileToJarDebug
+
+> Task :core:common:kaptGenerateStubsDebugKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :core:domain:kaptGenerateStubsDebugUnitTestKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :core:domain:bundleLibRuntimeToDirDebug
+> Task :core:common:kaptDebugKotlin
+> Task :core:domain:kaptDebugUnitTestKotlin
+> Task :core:common:compileDebugKotlin
+> Task :core:domain:compileDebugUnitTestKotlin
+> Task :core:common:compileDebugJavaWithJavac
+> Task :core:common:processDebugJavaRes
+> Task :core:domain:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :core:common:transformDebugClassesWithAsm
+> Task :core:domain:processDebugUnitTestJavaRes
+> Task :core:common:bundleLibCompileToJarDebug
+> Task :core:common:bundleLibRuntimeToJarDebug
+> Task :core:common:bundleLibRuntimeToDirDebug
+> Task :core:domain:testDebugUnitTest
+
+> Task :core:notifications:kaptGenerateStubsDebugKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :core:common:kaptGenerateStubsDebugUnitTestKotlin
+> Task :core:common:kaptDebugUnitTestKotlin
+> Task :core:common:compileDebugUnitTestKotlin NO-SOURCE
+> Task :core:common:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :core:common:hiltAggregateDepsDebugUnitTest
+> Task :core:common:hiltJavaCompileDebugUnitTest NO-SOURCE
+> Task :core:common:processDebugUnitTestJavaRes NO-SOURCE
+> Task :core:common:transformDebugUnitTestClassesWithAsm
+> Task :core:common:testDebugUnitTest NO-SOURCE
+> Task :core:notifications:kaptDebugKotlin
+> Task :core:data:kaptGenerateStubsDebugKotlin
+
+> Task :feature:ai:kaptGenerateStubsDebugKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :feature:history:kaptGenerateStubsDebugKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :feature:history:kaptDebugKotlin
+
+> Task :feature:library:kaptGenerateStubsDebugKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :feature:ai:kaptDebugKotlin
+
+> Task :feature:today:kaptGenerateStubsDebugKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :feature:journal:kaptGenerateStubsDebugKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :core:data:kaptGenerateStubsDebugKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :core:notifications:compileDebugKotlin
+> Task :core:notifications:compileDebugJavaWithJavac
+> Task :feature:history:compileDebugKotlin
+> Task :core:notifications:transformDebugClassesWithAsm
+> Task :feature:history:compileDebugJavaWithJavac
+> Task :core:notifications:bundleLibCompileToJarDebug
+> Task :feature:ai:compileDebugKotlin
+> Task :feature:journal:kaptDebugKotlin
+> Task :feature:history:transformDebugClassesWithAsm
+> Task :feature:library:kaptDebugKotlin
+> Task :feature:ai:compileDebugJavaWithJavac
+> Task :feature:history:bundleLibCompileToJarDebug
+> Task :core:notifications:bundleLibRuntimeToJarDebug
+> Task :core:data:kaptDebugKotlin
+> Task :feature:ai:transformDebugClassesWithAsm
+> Task :feature:ai:bundleLibCompileToJarDebug
+> Task :feature:today:kaptDebugKotlin
+> Task :core:notifications:processDebugJavaRes
+> Task :feature:history:bundleLibRuntimeToJarDebug
+> Task :feature:ai:processDebugJavaRes
+> Task :feature:history:processDebugJavaRes
+> Task :feature:journal:compileDebugKotlin
+> Task :feature:ai:bundleLibRuntimeToJarDebug
+> Task :core:notifications:kaptGenerateStubsDebugUnitTestKotlin
+
+> Task :feature:onboarding:kaptGenerateStubsDebugKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :core:notifications:kaptDebugUnitTestKotlin
+> Task :feature:library:compileDebugKotlin
+> Task :core:notifications:compileDebugUnitTestKotlin NO-SOURCE
+> Task :core:notifications:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :core:notifications:hiltAggregateDepsDebugUnitTest
+
+> Task :feature:settings:kaptGenerateStubsDebugKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :core:notifications:bundleLibRuntimeToDirDebug
+> Task :feature:onboarding:kaptDebugKotlin
+> Task :feature:history:bundleLibRuntimeToDirDebug
+> Task :feature:library:compileDebugJavaWithJavac
+> Task :core:data:compileDebugKotlin
+
+> Task :feature:ai:kaptGenerateStubsDebugUnitTestKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :feature:today:compileDebugKotlin
+> Task :feature:journal:compileDebugJavaWithJavac
+> Task :feature:ai:bundleLibRuntimeToDirDebug
+> Task :feature:library:transformDebugClassesWithAsm
+> Task :feature:today:compileDebugJavaWithJavac
+> Task :feature:journal:transformDebugClassesWithAsm
+> Task :feature:library:bundleLibCompileToJarDebug
+> Task :feature:settings:kaptDebugKotlin
+> Task :feature:library:bundleLibRuntimeToJarDebug
+> Task :feature:journal:processDebugJavaRes
+> Task :feature:today:transformDebugClassesWithAsm
+> Task :feature:onboarding:compileDebugKotlin
+> Task :core:data:compileDebugJavaWithJavac
+> Task :feature:journal:bundleLibCompileToJarDebug
+> Task :feature:onboarding:compileDebugJavaWithJavac
+> Task :feature:onboarding:transformDebugClassesWithAsm
+> Task :feature:onboarding:bundleLibCompileToJarDebug
+> Task :feature:onboarding:bundleLibRuntimeToJarDebug
+> Task :feature:today:bundleLibCompileToJarDebug
+> Task :feature:today:bundleLibRuntimeToJarDebug
+> Task :core:data:processDebugJavaRes
+> Task :feature:journal:bundleLibRuntimeToJarDebug
+> Task :feature:library:processDebugJavaRes
+> Task :feature:onboarding:processDebugJavaRes
+> Task :feature:today:processDebugJavaRes
+> Task :core:notifications:hiltJavaCompileDebugUnitTest NO-SOURCE
+> Task :core:notifications:processDebugUnitTestJavaRes NO-SOURCE
+> Task :core:notifications:transformDebugUnitTestClassesWithAsm
+> Task :core:notifications:testDebugUnitTest NO-SOURCE
+> Task :feature:onboarding:bundleLibRuntimeToDirDebug
+
+> Task :feature:ai:kaptDebugUnitTestKotlin
+warning: The following options were not recognized by any processor: '[dagger.fastInit, dagger.hilt.android.internal.disableAndroidSuperclassValidation, dagger.hilt.android.internal.projectType, dagger.hilt.internal.useAggregatingRootProcessor, kapt.kotlin.generated]'
+
+> Task :feature:history:kaptGenerateStubsDebugUnitTestKotlin
+> Task :feature:history:kaptDebugUnitTestKotlin
+> Task :feature:today:bundleLibRuntimeToDirDebug
+> Task :feature:history:compileDebugUnitTestKotlin NO-SOURCE
+> Task :feature:history:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :feature:history:hiltAggregateDepsDebugUnitTest
+> Task :core:data:transformDebugClassesWithAsm
+> Task :feature:library:bundleLibRuntimeToDirDebug
+> Task :feature:settings:compileDebugKotlin
+> Task :feature:journal:bundleLibRuntimeToDirDebug
+> Task :feature:ai:compileDebugUnitTestKotlin
+> Task :feature:settings:compileDebugJavaWithJavac
+
+> Task :feature:journal:kaptGenerateStubsDebugUnitTestKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :core:data:bundleLibCompileToJarDebug
+> Task :feature:settings:processDebugJavaRes
+> Task :feature:ai:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :feature:history:hiltJavaCompileDebugUnitTest NO-SOURCE
+> Task :feature:ai:hiltAggregateDepsDebugUnitTest
+> Task :feature:history:processDebugUnitTestJavaRes NO-SOURCE
+> Task :feature:ai:hiltJavaCompileDebugUnitTest NO-SOURCE
+> Task :feature:ai:processDebugUnitTestJavaRes
+> Task :core:data:bundleLibRuntimeToJarDebug
+> Task :feature:history:transformDebugUnitTestClassesWithAsm
+> Task :feature:ai:transformDebugUnitTestClassesWithAsm
+> Task :feature:settings:transformDebugClassesWithAsm
+
+> Task :feature:journal:kaptDebugUnitTestKotlin
+warning: The following options were not recognized by any processor: '[dagger.fastInit, dagger.hilt.android.internal.disableAndroidSuperclassValidation, dagger.hilt.android.internal.projectType, dagger.hilt.internal.useAggregatingRootProcessor, kapt.kotlin.generated]'
+
+> Task :core:data:kaptGenerateStubsDebugUnitTestKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :feature:ai:testDebugUnitTest
+> Task :feature:settings:bundleLibCompileToJarDebug
+> Task :feature:settings:bundleLibRuntimeToJarDebug
+
+> Task :core:data:kaptDebugUnitTestKotlin
+warning: The following options were not recognized by any processor: '[dagger.fastInit, dagger.hilt.android.internal.disableAndroidSuperclassValidation, dagger.hilt.android.internal.projectType, dagger.hilt.internal.useAggregatingRootProcessor, room.schemaLocation, kapt.kotlin.generated]'
+
+> Task :feature:history:testDebugUnitTest NO-SOURCE
+> Task :feature:library:kaptGenerateStubsDebugUnitTestKotlin
+> Task :core:data:bundleLibRuntimeToDirDebug
+> Task :feature:settings:bundleLibRuntimeToDirDebug
+> Task :feature:library:kaptDebugUnitTestKotlin
+> Task :feature:onboarding:kaptGenerateStubsDebugUnitTestKotlin
+> Task :feature:library:compileDebugUnitTestKotlin NO-SOURCE
+> Task :feature:library:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :feature:library:hiltAggregateDepsDebugUnitTest
+> Task :feature:library:hiltJavaCompileDebugUnitTest NO-SOURCE
+> Task :feature:library:processDebugUnitTestJavaRes NO-SOURCE
+> Task :feature:onboarding:kaptDebugUnitTestKotlin
+> Task :feature:library:transformDebugUnitTestClassesWithAsm
+> Task :feature:onboarding:compileDebugUnitTestKotlin NO-SOURCE
+> Task :feature:library:testDebugUnitTest NO-SOURCE
+> Task :feature:onboarding:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :feature:onboarding:hiltAggregateDepsDebugUnitTest
+> Task :feature:settings:kaptGenerateStubsDebugUnitTestKotlin
+> Task :feature:onboarding:hiltJavaCompileDebugUnitTest NO-SOURCE
+> Task :feature:onboarding:processDebugUnitTestJavaRes NO-SOURCE
+> Task :feature:onboarding:transformDebugUnitTestClassesWithAsm
+> Task :feature:onboarding:testDebugUnitTest NO-SOURCE
+> Task :feature:settings:kaptDebugUnitTestKotlin
+> Task :feature:today:kaptGenerateStubsDebugUnitTestKotlin
+> Task :feature:settings:compileDebugUnitTestKotlin NO-SOURCE
+> Task :feature:settings:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :feature:settings:hiltAggregateDepsDebugUnitTest
+> Task :feature:settings:hiltJavaCompileDebugUnitTest NO-SOURCE
+> Task :feature:settings:processDebugUnitTestJavaRes NO-SOURCE
+> Task :feature:journal:compileDebugUnitTestKotlin
+> Task :feature:today:kaptDebugUnitTestKotlin
+> Task :feature:journal:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :feature:settings:transformDebugUnitTestClassesWithAsm
+> Task :feature:settings:testDebugUnitTest NO-SOURCE
+> Task :feature:journal:hiltAggregateDepsDebugUnitTest
+> Task :feature:today:compileDebugUnitTestKotlin NO-SOURCE
+> Task :feature:journal:hiltJavaCompileDebugUnitTest NO-SOURCE
+> Task :core:data:compileDebugUnitTestKotlin
+
+> Task :app:kaptGenerateStubsDebugKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :feature:journal:processDebugUnitTestJavaRes
+> Task :core:data:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :core:data:hiltAggregateDepsDebugUnitTest
+> Task :core:data:hiltJavaCompileDebugUnitTest NO-SOURCE
+> Task :core:data:processDebugUnitTestJavaRes
+> Task :feature:today:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :feature:today:hiltAggregateDepsDebugUnitTest
+> Task :feature:today:hiltJavaCompileDebugUnitTest NO-SOURCE
+> Task :feature:today:processDebugUnitTestJavaRes NO-SOURCE
+> Task :feature:today:transformDebugUnitTestClassesWithAsm
+> Task :feature:today:testDebugUnitTest NO-SOURCE
+> Task :feature:journal:transformDebugUnitTestClassesWithAsm
+> Task :core:data:transformDebugUnitTestClassesWithAsm
+> Task :app:kaptDebugKotlin
+> Task :feature:journal:testDebugUnitTest
+> Task :app:mergeLibDexDebug
+> Task :app:compileDebugKotlin
+> Task :core:data:testDebugUnitTest
+> Task :app:compileDebugJavaWithJavac
+> Task :app:hiltAggregateDepsDebug
+> Task :app:hiltJavaCompileDebug
+> Task :app:processDebugJavaRes
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:kaptGenerateStubsDebugUnitTestKotlin
+> Task :app:kaptDebugUnitTestKotlin
+> Task :app:mergeDebugJavaResource
+> Task :app:compileDebugUnitTestKotlin NO-SOURCE
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:transformDebugClassesWithAsm
+> Task :app:dexBuilderDebug
+> Task :app:mergeDebugGlobalSynthetics
+> Task :app:mergeProjectDexDebug
+> Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:hiltAggregateDepsDebugUnitTest
+> Task :app:hiltJavaCompileDebugUnitTest NO-SOURCE
+> Task :app:processDebugUnitTestJavaRes NO-SOURCE
+> Task :app:transformDebugUnitTestClassesWithAsm
+> Task :app:testDebugUnitTest NO-SOURCE
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+
+BUILD SUCCESSFUL in 9m 55s
+393 actionable tasks: 393 executed
+EXIT=0

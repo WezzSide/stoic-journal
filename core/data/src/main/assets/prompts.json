@@ -1,19 +1,37 @@
 [
   {
+    "id": "prompt-morning-001",
+    "text": "Ochtend-intentie (Premeditatio Malorum): Welke obstakels of moeilijke situaties kan ik vandaag tegenkomen, en hoe reageer ik daar kalm en deugdzaam op?",
+    "theme": "ADVERSITY",
+    "difficultyLevel": "BEGINNER"
+  },
+  {
+    "id": "prompt-evening-001",
+    "text": "Seneca's Avondreview: 1. Welke slechte gewoonte heb ik vandaag weerstaan? 2. Waar heb ik vooruitgang geboekt? 3. Wat had ik beter kunnen doen?",
+    "theme": "VIRTUE",
+    "difficultyLevel": "BEGINNER"
+  },
+  {
     "id": "prompt-control-001",
-    "text": "What is within your control today, and what is not? How will you focus your energy on the former?",
+    "text": "Dichotomie van Controle: Wat valt er op dit moment wél binnen mijn controle, en wat valt er buiten mijn controle?",
     "theme": "CONTROL",
     "difficultyLevel": "BEGINNER"
   },
   {
+    "id": "prompt-amorfati-001",
+    "text": "Amor Fati & Dankbaarheid: Welke onverwachte of lastige gebeurtenis van vandaag kan ik omarmen als een kans om te groeien?",
+    "theme": "NATURE",
+    "difficultyLevel": "FAMILIAR"
+  },
+  {
     "id": "prompt-adversity-001",
-    "text": "Recall a recent difficulty. What virtue can you practice in response to it?",
+    "text": "Veerkracht & Deugd: Denk aan een recente uitdaging. Welke stoïcijnse deugd (Wijsheid, Moed, Rechtvaardigheid, Matigheid) kun je inzetten?",
     "theme": "ADVERSITY",
     "difficultyLevel": "FAMILIAR"
   },
   {
     "id": "prompt-mortality-001",
-    "text": "If you knew this were your last day, what would you stop doing and what would you begin?",
+    "text": "Memento Mori: Als vandaag je laatste dag zou zijn, wat zou je stoppen met doen en waar zou je al je aandacht aan geven?",
     "theme": "MORTALITY",
     "difficultyLevel": "ADVANCED"
   }
