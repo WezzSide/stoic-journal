@@ -51,7 +51,7 @@ class JournalDirectReplyReceiver : BroadcastReceiver() {
                 )
                 journalRepository.saveEntry(entry)
 
-                showConfirmationNotification(context, replyText)
+                showConfirmationNotification(context)
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to save direct reply journal entry", e)
             } finally {
@@ -60,7 +60,7 @@ class JournalDirectReplyReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun showConfirmationNotification(context: Context, replyText: String) {
+    private fun showConfirmationNotification(context: Context) {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId = "stoic_journal_confirm"
 
@@ -76,7 +76,7 @@ class JournalDirectReplyReceiver : BroadcastReceiver() {
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle("Reflectie Opgeslagen 🏛️")
-            .setContentText("\"$replyText\"")
+            .setContentText("Je dagboek is bijgewerkt.")
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setAutoCancel(true)
             .setTimeoutAfter(3000)

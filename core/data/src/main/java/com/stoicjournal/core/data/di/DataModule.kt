@@ -15,6 +15,8 @@ import com.stoicjournal.core.data.repository.JournalDraftRepositoryImpl
 import com.stoicjournal.core.data.repository.JournalRepositoryImpl
 import com.stoicjournal.core.data.repository.MentorConversationRepositoryImpl
 import com.stoicjournal.core.data.repository.MentorReflectionLinkRepositoryImpl
+import com.stoicjournal.core.data.dao.MentorMemoryDao
+import com.stoicjournal.core.data.repository.MentorMemoryRepositoryImpl
 import com.stoicjournal.core.data.repository.PhilosopherRepositoryImpl
 import com.stoicjournal.core.data.repository.ProactiveMentorPreferencesRepositoryImpl
 import com.stoicjournal.core.domain.repository.ProactiveMentorPreferencesRepository
@@ -81,6 +83,9 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindProactiveMentorPreferencesRepository(impl: ProactiveMentorPreferencesRepositoryImpl): ProactiveMentorPreferencesRepository
+
+    @Binds
+    abstract fun bindMentorMemoryRepository(impl: MentorMemoryRepositoryImpl): com.stoicjournal.core.domain.repository.MentorMemoryRepository
 }
 
 @Module
@@ -168,12 +173,20 @@ object DatabaseModule {
             }
         }
 
+        val migration5to6 = object : androidx.room.migration.Migration(5, 6) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `mentor_memories` (`id` TEXT NOT NULL, `category` TEXT NOT NULL, `content` TEXT NOT NULL, `sourceEntryIds` TEXT NOT NULL, `sourceConversationIds` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `lastReviewedAt` INTEGER, `status` TEXT NOT NULL, `userApproved` INTEGER NOT NULL, PRIMARY KEY(`id`))"
+                )
+            }
+        }
+
         return Room.databaseBuilder(
             context,
             StoicJournalDatabase::class.java,
             "stoic_journal.db"
         )
-            .addMigrations(migration1to2, migration2to3, migration1to3, migration3to4, migration4to5)
+            .addMigrations(migration1to2, migration2to3, migration1to3, migration3to4, migration4to5, migration5to6)
             .build()
     }
 
@@ -203,4 +216,7 @@ object DatabaseModule {
 
     @Provides
     fun provideMentorReflectionLinkDao(db: StoicJournalDatabase) = db.mentorReflectionLinkDao()
+
+    @Provides
+    fun provideMentorMemoryDao(db: StoicJournalDatabase) = db.mentorMemoryDao()
 }
