@@ -52,6 +52,8 @@ class MentorJourneyE2ETest {
     @Inject lateinit var mentorRepository: StoicMentorRepository
     @Inject lateinit var journalRepository: JournalRepository
     @Inject lateinit var preferences: PreferencesRepository
+    @Inject lateinit var credentials: com.stoicjournal.core.domain.repository.SecureCredentialRepository
+    private var previousSelection: String? = null
     @Inject lateinit var workerFactory: androidx.hilt.work.HiltWorkerFactory
 
     private lateinit var navController: TestNavHostController
@@ -64,6 +66,7 @@ class MentorJourneyE2ETest {
         E2ESupport.ensureWorkManager(androidx.test.core.app.ApplicationProvider.getApplicationContext(), workerFactory)
         E2ESupport.markOnboardingComplete(preferences)
         runBlocking {
+            previousSelection = registry.observeActiveProviderId().first()
             mentorRepository.clearAll()
             registry.setActiveProvider(FakeAiProvider.PROVIDER_ID)
         }
@@ -74,6 +77,12 @@ class MentorJourneyE2ETest {
             navController = TestNavHostController(LocalContext.current).apply { navigatorProvider.addNavigator(ComposeNavigator()) }
             StoicJournalNavHost(startDestination = Screen.Today, navController = navController)
         }
+    }
+
+    @org.junit.After
+    fun tearDown() {
+        // Restore whatever provider the device owner had selected before the test touched it.
+        runBlocking { previousSelection?.let { registry.setActiveProvider(it) } }
     }
 
     @Test
@@ -152,8 +161,11 @@ class MentorJourneyE2ETest {
         composeRule.onNodeWithContentDescription("New Conversation").performClick()
         composeRule.waitForText("Stoic Mentor")
 
-        // Switch to a real provider that has no credential: must fail gracefully with MissingCredentials.
-        runBlocking { registry.setActiveProvider("claude") }
+        // Switch to a real provider that has NO stored credential: must fail gracefully with MissingCredentials.
+        // (Skipped if the owner configured keys for all three providers — we never make live calls.)
+        val keyless = E2ESupport.keylessRealProviderId(credentials)
+        org.junit.Assume.assumeTrue("all real providers have credentials on this device; skipping to avoid live calls", keyless != null)
+        runBlocking { registry.setActiveProvider(keyless!!) }
         composeRule.onNode(hasSetTextAction()).performTextInput("QA error path")
         composeRule.onNodeWithContentDescription("Send Message").performClick()
         composeRule.waitForText("Reflection failed", substring = true)

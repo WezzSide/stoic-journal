@@ -1,0 +1,4 @@
+  Native Heap    10164    10148        4        2    14224    19380    12854     2900
+  Dalvik Heap     6541     6520        0        7    11040   262144     5224   256920
+         Native Heap:    10148                          14224
+           TOTAL PSS:   174098            TOTAL RSS:   300656       TOTAL SWAP PSS:       27

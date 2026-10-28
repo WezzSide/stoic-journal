@@ -1,0 +1,124 @@
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.MentorCoordinatorDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=2
+INSTRUMENTATION_STATUS: stream=
+com.stoicjournal.e2e.MentorCoordinatorDeviceTest:
+INSTRUMENTATION_STATUS: test=coordinator_withKeylessRealProvider_failsFastWithMissingCredentials
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.MentorCoordinatorDeviceTest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=2
+INSTRUMENTATION_STATUS: stack=java.lang.AssertionError: [Started(requestId=48b6d01f-12f8-410c-bb19-416a41f0fa95), TextDelta(text=It), TextDelta(text= s), TextDelta(text=ounds like you may be testing), TextDelta(text= things), TextDelta(text=, or per), TextDelta(text=haps something is), TextDelta(text=n't working as expected.), TextDelta(text= Either way, I'm here and), TextDelta(text= respon), TextDelta(text=ding.
+
+If this is a Q), TextDelta(text=A check, ever), TextDelta(text=ything app), TextDelta(text=ears to be working on my end.), TextDelta(text= If you meant something), TextDelta(text= else, like a lost key or), TextDelta(text= a mo), TextDelta(text=ment of frustration you), TextDelta(text='d like to reflect on), TextDelta(text=, I'm gl), TextDelta(text=ad to explore that), TextDelta(text= with you.
+
+**), TextDelta(text=What br), TextDelta(text=ings), TextDelta(text= you here right), TextDelta(text= now:), TextDelta(text= a qu), TextDelta(text=ick test, or something), TextDelta(text= on your mind today), TextDelta(text=?**), Completed(response=AiProviderResponse(content=It sounds like you may be testing things, or perhaps something isn't working as expected. Either way, I'm here and responding.
+
+If this is a QA check, everything appears to be working on my end. If you meant something else, like a lost key or a moment of frustration you'd like to reflect on, I'm glad to explore that with you.
+
+**What brings you here right now: a quick test, or something on your mind today?**, provider=claude, model=claude-opus-5-5, completionStatus=completed, usageMetadata=UsageMetadata(inputTokens=0, outputTokens=0, cachedTokens=0, estimatedMonetaryCost=null), finishReason=end_turn, errorClassification=null))]
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.stoicjournal.e2e.MentorCoordinatorDeviceTest$coordinator_withKeylessRealProvider_failsFastWithMissingCredentials$1.invokeSuspend(MentorCoordinatorDeviceTest.kt:51)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.internal.ScopeCoroutine.afterResume(Scopes.kt:32)
+	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:102)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:46)
+	at kotlinx.coroutines.internal.ScopeCoroutine.afterResume(Scopes.kt:32)
+	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:102)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:46)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:108)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:280)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:85)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:59)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-b36260e524a92925ea884aa3d1a62e1ef9115d3e-19229:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:38)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-b36260e524a92925ea884aa3d1a62e1ef9115d3e-19230:1)
+	at com.stoicjournal.e2e.MentorCoordinatorDeviceTest.coordinator_withKeylessRealProvider_failsFastWithMissingCredentials(MentorCoordinatorDeviceTest.kt:47)
+
+INSTRUMENTATION_STATUS: stream=
+Error in coordinator_withKeylessRealProvider_failsFastWithMissingCredentials(com.stoicjournal.e2e.MentorCoordinatorDeviceTest):
+java.lang.AssertionError: [Started(requestId=48b6d01f-12f8-410c-bb19-416a41f0fa95), TextDelta(text=It), TextDelta(text= s), TextDelta(text=ounds like you may be testing), TextDelta(text= things), TextDelta(text=, or per), TextDelta(text=haps something is), TextDelta(text=n't working as expected.), TextDelta(text= Either way, I'm here and), TextDelta(text= respon), TextDelta(text=ding.
+
+If this is a Q), TextDelta(text=A check, ever), TextDelta(text=ything app), TextDelta(text=ears to be working on my end.), TextDelta(text= If you meant something), TextDelta(text= else, like a lost key or), TextDelta(text= a mo), TextDelta(text=ment of frustration you), TextDelta(text='d like to reflect on), TextDelta(text=, I'm gl), TextDelta(text=ad to explore that), TextDelta(text= with you.
+
+**), TextDelta(text=What br), TextDelta(text=ings), TextDelta(text= you here right), TextDelta(text= now:), TextDelta(text= a qu), TextDelta(text=ick test, or something), TextDelta(text= on your mind today), TextDelta(text=?**), Completed(response=AiProviderResponse(content=It sounds like you may be testing things, or perhaps something isn't working as expected. Either way, I'm here and responding.
+
+If this is a QA check, everything appears to be working on my end. If you meant something else, like a lost key or a moment of frustration you'd like to reflect on, I'm glad to explore that with you.
+
+**What brings you here right now: a quick test, or something on your mind today?**, provider=claude, model=claude-opus-5-5, completionStatus=completed, usageMetadata=UsageMetadata(inputTokens=0, outputTokens=0, cachedTokens=0, estimatedMonetaryCost=null), finishReason=end_turn, errorClassification=null))]
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.stoicjournal.e2e.MentorCoordinatorDeviceTest$coordinator_withKeylessRealProvider_failsFastWithMissingCredentials$1.invokeSuspend(MentorCoordinatorDeviceTest.kt:51)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.internal.ScopeCoroutine.afterResume(Scopes.kt:32)
+	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:102)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:46)
+	at kotlinx.coroutines.internal.ScopeCoroutine.afterResume(Scopes.kt:32)
+	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:102)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:46)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:108)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:280)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:85)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:59)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-b36260e524a92925ea884aa3d1a62e1ef9115d3e-19229:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:38)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-b36260e524a92925ea884aa3d1a62e1ef9115d3e-19230:1)
+	at com.stoicjournal.e2e.MentorCoordinatorDeviceTest.coordinator_withKeylessRealProvider_failsFastWithMissingCredentials(MentorCoordinatorDeviceTest.kt:47)
+
+INSTRUMENTATION_STATUS: test=coordinator_withKeylessRealProvider_failsFastWithMissingCredentials
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.MentorCoordinatorDeviceTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=2
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=coordinator_roundTrip_withFakeProvider_completesOnDevice
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.MentorCoordinatorDeviceTest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=2
+INSTRUMENTATION_STATUS: stream=.
+INSTRUMENTATION_STATUS: test=coordinator_roundTrip_withFakeProvider_completesOnDevice
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_RESULT: stream=
+
+Time: 4,398
+There was 1 failure:
+1) coordinator_withKeylessRealProvider_failsFastWithMissingCredentials(com.stoicjournal.e2e.MentorCoordinatorDeviceTest)
+java.lang.AssertionError: [Started(requestId=48b6d01f-12f8-410c-bb19-416a41f0fa95), TextDelta(text=It), TextDelta(text= s), TextDelta(text=ounds like you may be testing), TextDelta(text= things), TextDelta(text=, or per), TextDelta(text=haps something is), TextDelta(text=n't working as expected.), TextDelta(text= Either way, I'm here and), TextDelta(text= respon), TextDelta(text=ding.
+
+If this is a Q), TextDelta(text=A check, ever), TextDelta(text=ything app), TextDelta(text=ears to be working on my end.), TextDelta(text= If you meant something), TextDelta(text= else, like a lost key or), TextDelta(text= a mo), TextDelta(text=ment of frustration you), TextDelta(text='d like to reflect on), TextDelta(text=, I'm gl), TextDelta(text=ad to explore that), TextDelta(text= with you.
+
+**), TextDelta(text=What br), TextDelta(text=ings), TextDelta(text= you here right), TextDelta(text= now:), TextDelta(text= a qu), TextDelta(text=ick test, or something), TextDelta(text= on your mind today), TextDelta(text=?**), Completed(response=AiProviderResponse(content=It sounds like you may be testing things, or perhaps something isn't working as expected. Either way, I'm here and responding.
+
+If this is a QA check, everything appears to be working on my end. If you meant something else, like a lost key or a moment of frustration you'd like to reflect on, I'm glad to explore that with you.
+
+**What brings you here right now: a quick test, or something on your mind today?**, provider=claude, model=claude-opus-5-5, completionStatus=completed, usageMetadata=UsageMetadata(inputTokens=0, outputTokens=0, cachedTokens=0, estimatedMonetaryCost=null), finishReason=end_turn, errorClassification=null))]
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.stoicjournal.e2e.MentorCoordinatorDeviceTest$coordinator_withKeylessRealProvider_failsFastWithMissingCredentials$1.invokeSuspend(MentorCoordinatorDeviceTest.kt:51)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.internal.ScopeCoroutine.afterResume(Scopes.kt:32)
+	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:102)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:46)
+	at kotlinx.coroutines.internal.ScopeCoroutine.afterResume(Scopes.kt:32)
+	at kotlinx.coroutines.AbstractCoroutine.resumeWith(AbstractCoroutine.kt:102)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:46)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:108)
+	at kotlinx.coroutines.EventLoopImplBase.processNextEvent(EventLoop.common.kt:280)
+	at kotlinx.coroutines.BlockingCoroutine.joinBlocking(Builders.kt:85)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking(Builders.kt:59)
+	at kotlinx.coroutines.BuildersKt.runBlocking(dex-id-b36260e524a92925ea884aa3d1a62e1ef9115d3e-19229:1)
+	at kotlinx.coroutines.BuildersKt__BuildersKt.runBlocking$default(Builders.kt:38)
+	at kotlinx.coroutines.BuildersKt.runBlocking$default(dex-id-b36260e524a92925ea884aa3d1a62e1ef9115d3e-19230:1)
+	at com.stoicjournal.e2e.MentorCoordinatorDeviceTest.coordinator_withKeylessRealProvider_failsFastWithMissingCredentials(MentorCoordinatorDeviceTest.kt:47)
+
+FAILURES!!!
+Tests run: 2,  Failures: 1
+
+
+INSTRUMENTATION_CODE: -1

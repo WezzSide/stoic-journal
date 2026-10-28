@@ -1,0 +1,104 @@
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.MentorJourneyE2ETest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=2
+INSTRUMENTATION_STATUS: stream=
+com.stoicjournal.e2e.MentorJourneyE2ETest:
+INSTRUMENTATION_STATUS: test=providerFailure_isRecoverable_andLeavesNoMentorMessage
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.MentorJourneyE2ETest
+INSTRUMENTATION_STATUS: current=1
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=2
+INSTRUMENTATION_STATUS: stack=java.lang.IllegalStateException: No compose hierarchies found in the app. Possible reasons include: (1) the Activity that calls setContent did not launch; (2) setContent was not called; (3) setContent was called before the ComposeTestRule ran. If setContent is called by the Activity, make sure the Activity is launched after the ComposeTestRule runs
+	at androidx.compose.ui.test.TestContext.getAllSemanticsNodes$ui_test_release(TestOwner.kt:87)
+	at androidx.compose.ui.test.TestContext.getAllSemanticsNodes$ui_test_release$default(TestOwner.kt:81)
+	at androidx.compose.ui.test.SemanticsNodeInteractionCollection.fetchSemanticsNodes(SemanticsNodeInteraction.kt:256)
+	at androidx.compose.ui.test.SemanticsNodeInteractionCollection.fetchSemanticsNodes$default(SemanticsNodeInteraction.kt:249)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText$lambda$0(E2ESupport.kt:38)
+	at com.stoicjournal.e2e.E2ESupportKt.$r8$lambda$OmwL_XjvdtO6GwKLqeW1JrhhXEg(E2ESupport.kt:0)
+	at com.stoicjournal.e2e.E2ESupportKt$$ExternalSyntheticLambda1.invoke(D8$$SyntheticClass:0)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:424)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:306)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText(E2ESupport.kt:37)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText$default(E2ESupport.kt:36)
+	at com.stoicjournal.e2e.MentorJourneyE2ETest.providerFailure_isRecoverable_andLeavesNoMentorMessage(MentorJourneyE2ETest.kt:171)
+
+INSTRUMENTATION_STATUS: stream=
+Error in providerFailure_isRecoverable_andLeavesNoMentorMessage(com.stoicjournal.e2e.MentorJourneyE2ETest):
+java.lang.IllegalStateException: No compose hierarchies found in the app. Possible reasons include: (1) the Activity that calls setContent did not launch; (2) setContent was not called; (3) setContent was called before the ComposeTestRule ran. If setContent is called by the Activity, make sure the Activity is launched after the ComposeTestRule runs
+	at androidx.compose.ui.test.TestContext.getAllSemanticsNodes$ui_test_release(TestOwner.kt:87)
+	at androidx.compose.ui.test.TestContext.getAllSemanticsNodes$ui_test_release$default(TestOwner.kt:81)
+	at androidx.compose.ui.test.SemanticsNodeInteractionCollection.fetchSemanticsNodes(SemanticsNodeInteraction.kt:256)
+	at androidx.compose.ui.test.SemanticsNodeInteractionCollection.fetchSemanticsNodes$default(SemanticsNodeInteraction.kt:249)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText$lambda$0(E2ESupport.kt:38)
+	at com.stoicjournal.e2e.E2ESupportKt.$r8$lambda$OmwL_XjvdtO6GwKLqeW1JrhhXEg(E2ESupport.kt:0)
+	at com.stoicjournal.e2e.E2ESupportKt$$ExternalSyntheticLambda1.invoke(D8$$SyntheticClass:0)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:424)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:306)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText(E2ESupport.kt:37)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText$default(E2ESupport.kt:36)
+	at com.stoicjournal.e2e.MentorJourneyE2ETest.providerFailure_isRecoverable_andLeavesNoMentorMessage(MentorJourneyE2ETest.kt:171)
+
+INSTRUMENTATION_STATUS: test=providerFailure_isRecoverable_andLeavesNoMentorMessage
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.MentorJourneyE2ETest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=2
+INSTRUMENTATION_STATUS: stream=
+INSTRUMENTATION_STATUS: test=fullMentorJourney_chat_resume_reflect_saveOnce_appearsInHistory
+INSTRUMENTATION_STATUS_CODE: 1
+INSTRUMENTATION_STATUS: class=com.stoicjournal.e2e.MentorJourneyE2ETest
+INSTRUMENTATION_STATUS: current=2
+INSTRUMENTATION_STATUS: id=AndroidJUnitRunner
+INSTRUMENTATION_STATUS: numtests=2
+INSTRUMENTATION_STATUS: stack=androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 10000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:431)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:306)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText(E2ESupport.kt:37)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText$default(E2ESupport.kt:36)
+	at com.stoicjournal.e2e.MentorJourneyE2ETest.fullMentorJourney_chat_resume_reflect_saveOnce_appearsInHistory(MentorJourneyE2ETest.kt:91)
+
+INSTRUMENTATION_STATUS: stream=
+Error in fullMentorJourney_chat_resume_reflect_saveOnce_appearsInHistory(com.stoicjournal.e2e.MentorJourneyE2ETest):
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 10000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:431)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:306)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText(E2ESupport.kt:37)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText$default(E2ESupport.kt:36)
+	at com.stoicjournal.e2e.MentorJourneyE2ETest.fullMentorJourney_chat_resume_reflect_saveOnce_appearsInHistory(MentorJourneyE2ETest.kt:91)
+
+INSTRUMENTATION_STATUS: test=fullMentorJourney_chat_resume_reflect_saveOnce_appearsInHistory
+INSTRUMENTATION_STATUS_CODE: -2
+INSTRUMENTATION_RESULT: stream=
+
+Time: 21,989
+There were 2 failures:
+1) providerFailure_isRecoverable_andLeavesNoMentorMessage(com.stoicjournal.e2e.MentorJourneyE2ETest)
+java.lang.IllegalStateException: No compose hierarchies found in the app. Possible reasons include: (1) the Activity that calls setContent did not launch; (2) setContent was not called; (3) setContent was called before the ComposeTestRule ran. If setContent is called by the Activity, make sure the Activity is launched after the ComposeTestRule runs
+	at androidx.compose.ui.test.TestContext.getAllSemanticsNodes$ui_test_release(TestOwner.kt:87)
+	at androidx.compose.ui.test.TestContext.getAllSemanticsNodes$ui_test_release$default(TestOwner.kt:81)
+	at androidx.compose.ui.test.SemanticsNodeInteractionCollection.fetchSemanticsNodes(SemanticsNodeInteraction.kt:256)
+	at androidx.compose.ui.test.SemanticsNodeInteractionCollection.fetchSemanticsNodes$default(SemanticsNodeInteraction.kt:249)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText$lambda$0(E2ESupport.kt:38)
+	at com.stoicjournal.e2e.E2ESupportKt.$r8$lambda$OmwL_XjvdtO6GwKLqeW1JrhhXEg(E2ESupport.kt:0)
+	at com.stoicjournal.e2e.E2ESupportKt$$ExternalSyntheticLambda1.invoke(D8$$SyntheticClass:0)
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:424)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:306)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText(E2ESupport.kt:37)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText$default(E2ESupport.kt:36)
+	at com.stoicjournal.e2e.MentorJourneyE2ETest.providerFailure_isRecoverable_andLeavesNoMentorMessage(MentorJourneyE2ETest.kt:171)
+2) fullMentorJourney_chat_resume_reflect_saveOnce_appearsInHistory(com.stoicjournal.e2e.MentorJourneyE2ETest)
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 10000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:431)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:306)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText(E2ESupport.kt:37)
+	at com.stoicjournal.e2e.E2ESupportKt.waitForText$default(E2ESupport.kt:36)
+	at com.stoicjournal.e2e.MentorJourneyE2ETest.fullMentorJourney_chat_resume_reflect_saveOnce_appearsInHistory(MentorJourneyE2ETest.kt:91)
+
+FAILURES!!!
+Tests run: 2,  Failures: 2
+
+
+INSTRUMENTATION_CODE: -1

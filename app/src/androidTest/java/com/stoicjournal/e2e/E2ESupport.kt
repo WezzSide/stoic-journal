@@ -35,6 +35,15 @@ object E2ESupport {
         device.waitForIdle(1_000)
     }
 
+    /**
+     * Never route a test request to a real provider for which the device holds a credential: that would be
+     * a live, billable call with the owner's key. Returns a real provider id with NO stored credential, or
+     * null when every real provider is configured (callers then skip via Assume).
+     */
+    fun keylessRealProviderId(credentials: com.stoicjournal.core.domain.repository.SecureCredentialRepository): String? = runBlocking {
+        listOf("claude", "gemini", "openai").firstOrNull { !credentials.hasCredential(it) }
+    }
+
     fun markOnboardingComplete(prefs: PreferencesRepository) = runBlocking {
         prefs.setOnboardingComplete(true)
         prefs.setPinLockEnabled(false)
