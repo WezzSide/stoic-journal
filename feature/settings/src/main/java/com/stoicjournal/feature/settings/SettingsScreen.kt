@@ -19,12 +19,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -386,7 +388,75 @@ fun SettingsScreen(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
-            // --- Sectie 3: Data Backup & Export ---
+            // --- Sectie 3: AI & Stoic Mentor Providers ---
+            Text(
+                text = "AI & Stoic Mentor Providers",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp, bottom = 8.dp)
+            )
+
+            var selectedProvider by remember { mutableStateOf("openai") }
+            var apiKeyInput by remember { mutableStateOf("") }
+            var isTestingConnection by remember { mutableStateOf(false) }
+
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                Text("Selecteer AI Provider", style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    FilterChip(
+                        selected = selectedProvider == "openai",
+                        onClick = { selectedProvider = "openai" },
+                        label = { Text("OpenAI") }
+                    )
+                    FilterChip(
+                        selected = selectedProvider == "claude",
+                        onClick = { selectedProvider = "claude" },
+                        label = { Text("Claude") }
+                    )
+                    FilterChip(
+                        selected = selectedProvider == "gemini",
+                        onClick = { selectedProvider = "gemini" },
+                        label = { Text("Gemini") }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = apiKeyInput,
+                    onValueChange = { apiKeyInput = it },
+                    label = { Text("$selectedProvider API Key") },
+                    placeholder = { Text("sk-...") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        if (apiKeyInput.isNotBlank()) {
+                            isTestingConnection = true
+                            viewModel.saveAiApiKey(selectedProvider, apiKeyInput) { success, msg ->
+                                isTestingConnection = false
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(msg)
+                                }
+                            }
+                        }
+                    },
+                    enabled = apiKeyInput.isNotBlank() && !isTestingConnection,
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text(if (isTestingConnection) "Verbinden..." else "Sleutel Opslaan & Testen")
+                }
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+
+            // --- Sectie 4: Data Backup & Export ---
             Text(
                 text = "Data Backup & Export",
                 style = MaterialTheme.typography.labelLarge,

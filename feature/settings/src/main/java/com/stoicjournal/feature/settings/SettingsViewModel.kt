@@ -8,6 +8,9 @@ import androidx.lifecycle.viewModelScope
 import com.stoicjournal.core.domain.model.EntryType
 import com.stoicjournal.core.domain.model.JournalEntry
 import com.stoicjournal.core.domain.model.Virtue
+import com.stoicjournal.core.domain.model.AiProviderRegistry
+import com.stoicjournal.core.domain.model.ProviderCredential
+import com.stoicjournal.core.domain.repository.SecureCredentialRepository
 import com.stoicjournal.core.domain.repository.JournalRepository
 import com.stoicjournal.core.domain.repository.PreferencesRepository
 import com.stoicjournal.core.notifications.ReminderScheduler
@@ -31,7 +34,9 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val preferencesRepository: PreferencesRepository,
     private val journalRepository: JournalRepository,
-    private val reminderScheduler: ReminderScheduler
+    private val reminderScheduler: ReminderScheduler,
+    private val secureCredentialRepository: SecureCredentialRepository,
+    private val aiProviderRegistry: AiProviderRegistry
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -327,6 +332,27 @@ class SettingsViewModel @Inject constructor(
     fun resetOnboarding() {
         viewModelScope.launch {
             preferencesRepository.setOnboardingComplete(false)
+        }
+    }
+
+    fun saveAiApiKey(providerId: String, apiKey: String, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                secureCredentialRepository.saveCredential(providerId, ProviderCredential.ApiKey(apiKey))
+                val provider = aiProviderRegistry.getProvider(providerId)
+                if (provider != null) {
+                    val result = provider.validateConnection()
+                    if (result.isSuccess) {
+                        onResult(true, "Verbinding succesvol! 🤖")
+                    } else {
+                        onResult(false, "Verbinding mislukt: ${result.exceptionOrNull()?.message}")
+                    }
+                } else {
+                    onResult(true, "API key veilig opgeslagen.")
+                }
+            } catch (e: Exception) {
+                onResult(false, "Opslaan mislukt: ${e.message}")
+            }
         }
     }
 

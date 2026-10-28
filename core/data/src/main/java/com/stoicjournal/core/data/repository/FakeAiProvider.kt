@@ -9,7 +9,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 
-class FakeAiProvider : AiProvider {
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class FakeAiProvider @Inject constructor() : AiProvider {
     override val providerId: String = "fake_provider"
     
     var shouldFailConnection = false
