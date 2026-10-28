@@ -50,5 +50,13 @@ Inherited from `origin/main` and flagged for the owner: two committed binaries `
 
 Verification of the candidate: `./gradlew :app:assembleDebug testDebugUnitTest` → BUILD SUCCESSFUL, **88/88 unit tests** (`evidence/logs/18_integration_build.log`); release artefacts built from the candidate with environment-supplied credentials (QA17). Instrumentation was executed on the QA branch build; the candidate differs only in main's additive UI/metadata (History search, streak insight, icons, widget manifest) which is covered by its own compile + the unchanged test suite, not by a separate device run (documented limitation).
 
+## 3b. Pushed branches and pull requests
+
+| Branch | Remote head | PR |
+|---|---|---|
+| `qa/final-qa-001` (feature branch + remediation + evidence) | `43d558f` (+ this doc commit) | **#3** https://github.com/WezzSide/stoic-journal/pull/3 — draft, base `feature/stoic-mentor-multiprovider` |
+| `integration/mentor-into-main` (qa + origin/main, conflicts resolved, D-37 removed) | `b3fa012` (+ merge of this doc commit) | **#2** https://github.com/WezzSide/stoic-journal/pull/2 — draft, base `main`, **mergeable** (no conflicts) |
+| PR #1 (`sync/2026-10-27-stoic-journal-icon` → `main`) | unchanged, still CONFLICTING | recommend closing in favour of #2 |
+
 ## 4. Git restrictions honoured
 No force-push, no history rewrite, no branch deletion, no merge into `main`, no release publication. All QA commits are on `qa/final-qa-001`; the integration candidate lives on its own review branch.
