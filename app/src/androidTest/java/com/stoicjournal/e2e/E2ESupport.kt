@@ -5,6 +5,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.stoicjournal.core.domain.repository.PreferencesRepository
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
 /** Shared helpers for the on-device regression suite (QA-14). All data is synthetic ("QA …"). */
@@ -42,6 +43,13 @@ object E2ESupport {
      */
     fun keylessRealProviderId(credentials: com.stoicjournal.core.domain.repository.SecureCredentialRepository): String? = runBlocking {
         listOf("claude", "gemini", "openai").firstOrNull { !credentials.hasCredential(it) }
+    }
+
+    /** Removes the synthetic "QA …" journal rows that earlier runs of this suite created in the test install. */
+    fun resetSyntheticEntries(journal: com.stoicjournal.core.domain.repository.JournalRepository) = runBlocking {
+        val entries: List<com.stoicjournal.core.domain.model.JournalEntry> = journal.getAllEntries().first()
+        entries.filter { it.title?.startsWith("QA") == true || it.body.startsWith("QA") }
+            .forEach { journal.deleteEntry(it) }
     }
 
     fun markOnboardingComplete(prefs: PreferencesRepository) = runBlocking {

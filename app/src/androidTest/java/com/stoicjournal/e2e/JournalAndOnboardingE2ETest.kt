@@ -44,6 +44,7 @@ class JournalAndOnboardingE2ETest {
     @Before
     fun setUp() {
         hiltRule.inject()
+        E2ESupport.resetSyntheticEntries(journalRepository)
         E2ESupport.ensureScreenOn()
         E2ESupport.ensureWorkManager(androidx.test.core.app.ApplicationProvider.getApplicationContext(), workerFactory)
     }
