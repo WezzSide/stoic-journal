@@ -49,6 +49,7 @@ class SettingsAndMemoryE2ETest {
     @Inject lateinit var proactivePrefs: ProactiveMentorPreferencesRepository
     @Inject lateinit var memoryPrefs: MentorMemoryPreferencesRepository
     @Inject lateinit var memoryRepository: MentorMemoryRepository
+    private var previousSelection: String? = null
 
     @Before
     fun setUp() {
@@ -57,6 +58,7 @@ class SettingsAndMemoryE2ETest {
         E2ESupport.ensureWorkManager(androidx.test.core.app.ApplicationProvider.getApplicationContext(), workerFactory)
         E2ESupport.markOnboardingComplete(preferences)
         runBlocking {
+            previousSelection = registry.observeActiveProviderId().first()
             registry.setActiveProvider("openai")
             proactivePrefs.setProactiveMentorEnabled(false)
             proactivePrefs.setQuietHours(22, 8)
@@ -73,6 +75,11 @@ class SettingsAndMemoryE2ETest {
             val navController = TestNavHostController(LocalContext.current).apply { navigatorProvider.addNavigator(ComposeNavigator()) }
             StoicJournalNavHost(startDestination = Screen.Settings, navController = navController)
         }
+    }
+
+    @org.junit.After
+    fun tearDown() {
+        runBlocking { previousSelection?.let { registry.setActiveProvider(it) } }
     }
 
     @Test

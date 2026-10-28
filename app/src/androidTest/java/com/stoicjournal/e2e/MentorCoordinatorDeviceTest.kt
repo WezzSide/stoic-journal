@@ -29,8 +29,17 @@ class MentorCoordinatorDeviceTest {
     @Inject lateinit var registry: AiProviderRegistry
     @Inject lateinit var fake: FakeAiProvider
     @Inject lateinit var mentorRepository: StoicMentorRepository
+    @Inject lateinit var credentials: com.stoicjournal.core.domain.repository.SecureCredentialRepository
+    private var previousSelection: String? = null
 
-    @Before fun setUp() { hiltRule.inject() }
+    @Before fun setUp() {
+        hiltRule.inject()
+        previousSelection = runBlocking { registry.observeActiveProviderId().first() }
+    }
+
+    @org.junit.After fun tearDown() {
+        runBlocking { previousSelection?.let { registry.setActiveProvider(it) } }
+    }
 
     @Test
     fun coordinator_roundTrip_withFakeProvider_completesOnDevice() = runBlocking {
@@ -41,5 +50,22 @@ class MentorCoordinatorDeviceTest {
         val msgs = mentorRepository.getMessagesForConversation("qa-device-conv").first()
         assertEquals(2, msgs.size)
         mentorRepository.deleteConversation("qa-device-conv")
+    }
+
+    @Test
+    fun coordinator_withKeylessRealProvider_failsFastWithMissingCredentials() = runBlocking {
+        val keyless = E2ESupport.keylessRealProviderId(credentials)
+        org.junit.Assume.assumeTrue("all real providers have credentials on this device; skipping to avoid live calls", keyless != null)
+        registry.setActiveProvider(keyless!!)
+        try {
+            val events = withTimeout(8_000) { coordinator.sendMessage("qa-device-conv-2", "QA no key").toList() }
+            assertTrue(events.toString(), events.last() is AiStreamEvent.Failed)
+            assertEquals(com.stoicjournal.core.domain.model.AiError.MissingCredentials, (events.last() as AiStreamEvent.Failed).error)
+            val msgs = mentorRepository.getMessagesForConversation("qa-device-conv-2").first()
+            assertEquals(1, msgs.size)
+        } finally {
+            registry.setActiveProvider(FakeAiProvider.PROVIDER_ID)
+            mentorRepository.deleteConversation("qa-device-conv-2")
+        }
     }
 }
