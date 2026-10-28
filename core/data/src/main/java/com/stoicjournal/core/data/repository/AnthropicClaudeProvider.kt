@@ -53,12 +53,12 @@ class AnthropicClaudeProvider @Inject constructor(
         return withContext(Dispatchers.IO) {
             try {
                 val dummyPayload = buildJsonObject {
-                    put("model", "claude-3-haiku-20240307")
+                    put("model", "claude-3-5-haiku-latest")
                     put("max_tokens", 1)
                     putJsonArray("messages") {
                         addJsonObject {
                             put("role", "user")
-                            put("content", "hi")
+                            put("content", "ping")
                         }
                     }
                 }.toString()
@@ -72,12 +72,12 @@ class AnthropicClaudeProvider @Inject constructor(
                     .build()
 
                 okHttpClient.newCall(request).execute().use { response ->
-                    if (response.isSuccessful || response.code == 400) {
+                    if (response.isSuccessful) {
                         Result.success(true)
                     } else if (response.code == 401) {
                         Result.failure(Exception(AiError.InvalidCredentials.toString()))
                     } else {
-                        Result.failure(Exception("HTTP ${response.code}"))
+                        Result.failure(Exception("HTTP ${response.code}: ${response.message}"))
                     }
                 }
             } catch (e: Exception) {
@@ -89,8 +89,9 @@ class AnthropicClaudeProvider @Inject constructor(
     override suspend fun listAvailableModels(): Result<List<String>> {
         return Result.success(
             listOf(
-                "claude-3-5-sonnet-20240620",
-                "claude-3-haiku-20240307",
+                "claude-3-5-sonnet-latest",
+                "claude-3-5-haiku-latest",
+                "claude-3-7-sonnet-latest",
                 "claude-3-opus-20240229"
             )
         )
@@ -101,9 +102,9 @@ class AnthropicClaudeProvider @Inject constructor(
         return withContext(Dispatchers.IO) {
             try {
                 val payload = buildJsonObject {
-                    put("model", request.selectedModel)
+                    put("model", request.selectedModel.ifBlank { "claude-3-5-sonnet-latest" })
                     put("max_tokens", request.maxOutputTokens.coerceAtLeast(256))
-                    if (!request.authorizedHistoricalContext.isNull_or_blank()) {
+                    if (!request.authorizedHistoricalContext.isNullOrBlank()) {
                         put("system", request.authorizedHistoricalContext)
                     }
                     putJsonArray("messages") {
@@ -171,8 +172,6 @@ class AnthropicClaudeProvider @Inject constructor(
         }
     }
 
-    private fun String?.isNull_or_blank(): Boolean = this == null || this.trim().isEmpty()
-
     override fun streamResponse(request: AiProviderRequest): Flow<Result<AiProviderResponse>> = flow {
         emit(generateResponse(request))
     }
@@ -187,10 +186,10 @@ class AnthropicClaudeProvider @Inject constructor(
         emit(AiStreamEvent.Started(request.requestCorrelationId))
 
         val payload = buildJsonObject {
-            put("model", request.selectedModel)
+            put("model", request.selectedModel.ifBlank { "claude-3-5-sonnet-latest" })
             put("max_tokens", request.maxOutputTokens.coerceAtLeast(256))
             put("stream", true)
-            if (!request.authorizedHistoricalContext.isNull_or_blank()) {
+            if (!request.authorizedHistoricalContext.isNullOrBlank()) {
                 put("system", request.authorizedHistoricalContext)
             }
             putJsonArray("messages") {

@@ -1,0 +1,8 @@
+fix(ai): execute Directive SJ-AI-03R production provider remediation & streaming hardening
+
+- Added INTERNET and ACCESS_NETWORK_STATE permissions to AndroidManifest.xml
+- Reverted privacy-preserving backup default (android:allowBackup="false")
+- Fixed AnthropicClaudeProvider validateConnection() to reject HTTP 400 bad requests
+- Modernized Claude and Gemini model catalogs (claude-3-5-sonnet-latest, gemini-2.0-flash)
+- Re-enforced Gradle 8.13 wrapper compatibility
+- Added test evidence reports AI3R_TEST_EVIDENCE.md and AI3R_FINAL_VERIFICATION_REPORT.md

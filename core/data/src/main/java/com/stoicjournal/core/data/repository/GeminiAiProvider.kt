@@ -37,11 +37,11 @@ class GeminiAiProvider @Inject constructor(
         val key = getApiKey() ?: return Result.failure(Exception("Missing Gemini API Key"))
         return try {
             val model = GenerativeModel(
-                modelName = "gemini-1.5-flash",
+                modelName = "gemini-2.0-flash",
                 apiKey = key
             )
-            val response = model.generateContent("hi")
-            if (!response.text.isNull_or_blank()) {
+            val response = model.generateContent("ping")
+            if (!response.text.isNullOrBlank()) {
                 Result.success(true)
             } else {
                 Result.failure(Exception("Empty Gemini response"))
@@ -54,9 +54,9 @@ class GeminiAiProvider @Inject constructor(
     override suspend fun listAvailableModels(): Result<List<String>> {
         return Result.success(
             listOf(
+                "gemini-2.0-flash",
                 "gemini-1.5-pro",
-                "gemini-1.5-flash",
-                "gemini-1.0-pro"
+                "gemini-1.5-flash"
             )
         )
     }
@@ -65,7 +65,7 @@ class GeminiAiProvider @Inject constructor(
         val key = getApiKey() ?: return Result.failure(Exception("Missing Gemini API Key"))
         return withContext(Dispatchers.IO) {
             try {
-                val modelName = request.selectedModel.ifBlank { "gemini-1.5-flash" }
+                val modelName = request.selectedModel.ifBlank { "gemini-2.0-flash" }
                 val systemPrompt = request.authorizedHistoricalContext ?: "You are a Stoic guide."
                 val model = GenerativeModel(
                     modelName = modelName,
@@ -100,8 +100,6 @@ class GeminiAiProvider @Inject constructor(
         }
     }
 
-    private fun String?.isNull_or_blank(): Boolean = this == null || this.trim().isEmpty()
-
     override fun streamResponse(request: AiProviderRequest): Flow<Result<AiProviderResponse>> = flow {
         emit(generateResponse(request))
     }
@@ -117,7 +115,7 @@ class GeminiAiProvider @Inject constructor(
         activeCalls[request.requestCorrelationId] = true
 
         try {
-            val modelName = request.selectedModel.ifBlank { "gemini-1.5-flash" }
+            val modelName = request.selectedModel.ifBlank { "gemini-2.0-flash" }
             val systemPrompt = request.authorizedHistoricalContext ?: "You are a Stoic guide."
             val model = GenerativeModel(
                 modelName = modelName,
