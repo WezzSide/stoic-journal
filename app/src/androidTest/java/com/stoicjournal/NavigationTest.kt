@@ -7,6 +7,7 @@ import androidx.navigation.compose.ComposeNavigator
 import androidx.navigation.testing.TestNavHostController
 import com.stoicjournal.navigation.Screen
 import com.stoicjournal.navigation.StoicJournalNavHost
+import com.stoicjournal.e2e.waitForText
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.junit.Before
@@ -37,6 +38,9 @@ class NavigationTest {
 
     @Test
     fun todayScreen_isDisplayed() {
+        // Same robustness as the E2E suite: the first test of a run may start while a system window
+        // (keyguard dismissal, IME toolbar) still holds focus, so wait instead of asserting immediately.
+        composeTestRule.waitForText("Stoic Journal")
         composeTestRule.onNodeWithText("Stoic Journal").assertExists()
     }
 }

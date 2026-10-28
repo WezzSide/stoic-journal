@@ -167,9 +167,10 @@ fun StoicJournalNavHost(
             MentorChatScreen(
                 conversationId = conversationId,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToPreview = { candidateId -> 
-                    navController.navigate(Screen.MentorReflectionPreview.createRoute(candidateId)) 
-                }
+                onNavigateToPreview = { candidateId ->
+                    navController.navigate(Screen.MentorReflectionPreview.createRoute(candidateId))
+                },
+                onOpenSettings = { navController.navigate(Screen.Settings.route) }
             )
         }
         composable(Screen.MentorConversationList.route) {

@@ -94,7 +94,9 @@ class MentorJourneyE2ETest {
         composeRule.waitForText("Conversations")
         composeRule.onNodeWithContentDescription("New Conversation").performClick()
         composeRule.waitForText("Stoic Mentor")
-        composeRule.onNodeWithText("Provider: FAKE_PROVIDER").assertIsDisplayed()
+        composeRule.onNodeWithText("via fake_provider").assertIsDisplayed()
+        // Empty conversation explains what is expected of the user.
+        composeRule.onNodeWithText("Your Stoic Mentor").assertIsDisplayed()
 
         // E2E-006 send + streamed reply
         composeRule.onNode(hasSetTextAction()).performTextInput(userText)
@@ -169,7 +171,9 @@ class MentorJourneyE2ETest {
         runBlocking { registry.setActiveProvider(keyless!!) }
         composeRule.onNode(hasSetTextAction()).performTextInput("QA error path")
         composeRule.onNodeWithContentDescription("Send Message").performClick()
-        composeRule.waitForText("Reflection failed", substring = true)
+        composeRule.waitForText("Message not sent")
+        composeRule.onNodeWithText("No API key is set for", substring = true).assertIsDisplayed()
+        composeRule.onNodeWithText("Open Settings").assertIsDisplayed()
         composeRule.onNodeWithText("Dismiss").performClick()
         composeRule.waitForTextGone("Dismiss")
 

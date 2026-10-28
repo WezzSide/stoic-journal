@@ -61,7 +61,7 @@ class MentorChatViewModel @Inject constructor(
         activeConversationId = conversationId
         conversationJob?.cancel()
         messagesJob?.cancel()
-        _uiState.update { it.copy(conversation = null, messages = emptyList(), streamingText = "", errorMessage = null) }
+        _uiState.update { it.copy(conversation = null, messages = emptyList(), streamingText = "", error = null) }
         conversationJob = viewModelScope.launch {
             mentorRepository.getConversation(conversationId).collectLatest { conv ->
                 _uiState.update { it.copy(conversation = conv) }
@@ -76,10 +76,11 @@ class MentorChatViewModel @Inject constructor(
 
     fun sendMessage(userContent: String) {
         if (userContent.isBlank()) return
+        if (_uiState.value.isStreaming) return
         val conversationId = activeConversationId ?: return
 
         streamJob?.cancel()
-        _uiState.update { it.copy(isStreaming = true, streamingText = "", errorMessage = null) }
+        _uiState.update { it.copy(isStreaming = true, streamingText = "", error = null) }
 
         streamJob = viewModelScope.launch {
             coordinator.sendMessage(conversationId, userContent, _uiState.value.activeMode)
@@ -99,15 +100,21 @@ class MentorChatViewModel @Inject constructor(
                             _uiState.update {
                                 it.copy(
                                     isStreaming = false,
-                                    errorMessage = "Reflection failed: ${event.error}"
+                                    streamingText = "",
+                                    error = event.error.toChatError(it.activeProviderId)
                                 )
                             }
+                            // The selection may have changed in Settings meanwhile; refresh the header.
+                            loadActiveProvider()
                         }
                         else -> {}
                     }
                 }
         }
     }
+
+    /** Re-reads the active provider, e.g. when returning from Settings. */
+    fun refreshProvider() = loadActiveProvider()
 
     fun cancelActiveRequest() {
         streamJob?.cancel()
@@ -119,7 +126,7 @@ class MentorChatViewModel @Inject constructor(
     }
 
     fun clearError() {
-        _uiState.update { it.copy(errorMessage = null) }
+        _uiState.update { it.copy(error = null) }
     }
 
     fun generateReflection(onCandidateGenerated: (String) -> Unit) {
@@ -127,7 +134,7 @@ class MentorChatViewModel @Inject constructor(
         val conversationId = activeConversationId ?: return
         if (msgs.isEmpty()) return
 
-        _uiState.update { it.copy(isGeneratingCandidate = true, errorMessage = null) }
+        _uiState.update { it.copy(isGeneratingCandidate = true, error = null) }
         viewModelScope.launch {
             val result = candidateGenerator.generateCandidate(
                 conversationId = conversationId,
@@ -143,7 +150,11 @@ class MentorChatViewModel @Inject constructor(
                 _uiState.update { 
                     it.copy(
                         isGeneratingCandidate = false, 
-                        errorMessage = "Failed to generate reflection: ${error.message}"
+                        error = MentorChatError(
+                            title = "Reflection not created",
+                            detail = error.message?.takeIf { msg -> msg.isNotBlank() }
+                                ?: "The mentor could not summarise this conversation. Try again."
+                        )
                     ) 
                 }
             }

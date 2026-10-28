@@ -2,6 +2,7 @@ package com.stoicjournal.feature.ai.mentor
 
 import com.stoicjournal.core.domain.model.MentorConversation
 import com.stoicjournal.core.domain.model.MentorMessage
+import com.stoicjournal.core.domain.model.MessageRole
 
 data class MentorChatUiState(
     val conversation: MentorConversation? = null,
@@ -9,9 +10,16 @@ data class MentorChatUiState(
     val isStreaming: Boolean = false,
     val streamingText: String = "",
     val activeProviderId: String = "openai",
-    val activeModelId: String = "gpt-4o",
+    val activeModelId: String = "",
     val activeMode: String = "DAILY_REFLECTION",
-    val errorMessage: String? = null,
+    val error: MentorChatError? = null,
     val isGeneratingCandidate: Boolean = false,
     val generatedCandidateId: String? = null
-)
+) {
+    /** A reflection can be generated once the mentor has answered at least once and nothing is in flight. */
+    val canGenerateReflection: Boolean
+        get() = messages.any { it.role == MessageRole.MENTOR } && !isStreaming
+
+    val isEmptyConversation: Boolean
+        get() = messages.none { it.role != MessageRole.SYSTEM } && !isStreaming
+}
