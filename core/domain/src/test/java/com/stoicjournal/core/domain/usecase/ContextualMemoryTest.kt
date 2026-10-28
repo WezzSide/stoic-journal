@@ -16,17 +16,22 @@ import org.junit.Before
 import org.junit.Test
 import java.time.Instant
 
+import com.stoicjournal.core.domain.repository.MentorMemoryPreferences
+import com.stoicjournal.core.domain.repository.MentorMemoryPreferencesRepository
+
 class ContextualMemoryTest {
 
     private lateinit var journalRepository: FakeJournalRepository
     private lateinit var memoryRepository: FakeMemoryRepository
+    private lateinit var memoryPreferencesRepository: FakeMemoryPreferencesRepository
     private lateinit var retriever: HistoricalReflectionRetriever
 
     @Before
     fun setUp() {
         journalRepository = FakeJournalRepository()
         memoryRepository = FakeMemoryRepository()
-        retriever = HistoricalReflectionRetriever(journalRepository, memoryRepository)
+        memoryPreferencesRepository = FakeMemoryPreferencesRepository()
+        retriever = HistoricalReflectionRetriever(journalRepository, memoryRepository, memoryPreferencesRepository)
     }
 
     @Test
@@ -74,5 +79,20 @@ class ContextualMemoryTest {
         override suspend fun saveMemory(memory: MentorMemory) { memories.add(memory) }
         override suspend fun deleteMemory(id: String) { memories.removeAll { it.id == id } }
         override suspend fun clearAll() { memories.clear() }
+    }
+
+    private class FakeMemoryPreferencesRepository : MentorMemoryPreferencesRepository {
+        override val preferences: Flow<MentorMemoryPreferences> = flowOf(
+            MentorMemoryPreferences(
+                memoryEnabled = true,
+                historicalJournalAccessEnabled = true,
+                useApprovedMemories = true
+            )
+        )
+        override suspend fun setMemoryEnabled(enabled: Boolean) {}
+        override suspend fun setHistoricalJournalAccessEnabled(enabled: Boolean) {}
+        override suspend fun setUsePreviousConversations(enabled: Boolean) {}
+        override suspend fun setUseApprovedMemories(enabled: Boolean) {}
+        override suspend fun setSendHistoricalContextToProvider(enabled: Boolean) {}
     }
 }

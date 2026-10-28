@@ -15,18 +15,33 @@ import com.stoicjournal.core.domain.model.ReflectionCandidate
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MentorReflectionPreviewScreen(
-    candidate: ReflectionCandidate,
-    onSaveReflection: (ReflectionCandidate) -> Unit,
-    onContinueConversation: () -> Unit,
+    candidateId: String,
     onNavigateBack: () -> Unit,
+    onContinueConversation: () -> Unit,
+    onSaveSuccess: () -> Unit,
+    viewModel: MentorReflectionPreviewViewModel = androidx.hilt.navigation.compose.hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
-    var title by remember { mutableStateOf(candidate.title) }
-    var summary by remember { mutableStateOf(candidate.summary) }
-    var keyInsights by remember { mutableStateOf(candidate.keyInsights) }
-    var withinControl by remember { mutableStateOf(candidate.withinControl) }
-    var outsideControl by remember { mutableStateOf(candidate.outsideControl) }
-    var nextAction by remember { mutableStateOf(candidate.nextAction) }
+    val uiState by viewModel.uiState.collectAsState()
+    
+    LaunchedEffect(candidateId) {
+        viewModel.loadCandidate(candidateId)
+    }
+    
+    LaunchedEffect(uiState.isSaved) {
+        if (uiState.isSaved) {
+            onSaveSuccess()
+        }
+    }
+    
+    val candidate = uiState.candidate ?: return
+
+    var title by remember(candidate) { mutableStateOf(candidate.title) }
+    var summary by remember(candidate) { mutableStateOf(candidate.summary) }
+    var keyInsights by remember(candidate) { mutableStateOf(candidate.keyInsights) }
+    var withinControl by remember(candidate) { mutableStateOf(candidate.withinControl) }
+    var outsideControl by remember(candidate) { mutableStateOf(candidate.outsideControl) }
+    var nextAction by remember(candidate) { mutableStateOf(candidate.nextAction) }
 
     Scaffold(
         topBar = {
@@ -48,7 +63,7 @@ fun MentorReflectionPreviewScreen(
                                 outsideControl = outsideControl,
                                 nextAction = nextAction
                             )
-                            onSaveReflection(updatedCandidate)
+                            viewModel.saveReflection(updatedCandidate)
                         }
                     ) {
                         Icon(Icons.Default.Check, contentDescription = "Save Reflection")
@@ -77,7 +92,7 @@ fun MentorReflectionPreviewScreen(
                                 outsideControl = outsideControl,
                                 nextAction = nextAction
                             )
-                            onSaveReflection(updatedCandidate)
+                            viewModel.saveReflection(updatedCandidate)
                         }
                     ) {
                         Text("Save to Journal")

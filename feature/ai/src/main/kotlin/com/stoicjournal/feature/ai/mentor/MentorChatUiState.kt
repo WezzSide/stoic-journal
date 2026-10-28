@@ -11,5 +11,7 @@ data class MentorChatUiState(
     val activeProviderId: String = "openai",
     val activeModelId: String = "gpt-4o",
     val activeMode: String = "DAILY_REFLECTION",
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val isGeneratingCandidate: Boolean = false,
+    val generatedCandidateId: String? = null
 )

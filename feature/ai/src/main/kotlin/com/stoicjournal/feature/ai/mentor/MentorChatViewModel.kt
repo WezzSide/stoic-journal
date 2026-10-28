@@ -6,6 +6,7 @@ import com.stoicjournal.core.domain.model.AiProviderRegistry
 import com.stoicjournal.core.domain.model.AiStreamEvent
 import com.stoicjournal.core.domain.repository.StoicMentorRepository
 import com.stoicjournal.core.domain.usecase.MentorConversationCoordinator
+import com.stoicjournal.core.domain.usecase.ReflectionCandidateGenerator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,11 +18,15 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
 
+import com.stoicjournal.core.domain.repository.ReflectionCandidateCache
+
 @HiltViewModel
 class MentorChatViewModel @Inject constructor(
     private val coordinator: MentorConversationCoordinator,
     private val mentorRepository: StoicMentorRepository,
-    private val providerRegistry: AiProviderRegistry
+    private val providerRegistry: AiProviderRegistry,
+    private val candidateGenerator: ReflectionCandidateGenerator,
+    private val candidateCache: ReflectionCandidateCache
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MentorChatUiState())
@@ -103,5 +108,32 @@ class MentorChatViewModel @Inject constructor(
 
     fun clearError() {
         _uiState.update { it.copy(errorMessage = null) }
+    }
+
+    fun generateReflection(onCandidateGenerated: (String) -> Unit) {
+        val msgs = _uiState.value.messages
+        if (msgs.isEmpty()) return
+
+        _uiState.update { it.copy(isGeneratingCandidate = true, errorMessage = null) }
+        viewModelScope.launch {
+            val result = candidateGenerator.generateCandidate(
+                conversationId = activeConversationId,
+                messages = msgs,
+                modelId = _uiState.value.activeModelId
+            )
+            
+            result.onSuccess { candidate ->
+                candidateCache.put(candidate)
+                _uiState.update { it.copy(isGeneratingCandidate = false, generatedCandidateId = candidate.candidateId) }
+                onCandidateGenerated(candidate.candidateId)
+            }.onFailure { error ->
+                _uiState.update { 
+                    it.copy(
+                        isGeneratingCandidate = false, 
+                        errorMessage = "Failed to generate reflection: ${error.message}"
+                    ) 
+                }
+            }
+        }
     }
 }

@@ -8,6 +8,8 @@ import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
 
+import com.stoicjournal.core.domain.model.EntryType
+
 @Singleton
 class DailyReflectionStatusRepositoryImpl @Inject constructor(
     private val journalRepository: JournalRepository
@@ -17,7 +19,12 @@ class DailyReflectionStatusRepositoryImpl @Inject constructor(
         val entries = journalRepository.getAllEntries().first()
         return entries.any { entry ->
             val entryDate = entry.createdAt.atZone(ZoneId.systemDefault()).toLocalDate()
-            entryDate == date
+            val isMeaningful = when (entry.type) {
+                EntryType.FREE_FORM -> entry.body.length > 50
+                EntryType.GUIDED -> true
+                else -> false
+            }
+            entryDate == date && isMeaningful
         }
     }
 }

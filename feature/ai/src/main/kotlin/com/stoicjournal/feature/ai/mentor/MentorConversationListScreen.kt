@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.stoicjournal.core.domain.model.MentorConversation
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -20,13 +21,13 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MentorConversationListScreen(
-    conversations: List<MentorConversation>,
     onSelectConversation: (String) -> Unit,
     onNewConversation: () -> Unit,
-    onDeleteConversation: (String) -> Unit,
     onNavigateBack: () -> Unit,
+    viewModel: MentorConversationListViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
+    val conversations by viewModel.conversations.collectAsState()
     val formatter = remember {
         DateTimeFormatter.ofPattern("MMM dd, HH:mm").withZone(ZoneId.systemDefault())
     }
@@ -95,7 +96,7 @@ fun MentorConversationListScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                            IconButton(onClick = { onDeleteConversation(conversation.id) }) {
+                            IconButton(onClick = { viewModel.deleteConversation(conversation.id) }) {
                                 Icon(
                                     imageVector = Icons.Default.Delete,
                                     contentDescription = "Delete Conversation",

@@ -16,9 +16,13 @@ import com.stoicjournal.core.data.repository.JournalRepositoryImpl
 import com.stoicjournal.core.data.repository.MentorConversationRepositoryImpl
 import com.stoicjournal.core.data.repository.MentorReflectionLinkRepositoryImpl
 import com.stoicjournal.core.data.dao.MentorMemoryDao
+import com.stoicjournal.core.data.repository.MentorMemoryPreferencesRepositoryImpl
 import com.stoicjournal.core.data.repository.MentorMemoryRepositoryImpl
 import com.stoicjournal.core.data.repository.PhilosopherRepositoryImpl
 import com.stoicjournal.core.data.repository.ProactiveMentorPreferencesRepositoryImpl
+import com.stoicjournal.core.data.repository.ReflectionCandidateCacheImpl
+import com.stoicjournal.core.data.repository.ReflectionPersistenceCoordinatorImpl
+import com.stoicjournal.core.domain.repository.MentorMemoryPreferencesRepository
 import com.stoicjournal.core.domain.repository.ProactiveMentorPreferencesRepository
 import com.stoicjournal.core.data.repository.PreferencesRepositoryImpl
 import com.stoicjournal.core.data.repository.PromptRepositoryImpl
@@ -44,6 +48,8 @@ import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
+
+import com.stoicjournal.core.domain.repository.ReflectionCandidateCache
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -85,7 +91,16 @@ abstract class RepositoryModule {
     abstract fun bindProactiveMentorPreferencesRepository(impl: ProactiveMentorPreferencesRepositoryImpl): ProactiveMentorPreferencesRepository
 
     @Binds
+    abstract fun bindMentorMemoryPreferencesRepository(impl: MentorMemoryPreferencesRepositoryImpl): MentorMemoryPreferencesRepository
+
+    @Binds
     abstract fun bindMentorMemoryRepository(impl: MentorMemoryRepositoryImpl): com.stoicjournal.core.domain.repository.MentorMemoryRepository
+
+    @Binds
+    abstract fun bindReflectionCandidateCache(impl: ReflectionCandidateCacheImpl): ReflectionCandidateCache
+
+    @Binds
+    abstract fun bindReflectionPersistenceCoordinator(impl: ReflectionPersistenceCoordinatorImpl): com.stoicjournal.core.domain.repository.ReflectionPersistenceCoordinator
 }
 
 @Module

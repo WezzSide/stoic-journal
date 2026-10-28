@@ -24,4 +24,9 @@ sealed class Screen(val route: String) {
         fun createRoute(conversationId: String) = "mentor_chat/$conversationId"
     }
     data object MentorConversationList : Screen("mentor_conversations")
+    data object MentorReflectionPreview : Screen("mentor_reflection_preview/{candidateId}") {
+        fun createRoute(candidateId: String) = "mentor_reflection_preview/$candidateId"
+    }
+    data object MemorySettings : Screen("memory_settings")
+    data object Insights : Screen("insights")
 }

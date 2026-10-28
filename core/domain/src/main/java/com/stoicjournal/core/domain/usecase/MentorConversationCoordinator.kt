@@ -23,7 +23,8 @@ import javax.inject.Singleton
 @Singleton
 class MentorConversationCoordinator @Inject constructor(
     private val mentorRepository: StoicMentorRepository,
-    private val providerRegistry: AiProviderRegistry
+    private val providerRegistry: AiProviderRegistry,
+    private val historicalReflectionRetriever: HistoricalReflectionRetriever
 ) {
     fun sendMessage(
         conversationId: String,
@@ -66,15 +67,25 @@ class MentorConversationCoordinator @Inject constructor(
         val stateMachine = MentorConversationStateMachine(conversation.state)
         stateMachine.transition(MentorEvent.UserSentMessage)
 
-        val updatedHistory = existingMessages + userMessage
+        val updatedHistory = existingMessages // Removed userMessage to prevent duplication!
         val correlationId = UUID.randomUUID().toString()
+
+        val contextResult = historicalReflectionRetriever.retrieveContext(userContent)
+        val systemInstruction = MentorInstructionBuilder.buildSystemInstruction(mode)
+        val authorizedContext = buildString {
+            append(systemInstruction)
+            if (contextResult.formattedContextString.isNotBlank()) {
+                append("\n\n")
+                append(contextResult.formattedContextString)
+            }
+        }
 
         val request = AiProviderRequest(
             conversationId = conversationId,
             userMessage = userContent,
             selectedModel = conversation.modelId ?: "default",
-            systemInstructionVersion = "1.0",
-            authorizedHistoricalContext = MentorInstructionBuilder.buildSystemInstruction(mode),
+            systemInstructionVersion = "1.1",
+            authorizedHistoricalContext = authorizedContext,
             conversationHistory = updatedHistory,
             maxOutputTokens = 500,
             cancellationState = false,
@@ -103,7 +114,7 @@ class MentorConversationCoordinator @Inject constructor(
                         role = MessageRole.MENTOR,
                         content = event.response.content.ifBlank { accumulatedText },
                         timestamp = Instant.now(),
-                        sequenceNumber = updatedHistory.size + 1,
+                        sequenceNumber = existingMessages.size + 2,
                         providerMetadata = correlationId
                     )
                     mentorRepository.saveMessage(mentorMessage)

@@ -28,6 +28,6 @@ data class MentorMemory(
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now(),
     val lastReviewedAt: Instant? = null,
-    val status: MentorMemoryStatus = MentorMemoryStatus.APPROVED,
-    val userApproved: Boolean = true
+    val status: MentorMemoryStatus = MentorMemoryStatus.PROPOSED,
+    val userApproved: Boolean = false
 )

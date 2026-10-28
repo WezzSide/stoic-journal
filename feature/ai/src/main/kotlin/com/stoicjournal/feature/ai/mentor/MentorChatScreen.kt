@@ -27,10 +27,16 @@ import java.time.Instant
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MentorChatScreen(
+    conversationId: String,
     onNavigateBack: () -> Unit,
+    onNavigateToPreview: (String) -> Unit,
     viewModel: MentorChatViewModel = hiltViewModel(),
     modifier: Modifier = Modifier
 ) {
+    LaunchedEffect(conversationId) {
+        viewModel.loadConversation(conversationId)
+    }
+    
     val uiState by viewModel.uiState.collectAsState()
     val listState = rememberLazyListState()
 
@@ -93,6 +99,23 @@ fun MentorChatScreen(
                         viewModel.sendMessage("Let's begin: $label")
                     }
                 )
+                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.End) {
+                    if (uiState.messages.isNotEmpty()) {
+                        Button(
+                            onClick = { viewModel.generateReflection(onCandidateGenerated = onNavigateToPreview) },
+                            enabled = !uiState.isStreaming && !uiState.isGeneratingCandidate,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        ) {
+                            if (uiState.isGeneratingCandidate) {
+                                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Generating...")
+                            } else {
+                                Text("Generate Reflection")
+                            }
+                        }
+                    }
+                }
                 MentorComposer(
                     onSendMessage = { content -> viewModel.sendMessage(content) },
                     onVoiceClick = { launchSpeechRecognizer() },

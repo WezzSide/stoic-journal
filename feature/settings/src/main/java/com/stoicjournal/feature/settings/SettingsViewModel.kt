@@ -15,6 +15,7 @@ import com.stoicjournal.core.domain.repository.ProactiveMentorPreferencesReposit
 import com.stoicjournal.core.domain.repository.JournalRepository
 import com.stoicjournal.core.domain.repository.PreferencesRepository
 import com.stoicjournal.core.notifications.ReminderScheduler
+import com.stoicjournal.core.notifications.proactive.ProactiveMentorScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -38,7 +39,8 @@ class SettingsViewModel @Inject constructor(
     private val reminderScheduler: ReminderScheduler,
     private val secureCredentialRepository: SecureCredentialRepository,
     private val aiProviderRegistry: AiProviderRegistry,
-    private val proactivePreferencesRepository: ProactiveMentorPreferencesRepository
+    private val proactivePreferencesRepository: ProactiveMentorPreferencesRepository,
+    private val proactiveMentorScheduler: ProactiveMentorScheduler
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -361,6 +363,8 @@ class SettingsViewModel @Inject constructor(
     fun setProactiveMentorEnabled(enabled: Boolean) {
         viewModelScope.launch {
             proactivePreferencesRepository.setProactiveMentorEnabled(enabled)
+            val prefs = proactivePreferencesRepository.preferences.first()
+            proactiveMentorScheduler.scheduleNextInvitation(prefs)
         }
     }
 

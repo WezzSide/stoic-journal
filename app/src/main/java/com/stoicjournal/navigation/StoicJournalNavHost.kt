@@ -12,6 +12,7 @@ import com.stoicjournal.feature.history.EntryDetailScreen
 import com.stoicjournal.feature.ai.AiReflectionScreen
 import com.stoicjournal.feature.ai.mentor.MentorChatScreen
 import com.stoicjournal.feature.ai.mentor.MentorConversationListScreen
+import com.stoicjournal.feature.ai.mentor.MentorReflectionPreviewScreen
 import com.stoicjournal.feature.journal.exercise.ExerciseJournalScreen
 import com.stoicjournal.feature.journal.freeform.FreeFormJournalScreen
 import com.stoicjournal.feature.journal.guided.GuidedJournalScreen
@@ -53,7 +54,7 @@ fun StoicJournalNavHost(
                 onNavigateToLibrary = { navController.navigate(Screen.Library.route) },
                 onNavigateToHistory = { navController.navigate(Screen.History.route) },
                 onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
-                onNavigateToAiReflection = { navController.navigate(Screen.AiReflection.route) }
+                onNavigateToAiReflection = { navController.navigate(Screen.MentorConversationList.route) }
             )
         }
         composable(Screen.GuidedJournal.route) { backStackEntry ->
@@ -133,6 +134,36 @@ fun StoicJournalNavHost(
         composable(Screen.AiReflection.route) {
             AiReflectionScreen(
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.MentorChat.route) { backStackEntry ->
+            val conversationId = backStackEntry.arguments?.getString("conversationId") ?: java.util.UUID.randomUUID().toString()
+            MentorChatScreen(
+                conversationId = conversationId,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToPreview = { candidateId -> 
+                    navController.navigate(Screen.MentorReflectionPreview.createRoute(candidateId)) 
+                }
+            )
+        }
+        composable(Screen.MentorConversationList.route) {
+            MentorConversationListScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onSelectConversation = { id -> navController.navigate(Screen.MentorChat.createRoute(id)) },
+                onNewConversation = { navController.navigate(Screen.MentorChat.createRoute(java.util.UUID.randomUUID().toString())) }
+            )
+        }
+        composable(Screen.MentorReflectionPreview.route) { backStackEntry ->
+            val candidateId = backStackEntry.arguments?.getString("candidateId") ?: ""
+            MentorReflectionPreviewScreen(
+                candidateId = candidateId,
+                onNavigateBack = { navController.popBackStack() },
+                onContinueConversation = { navController.popBackStack() },
+                onSaveSuccess = {
+                    navController.navigate(Screen.Today.route) {
+                        popUpTo(0)
+                    }
+                }
             )
         }
     }
