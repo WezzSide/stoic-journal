@@ -19,5 +19,15 @@ data class SettingsUiState(
     val hasPinSet: Boolean = false,
     val lockTimeoutSeconds: Int = 0,
     val privacyScreenEnabled: Boolean = false,
+    // AI providers
+    val activeProviderId: String = "openai",
+    val activeProviderExplicitlyChosen: Boolean = false,
+    val configuredProviderIds: Set<String> = emptySet(),
+    // Proactive Stoic Mentor
+    val proactiveMentorEnabled: Boolean = false,
+    val proactiveReminderHour: Int = 20,
+    val proactiveReminderMinute: Int = 30,
+    val proactiveQuietStartHour: Int = 22,
+    val proactiveQuietEndHour: Int = 8,
     val error: String? = null
 )

@@ -14,6 +14,7 @@ import androidx.work.WorkerParameters
 import com.stoicjournal.core.domain.repository.ProactiveMentorPreferencesRepository
 import com.stoicjournal.core.domain.usecase.ProactiveReflectionEligibilityEvaluator
 import com.stoicjournal.core.domain.usecase.ReminderDecision
+import com.stoicjournal.core.common.notifications.NotificationRoutes
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
@@ -45,7 +46,7 @@ class ProactiveMentorWorker @AssistedInject constructor(
         val mainActivityClass = Class.forName("com.stoicjournal.MainActivity")
         val contentIntent = Intent(context, mainActivityClass).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("route", "mentor_chat")
+            putExtra(NotificationRoutes.EXTRA_ROUTE, NotificationRoutes.ROUTE_MENTOR_CHAT)
         }
         val contentPendingIntent = PendingIntent.getActivity(
             context,
@@ -80,7 +81,10 @@ class ProactiveMentorWorker @AssistedInject constructor(
             .setContentText("Would you like to reflect on your day with Stoic Mentor?")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(contentPendingIntent)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC) // static copy only, never journal/AI text
             .setAutoCancel(true)
+            .addAction(0, "Reflect Now", contentPendingIntent)
             .addAction(0, "Snooze 30m", snoozePendingIntent)
             .addAction(0, "Skip Today", skipPendingIntent)
             .build()
@@ -107,6 +111,7 @@ class ProactiveMentorWorker @AssistedInject constructor(
 
     companion object {
         const val CHANNEL_ID = "stoic_mentor_reflection"
-        const val NOTIFICATION_ID = 2002
+        // 2002 collided with JournalDirectReplyReceiver.CONFIRM_NOTIFICATION_ID.
+        const val NOTIFICATION_ID = 2003
     }
 }

@@ -25,6 +25,7 @@ class GeminiAiProvider @Inject constructor(
 ) : AiProvider {
 
     override val providerId: String = "gemini"
+    override val defaultModelId: String = DEFAULT_MODEL
     private val activeCalls = ConcurrentHashMap<String, Boolean>()
 
     private suspend fun getApiKey(): String? {
@@ -37,7 +38,7 @@ class GeminiAiProvider @Inject constructor(
         val key = getApiKey() ?: return Result.failure(Exception("Missing Gemini API Key"))
         return try {
             val model = GenerativeModel(
-                modelName = "gemini-2.0-flash",
+                modelName = DEFAULT_MODEL,
                 apiKey = key
             )
             val response = model.generateContent("ping")
@@ -52,35 +53,19 @@ class GeminiAiProvider @Inject constructor(
     }
 
     override suspend fun listAvailableModels(): Result<List<String>> {
-        return Result.success(
-            listOf(
-                "gemini-2.0-flash",
-                "gemini-1.5-pro",
-                "gemini-1.5-flash"
-            )
-        )
+        return Result.success(KNOWN_MODELS)
     }
 
     override suspend fun generateResponse(request: AiProviderRequest): Result<AiProviderResponse> {
         val key = getApiKey() ?: return Result.failure(Exception("Missing Gemini API Key"))
         return withContext(Dispatchers.IO) {
             try {
-                val modelName = request.selectedModel.ifBlank { "gemini-2.0-flash" }
-                val systemPrompt = request.authorizedHistoricalContext ?: "You are a Stoic guide."
-                val model = GenerativeModel(
-                    modelName = modelName,
-                    apiKey = key,
-                    systemInstruction = content { text(systemPrompt) }
-                )
+                val modelName = resolveModelId(request.selectedModel)
+                val model = buildModel(key, modelName, request)
 
-                val prompt = buildString {
-                    request.conversationHistory.forEach { msg ->
-                        append("${msg.role.name}: ${msg.content}\n")
-                    }
-                    append("USER: ${request.userMessage}")
-                }
-
-                val response = model.generateContent(prompt)
+                // Structured multi-turn history so journal/user text can never spoof a role label.
+                val chat = model.startChat(history = toHistory(request))
+                val response = chat.sendMessage(request.userMessage)
                 val responseText = response.text ?: ""
 
                 Result.success(
@@ -115,23 +100,12 @@ class GeminiAiProvider @Inject constructor(
         activeCalls[request.requestCorrelationId] = true
 
         try {
-            val modelName = request.selectedModel.ifBlank { "gemini-2.0-flash" }
-            val systemPrompt = request.authorizedHistoricalContext ?: "You are a Stoic guide."
-            val model = GenerativeModel(
-                modelName = modelName,
-                apiKey = key,
-                systemInstruction = content { text(systemPrompt) }
-            )
-
-            val prompt = buildString {
-                request.conversationHistory.forEach { msg ->
-                    append("${msg.role.name}: ${msg.content}\n")
-                }
-                append("USER: ${request.userMessage}")
-            }
+            val modelName = resolveModelId(request.selectedModel)
+            val model = buildModel(key, modelName, request)
+            val chat = model.startChat(history = toHistory(request))
 
             var accumulatedText = ""
-            model.generateContentStream(prompt).collect { chunk ->
+            chat.sendMessageStream(request.userMessage).collect { chunk ->
                 val text = chunk.text ?: ""
                 if (text.isNotEmpty()) {
                     accumulatedText += text
@@ -156,11 +130,38 @@ class GeminiAiProvider @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
+    private fun buildModel(key: String, modelName: String, request: AiProviderRequest): GenerativeModel {
+        val systemPrompt = request.authorizedHistoricalContext ?: "You are a Stoic guide."
+        return GenerativeModel(
+            modelName = modelName,
+            apiKey = key,
+            systemInstruction = content { text(systemPrompt) }
+        )
+    }
+
+    /** Gemini requires alternating user/model turns; the SDK role for the assistant is "model". */
+    private fun toHistory(request: AiProviderRequest) = request.conversationHistory.map { msg ->
+        content(role = if (msg.role.name == "USER") "user" else "model") { text(msg.content) }
+    }
+
+    /**
+     * The Gemini SDK streams through a Kotlin Flow; cancelling the collecting coroutine (which the
+     * ViewModel does on "Stop generation") cancels the underlying request. Nothing else to do here.
+     */
     override fun cancelRequest(requestId: String) {
         activeCalls.remove(requestId)
     }
 
     override fun reportUsage(): UsageMetadata {
         return UsageMetadata(0, 0, 0, null)
+    }
+
+    companion object {
+        /**
+         * Verified against ai.google.dev/gemini-api/docs/models and /deprecations on 2026-10-28:
+         * gemini-2.0-flash was shut down on 2026-06-01 and the 1.5 family is no longer listed.
+         */
+        const val DEFAULT_MODEL = "gemini-3.8-flash"
+        val KNOWN_MODELS = listOf("gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-3.1-pro-preview")
     }
 }

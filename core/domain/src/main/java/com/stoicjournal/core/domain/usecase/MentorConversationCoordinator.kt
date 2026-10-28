@@ -45,7 +45,7 @@ class MentorConversationCoordinator @Inject constructor(
                 createdAt = Instant.now(),
                 updatedAt = Instant.now(),
                 providerId = activeProvider.providerId,
-                modelId = "default",
+                modelId = activeProvider.defaultModelId,
                 state = ConversationState.ACTIVE,
                 reflectionStatus = null,
                 linkedJournalEntryId = null
@@ -80,10 +80,13 @@ class MentorConversationCoordinator @Inject constructor(
             }
         }
 
+        // Never forward placeholder/blank model ids: resolve against the provider that will serve the call.
+        val resolvedModelId = activeProvider.resolveModelId(conversation.modelId)
+
         val request = AiProviderRequest(
             conversationId = conversationId,
             userMessage = userContent,
-            selectedModel = conversation.modelId ?: "default",
+            selectedModel = resolvedModelId,
             systemInstructionVersion = "1.1",
             authorizedHistoricalContext = authorizedContext,
             conversationHistory = updatedHistory,
@@ -118,7 +121,14 @@ class MentorConversationCoordinator @Inject constructor(
                         providerMetadata = correlationId
                     )
                     mentorRepository.saveMessage(mentorMessage)
-                    mentorRepository.saveConversation(conversation.copy(updatedAt = Instant.now(), state = ConversationState.ACTIVE))
+                    mentorRepository.saveConversation(
+                        conversation.copy(
+                            updatedAt = Instant.now(),
+                            state = ConversationState.ACTIVE,
+                            providerId = activeProvider.providerId,
+                            modelId = resolvedModelId
+                        )
+                    )
                     emit(event)
                 }
                 is AiStreamEvent.Failed -> {

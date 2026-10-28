@@ -23,6 +23,16 @@ class MentorMemoryRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getAllMemories(): Flow<List<MentorMemory>> {
+        return memoryDao.getAllMemories().map { entities ->
+            entities.map { it.toDomainModel() }
+        }
+    }
+
+    override suspend fun approveMemory(id: String) {
+        memoryDao.approveMemory(id, Instant.now().toEpochMilli())
+    }
+
     override suspend fun saveMemory(memory: MentorMemory) {
         val entity = MentorMemoryEntity(
             id = memory.id,
@@ -40,7 +50,7 @@ class MentorMemoryRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteMemory(id: String) {
-        memoryDao.deleteMemory(id)
+        memoryDao.deleteMemory(id, Instant.now().toEpochMilli())
     }
 
     override suspend fun clearAll() {

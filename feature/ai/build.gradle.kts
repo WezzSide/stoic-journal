@@ -1,6 +1,5 @@
 plugins {
     id("stoic.android.feature")
-    alias(libs.plugins.secrets)
 }
 
 android {
@@ -8,7 +7,6 @@ android {
 }
 
 dependencies {
-    implementation(libs.google.generative.ai)
     implementation(libs.androidx.material.icons.extended)
     
     implementation(libs.androidx.lifecycle.runtime.compose)
@@ -16,7 +14,6 @@ dependencies {
     
     implementation(project(":core:domain"))
     implementation(project(":core:common"))
-    implementation(project(":core:data"))
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

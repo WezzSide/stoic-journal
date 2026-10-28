@@ -20,14 +20,34 @@ import com.stoicjournal.feature.library.LibraryScreen
 import com.stoicjournal.feature.library.QuoteDetailScreen
 import com.stoicjournal.feature.onboarding.OnboardingScreen
 import com.stoicjournal.feature.settings.SettingsScreen
+import com.stoicjournal.feature.settings.memory.MemorySettingsScreen
+import com.stoicjournal.core.common.notifications.NotificationRoutes
+import androidx.compose.runtime.LaunchedEffect
 import com.stoicjournal.feature.today.TodayScreen
 
 @Composable
 fun StoicJournalNavHost(
     startDestination: Screen,
     modifier: Modifier = Modifier,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    pendingRoute: String? = null,
+    onPendingRouteConsumed: () -> Unit = {}
 ) {
+    // Notification deep links: rendered only here, i.e. behind the app-lock gate in MainActivity.
+    LaunchedEffect(pendingRoute) {
+        when (pendingRoute) {
+            NotificationRoutes.ROUTE_MENTOR_CHAT -> {
+                navController.navigate(Screen.MentorConversationList.route) { launchSingleTop = true }
+                navController.navigate(Screen.MentorChat.createRoute(java.util.UUID.randomUUID().toString()))
+                onPendingRouteConsumed()
+            }
+            null -> Unit
+            else -> {
+                Log.w(TAG, "Ignoring unknown notification route")
+                onPendingRouteConsumed()
+            }
+        }
+    }
     NavHost(
         navController = navController,
         startDestination = startDestination.route,
@@ -128,6 +148,12 @@ fun StoicJournalNavHost(
         }
         composable(Screen.Settings.route) {
             SettingsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToMemorySettings = { navController.navigate(Screen.MemorySettings.route) }
+            )
+        }
+        composable(Screen.MemorySettings.route) {
+            MemorySettingsScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

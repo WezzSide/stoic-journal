@@ -3,6 +3,10 @@ package com.stoicjournal.core.data.repository
 import com.stoicjournal.core.domain.model.AiProviderRequest
 import com.stoicjournal.core.domain.model.ProviderCredential
 import com.stoicjournal.core.domain.repository.SecureCredentialRepository
+import com.stoicjournal.core.domain.repository.AiProviderSelectionRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import org.junit.Assert.assertEquals
@@ -24,20 +28,57 @@ class DefaultAiProviderRegistryTest {
     private val gemini = GeminiAiProvider(fakeRepo)
     private val fake = FakeAiProvider()
 
+    private class InMemorySelection : AiProviderSelectionRepository {
+        val state = MutableStateFlow<String?>(null)
+        override val activeProviderId: Flow<String?> = state
+        override suspend fun setActiveProviderId(providerId: String) { state.value = providerId }
+    }
+    private val selection = InMemorySelection()
+    private fun registry() = DefaultAiProviderRegistry(openAi, claude, gemini, fake, selection)
+
     @Test
     fun `register and retrieve provider`() {
-        val registry = DefaultAiProviderRegistry(openAi, claude, gemini, fake)
+        val registry = registry()
 
-        assertEquals(4, registry.getSupportedProviders().size)
+        // The fake provider is resolvable by id for tests but hidden from the user-facing list.
+        assertEquals(listOf("openai", "claude", "gemini"), registry.getSupportedProviders().map { it.providerId })
         assertEquals(fake, registry.getProvider("fake_provider"))
         assertEquals(openAi, registry.getProvider("openai"))
     }
 
     @Test
-    fun `active provider defaults to first registered`() {
-        val registry = DefaultAiProviderRegistry(openAi, claude, gemini, fake)
-
+    fun `active provider falls back to OpenAI until the user chooses`() = runBlocking {
+        val registry = registry()
         assertEquals(openAi, registry.getActiveProvider())
+        assertEquals(null, registry.observeActiveProviderId().first())
+    }
+
+    @Test
+    fun `active provider follows the persisted selection and is observable`() = runBlocking {
+        val registry = registry()
+        registry.setActiveProvider("claude")
+        assertEquals(claude, registry.getActiveProvider())
+        assertEquals("claude", registry.observeActiveProviderId().first())
+        registry.setActiveProvider("gemini")
+        assertEquals(gemini, registry.getActiveProvider())
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `selecting an unknown provider is rejected`() = runBlocking {
+        registry().setActiveProvider("not-a-provider")
+    }
+
+    @Test
+    fun `every real provider resolves the legacy placeholder to a current model`() {
+        listOf(openAi, claude, gemini).forEach { provider ->
+            assertEquals(provider.defaultModelId, provider.resolveModelId("default"))
+            assertEquals(provider.defaultModelId, provider.resolveModelId(""))
+            assertEquals(provider.defaultModelId, provider.resolveModelId(null))
+            assertEquals("explicit-model", provider.resolveModelId("explicit-model"))
+            assertTrue(provider.defaultModelId.isNotBlank() && provider.defaultModelId != "default")
+        }
+        assertEquals("gemini-3.8-flash", gemini.defaultModelId)
+        assertTrue(runBlocking { gemini.listAvailableModels().getOrThrow() }.none { it.startsWith("gemini-1.5") || it == "gemini-2.0-flash" })
     }
 
     @Test

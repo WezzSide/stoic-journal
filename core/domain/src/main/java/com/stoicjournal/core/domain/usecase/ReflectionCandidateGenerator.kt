@@ -46,7 +46,7 @@ class ReflectionCandidateGenerator @Inject constructor(
         val request = AiProviderRequest(
             conversationId = conversationId,
             userMessage = prompt,
-            selectedModel = modelId,
+            selectedModel = activeProvider.resolveModelId(modelId),
             systemInstructionVersion = "1.0",
             authorizedHistoricalContext = "You are a reflection extraction assistant. Output only raw JSON. Do not include markdown blocks.",
             conversationHistory = emptyList(),

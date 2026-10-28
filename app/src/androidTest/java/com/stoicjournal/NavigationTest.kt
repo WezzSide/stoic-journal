@@ -27,6 +27,7 @@ class NavigationTest {
     @Before
     fun setup() {
         hiltRule.inject()
+        com.stoicjournal.e2e.E2ESupport.ensureScreenOn()
         composeTestRule.setContent {
             navController = TestNavHostController(LocalContext.current)
             navController.navigatorProvider.addNavigator(ComposeNavigator())

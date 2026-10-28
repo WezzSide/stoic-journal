@@ -69,6 +69,36 @@ class SettingsViewModel @Inject constructor(
                 )
             }
         }.launchIn(viewModelScope)
+
+        aiProviderRegistry.observeActiveProviderId().onEach { selected ->
+            _uiState.update {
+                it.copy(
+                    activeProviderId = selected ?: DEFAULT_PROVIDER_ID,
+                    activeProviderExplicitlyChosen = selected != null
+                )
+            }
+        }.launchIn(viewModelScope)
+
+        proactivePreferencesRepository.preferences.onEach { prefs ->
+            _uiState.update {
+                it.copy(
+                    proactiveMentorEnabled = prefs.proactiveMentorEnabled,
+                    proactiveReminderHour = prefs.preferredReminderHour,
+                    proactiveReminderMinute = prefs.preferredReminderMinute,
+                    proactiveQuietStartHour = prefs.quietHoursStartHour,
+                    proactiveQuietEndHour = prefs.quietHoursEndHour
+                )
+            }
+        }.launchIn(viewModelScope)
+
+        refreshConfiguredProviders()
+    }
+
+    private fun refreshConfiguredProviders() {
+        viewModelScope.launch {
+            val configured = PROVIDER_IDS.filter { secureCredentialRepository.hasCredential(it) }.toSet()
+            _uiState.update { it.copy(configuredProviderIds = configured) }
+        }
     }
 
     private fun String?.isNull_or_empty(): Boolean = this == null || this.isEmpty()
@@ -343,6 +373,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 secureCredentialRepository.saveCredential(providerId, ProviderCredential.ApiKey(apiKey))
+                refreshConfiguredProviders()
                 val provider = aiProviderRegistry.getProvider(providerId)
                 if (provider != null) {
                     val result = provider.validateConnection()
@@ -360,11 +391,73 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    /** Explicit, user-consented choice of which provider receives Stoic Mentor conversations. */
+    fun setActiveAiProvider(providerId: String) {
+        viewModelScope.launch {
+            try {
+                aiProviderRegistry.setActiveProvider(providerId)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to set active AI provider", e)
+                _uiState.update { it.copy(error = e.message ?: "Failed to set active AI provider") }
+            }
+        }
+    }
+
+    fun deleteAiApiKey(providerId: String, onResult: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                secureCredentialRepository.deleteCredential(providerId)
+                refreshConfiguredProviders()
+                onResult("API key verwijderd.")
+            } catch (e: Exception) {
+                onResult("Verwijderen mislukt: ${e.message}")
+            }
+        }
+    }
+
     fun setProactiveMentorEnabled(enabled: Boolean) {
         viewModelScope.launch {
-            proactivePreferencesRepository.setProactiveMentorEnabled(enabled)
-            val prefs = proactivePreferencesRepository.preferences.first()
-            proactiveMentorScheduler.scheduleNextInvitation(prefs)
+            try {
+                proactivePreferencesRepository.setProactiveMentorEnabled(enabled)
+                val prefs = proactivePreferencesRepository.preferences.first()
+                proactiveMentorScheduler.scheduleNextInvitation(prefs)
+                if (!enabled) proactiveMentorScheduler.scheduleSnoozeWakeup(prefs)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to update proactive mentor", e)
+                _uiState.update { it.copy(error = e.message ?: "Failed to update proactive mentor") }
+            }
+        }
+    }
+
+    fun setProactiveReminderTime(hour: Int, minute: Int) {
+        viewModelScope.launch {
+            try {
+                proactivePreferencesRepository.setPreferredReminderTime(hour, minute)
+                val prefs = proactivePreferencesRepository.preferences.first()
+                proactiveMentorScheduler.scheduleNextInvitation(prefs)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to set proactive reminder time", e)
+                _uiState.update { it.copy(error = e.message ?: "Failed to set proactive reminder time") }
+            }
+        }
+    }
+
+    fun setProactiveQuietHours(startHour: Int, endHour: Int) {
+        viewModelScope.launch {
+            try {
+                proactivePreferencesRepository.setQuietHours(startHour.coerceIn(0, 23), endHour.coerceIn(0, 23))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to set quiet hours", e)
+                _uiState.update { it.copy(error = e.message ?: "Failed to set quiet hours") }
+            }
         }
     }
 
@@ -374,7 +467,9 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    private companion object {
-        const val TAG = "SettingsViewModel"
+    companion object {
+        private const val TAG = "SettingsViewModel"
+        const val DEFAULT_PROVIDER_ID = "openai"
+        val PROVIDER_IDS = listOf("openai", "claude", "gemini")
     }
 }
