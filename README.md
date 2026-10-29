@@ -1,10 +1,10 @@
 # Stoic Journal
 
-A calm, offline-first Android journaling app for daily Stoic reflection, security, and personal growth.
+A calm Android journaling app for daily Stoic reflection, security, and personal growth.
 
-Stoic Journal helps you build a reflective practice through guided prompts, curated wisdom from Marcus Aurelius, Epictetus, and Seneca, and structured exercises rooted in classical Stoicism. Everything stays on your device — your journal is strictly private by default.
+Stoic Journal helps you build a reflective practice through guided prompts, curated wisdom from Marcus Aurelius, Epictetus, and Seneca, structured exercises, and an optional AI Stoic Mentor. Journal entries are stored locally. AI features send the text and context needed for a request to the provider you configure; review that provider's privacy terms before using them.
 
-[![Build and Verify Debug APK](https://github.com/WezzSide/stoic-journal/actions/workflows/build.yml/badge.svg)](https://github.com/WezzSide/stoic-journal/actions/workflows/build.yml)
+[![Build and Verify Debug APK](https://github.com/WezzSide/stoic-journal/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/WezzSide/stoic-journal/actions/workflows/build.yml)
 
 ---
 
@@ -55,6 +55,8 @@ Philosophy is a practice, not a lecture. Reading a Stoic quote is useful, but re
   - **Voice Journaling:** Integrated Android Speech-to-Text (`RecognizerIntent.ACTION_RECOGNIZE_SPEECH`) microphone button to dictate entries.
   - **Virtue Tagging:** Tag entries with the 4 Cardinal Virtues (🧠 Wijsheid, 🦁 Moed, ⚖️ Rechtvaardigheid, 🍇 Matigheid).
 
+- **AI Stoic Mentor:** Chat with a configurable AI provider, review past conversations, and turn a conversation into a draft reflection. AI use requires your own provider credentials and an internet connection.
+
 - **Stoic Exercises:**
   - **Dichotomy of Control Tool:** Interactive 2-column wizard (*Binnen mijn controle* vs. *Buiten mijn controle*) that automatically formats reflections into structured entries.
   - Amor Fati, Evening Review, Premeditatio Malorum, and View from Above step-by-step exercises.
@@ -97,6 +99,7 @@ feature:library/      # Quote and philosopher browsing
 feature:history/      # Entry list, detail, and VirtueStatsCard
 feature:settings/     # Dual reminders, PIN/Biometric lock, JSON backup/restore
 feature:onboarding/   # First-launch onboarding
+feature:ai/          # AI reflection and Stoic Mentor UI
 core:data/            # Room entities, DAOs, repositories, JSON seeders
 core:domain/          # Use cases, models (Virtue, JournalEntry, Streak)
 core:common/          # Utilities, date helpers, constants
@@ -109,9 +112,8 @@ core:notifications/   # WorkManager workers, DailyReminderWorker, DirectReplyRec
 
 ### Requirements
 
-- Android Studio Hedgehog or newer
 - JDK 17
-- Android SDK API 34
+- Android Studio with Android SDK Platform 34 and Build Tools 34.0.0
 
 ### Clone
 
@@ -120,9 +122,19 @@ git clone https://github.com/WezzSide/stoic-journal.git
 cd stoic-journal
 ```
 
-### IDE Setup
+### First run
 
-Open the project in Android Studio and sync with Gradle.
+1. Open the repository root in Android Studio and let it create `local.properties` for your Android SDK. This file is local and must not be committed.
+2. Select a JDK 17 Gradle JDK and sync the project.
+3. Build and install the debug app:
+
+   ```powershell
+   .\gradlew.bat :app:installDebug
+   ```
+
+   On macOS/Linux, use `./gradlew :app:installDebug`.
+
+The AI Mentor is optional. To use it, add an API key for a supported provider in the app's AI settings. Never commit API keys, signing keys, or machine-specific configuration.
 
 ---
 
@@ -130,17 +142,25 @@ Open the project in Android Studio and sync with Gradle.
 
 ### Debug APK
 
+Windows:
+
+```powershell
+.\gradlew.bat :app:assembleDebug
+```
+
+macOS/Linux:
+
 ```bash
 ./gradlew :app:assembleDebug
 ```
 
 Output: `app/build/outputs/apk/debug/app-debug.apk`
 
-### Signed Release APK & App Bundle
+### Release APK & App Bundle
 
-A release upload keystore (`stoic-journal-release.keystore`) is configured in `:app/build.gradle.kts`.
+Release builds are unsigned unless a release keystore (`stoic-journal-release.keystore`) and all three credentials are supplied: `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS`, and `RELEASE_KEY_PASSWORD`. Store them in your user-level Gradle properties or environment; never put them in the repository.
 
-To build the signed release APK and App Bundle (`.aab`):
+Build release artifacts:
 
 ```bash
 ./gradlew :app:bundleRelease :app:assembleRelease
@@ -148,7 +168,9 @@ To build the signed release APK and App Bundle (`.aab`):
 
 Output artifacts:
 - Release App Bundle: `app/build/outputs/bundle/release/app-release.aab`
-- Release Signed APK: `app/build/outputs/apk/release/app-release.apk`
+- Release APK: `app/build/outputs/apk/release/app-release.apk`
+
+The GitHub Actions workflow builds and uploads a debug APK artifact; it does not publish to Google Play or create a GitHub Release. Release distribution requires a separate release process.
 
 ---
 
@@ -163,17 +185,19 @@ Output artifacts:
 ### Instrumentation tests
 
 ```bash
-./gradlew :app:connectedDebugAndroidTest
+./gradlew :app:connectedQaAndroidTest
 ```
+
+The QA application uses a separate `com.stoicjournal.qa` application ID to avoid modifying data in an installed production/debug app.
 
 ---
 
 ## Privacy & Security
 
-- All journal entries, biometric preferences, and PIN hashes stay 100% local on your device.
-- Zero analytics, ads, or online tracking SDKs.
+- Journal entries and app data are stored locally on your device; the app does not provide cloud journal sync.
+- AI prompts, conversation context, and related text are sent to the AI provider selected in Settings when you use AI features. Provider credentials are configured in the app; do not share them or commit them.
 - Privacy Screen (`FLAG_SECURE`) blocks screenshots and obscures app content in the recent apps task manager.
-- Microphones for Voice Journaling use native Android `SpeechRecognizer` and process speech locally without transmitting audio.
+- Voice journaling uses Android speech recognition. Whether audio is processed on-device depends on the device's speech-recognition service and settings.
 
 ---
 

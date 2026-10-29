@@ -2,20 +2,18 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Working-tree caveat — read this first
+## First setup for agents
 
-The current working tree on disk only contains `app/`, `.git/`, and `.github/`. Every other tracked
-path — `build.gradle.kts`, `settings.gradle.kts`, `gradlew`, `build-logic/`, `core/*`, `feature/*`,
-`docs/`, `.autoloop/`, `gradle/` — shows as **deleted-but-uncommitted** in `git status`, even though it
-is fully present in `HEAD` (181 tracked files as of commit `2f43589`). This means:
+This checkout contains the complete project, including the root Gradle files, modules, and wrapper.
+Do not run `git restore`, `git checkout -- .`, or switch to a sibling checkout to "repair" it.
 
-- The project is **not buildable as-is**: `./gradlew` and the root Gradle files are missing from disk.
-- Before doing any build/test/run work, restore the missing files (e.g. `git checkout -- .` after
-  confirming with the user, or `git restore .`) — don't assume the sparse `app/`-only tree is intentional.
-- The sibling checkout `../stoic-journal-app` is the canonical, fully-checked-out copy of this same
-  GitHub repo (`B0LK13/stoic-journal.git`); prefer working there unless the user specifically wants this
-  checkout fixed up.
-- Everything below describes the project as recorded in `HEAD`, not the currently-sparse working tree.
+1. Start at the repository root and inspect `git status --short --branch` and `git log -5 --oneline`. Keep the current branch and preserve all pre-existing changes and untracked files.
+2. Use JDK 17 and Android SDK Platform 34 / Build Tools 34.0.0. Open the root folder in Android Studio and let it create the ignored `local.properties` file for the local SDK path.
+3. Use the Gradle wrapper, not a separately installed Gradle. On Windows run `.\gradlew.bat`; on macOS/Linux run `./gradlew`.
+4. For a first build, run `:app:assembleDebug`. For JVM tests run `test`; connected Android instrumentation tests use `:app:connectedQaAndroidTest` and need an emulator/device.
+5. Before changing build versions or shared dependencies, check `gradle/libs.versions.toml` and `build-logic/convention`. Never commit API keys, signing keys, or machine-specific configuration.
+
+The GitHub Actions workflow builds and verifies a debug APK and stores it as a short-lived workflow artifact. It is not a Play Store or GitHub Release deployment.
 
 ## Commands
 
@@ -31,13 +29,13 @@ All commands assume the root Gradle files are present (see caveat above).
 ./gradlew :feature:journal:test           # e.g. JournalDraftSaverTest
 
 ./gradlew :app:assembleDebugAndroidTest   # build instrumentation test APK
-./gradlew :app:connectedDebugAndroidTest  # run instrumentation tests on a connected device/emulator
+./gradlew :app:connectedQaAndroidTest    # run isolated QA instrumentation tests on a connected device/emulator
 
 ./gradlew lintDebug                       # Android lint
 ```
 
-Requirements: JDK 17, Android SDK with platform `android-34` and `build-tools;34.0.0`. `local.properties`
-(gitignored) must point `sdk.dir` at the SDK.
+Requirements: JDK 17, Android SDK with platform `android-34` and `build-tools;34.0.0`. Android Studio
+can create the ignored `local.properties`; if setting it manually, it must point `sdk.dir` at the SDK.
 
 ### Release signing
 
@@ -66,7 +64,7 @@ launches `MainActivity`, and fails on fatal logcat exceptions. Requires a runnin
 ## Architecture
 
 Multi-module Gradle project (root name `StoicJournal`, package `com.stoicjournal`), Kotlin + Jetpack
-Compose, MVVM + Repository, offline-first (Room), no network/cloud sync in the MVP.
+Compose, MVVM + Repository, with local-first Room storage and optional network-backed AI providers.
 
 ### Module graph
 
@@ -78,6 +76,7 @@ feature:library/       quote + philosopher browsing, favorites
 feature:history/       entry list, filters, detail, swipe-to-delete
 feature:settings/      reminder time, reset onboarding, attribution
 feature:onboarding/    first-launch flow (Stoicism-familiarity level, reminder opt-in)
+feature:ai/            AI reflection and Stoic Mentor UI
 core:data/             Room entities/DAOs/database, repository impls, asset-JSON seeder
 core:domain/           models, repository interfaces, use cases (no Android deps)
 core:common/           app-level CoroutineScope qualifier, shared DI utilities
@@ -85,8 +84,8 @@ core:notifications/    WorkManager daily reminder worker + scheduler
 ```
 
 `app` depends on every `feature:*` and `core:*` module. `feature:*` modules depend on `core:domain` and
-`core:common` only — never on `core:data` or each other directly; all persistence goes through domain
-repository interfaces injected via Hilt.
+`core:common` only — never on `core:data` or each other directly; persistence and provider access go
+through domain repository interfaces injected via Hilt.
 
 ### Convention plugins (`build-logic/convention`)
 
@@ -112,6 +111,8 @@ bundled JSON (`core/data/src/main/assets/{quotes,prompts,exercises,philosophers}
 a single transaction, gated on all four tables being empty — this is the only path that populates
 reference content; journal entries themselves are always user-created. `DataModule.kt` wires the Room
 `Singleton` database and binds every `*RepositoryImpl` to its `core:domain` interface via `@Binds`.
+Journal data has no cloud sync. Optional AI requests send user prompts and included conversation
+context to the provider selected in Settings; do not describe the whole app as offline-only.
 
 ### Navigation
 
@@ -128,11 +129,11 @@ callback, and it debounces writes and flushes on exit. `JournalDraftRepository` 
 
 ### Testing layout
 
-- JVM unit tests: `core/domain/src/test` (e.g. `StreakCalculatorTest`, `GetTodayPromptUseCaseTest`),
-  `feature/journal/src/test` (`JournalDraftSaverTest`).
-- Instrumentation tests: `app/src/androidTest` (`NavigationTest`, plus Hilt test scaffolding —
-  `HiltTestRunner`, `CustomTestApplication`) and `feature/today/src/androidTest` (`TodayScreenTest`).
-  `app`'s `testInstrumentationRunner` is `com.stoicjournal.HiltTestRunner`, not the default AndroidX one.
+- JVM unit tests are in module-level `src/test` folders, including `core/domain`, `feature/journal`,
+  and `feature/ai`.
+- Instrumentation tests are in `app/src/androidTest` and feature modules' `src/androidTest`.
+  `app` sets `testBuildType = "qa"` and uses the isolated `com.stoicjournal.qa` application ID;
+  run `:app:connectedQaAndroidTest` on a connected device/emulator.
 
 ## Other repo-root docs
 
